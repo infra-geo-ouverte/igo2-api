@@ -1,6 +1,6 @@
 
 
-# Infrastructure géomatique ouverte 2.0 (IGO2) / Open GIS Infrastructure 2.0
+# API pour Infrastructure géomatique ouverte 2.0 (IGO2) / API for Open GIS Infrastructure 2.0
 ***
 
 ### Qu'est-ce qu'[IGO](http://igouverte.org/)?
