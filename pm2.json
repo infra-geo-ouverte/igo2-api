@@ -8,7 +8,7 @@
         "env": {
             "NODE_ENV": "dev"
         },
-        "out_file": "C:\\Logs\\pm2\\type-node.log",
-        "error_file": "C:\\Logs\\pm2\\type-node-err.log"
+        "out_file": "/tmp//logs/pm2/type-node.log",
+        "error_file": "/tmp/logs/pm2/type-node-err.log"
     }]
 }
