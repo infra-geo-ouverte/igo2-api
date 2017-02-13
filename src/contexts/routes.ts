@@ -1,12 +1,14 @@
-import * as Hapi from "hapi";
-import * as Joi from "joi";
-import ContextController from "./context-controller";
-import * as ContextValidator from "./context-validator";
-// import { jwtValidator } from "../users/user-validator";
-import { IDatabase } from "../database";
-import { IServerConfigurations } from "../configurations";
+import * as Hapi from 'hapi';
+import * as Joi from 'joi';
+import ContextController from './context-controller';
+import * as ContextValidator from './context-validator';
+// import { jwtValidator } from '../users/user-validator';
+import { IDatabase } from '../database';
+import { IServerConfigurations } from '../configurations';
 
-export default function (server: Hapi.Server, configs: IServerConfigurations, database: IDatabase) {
+export default function (server: Hapi.Server,
+                         configs: IServerConfigurations,
+                         database: IDatabase) {
 
     const contextController = new ContextController(configs, database);
     server.bind(contextController);
@@ -16,7 +18,7 @@ export default function (server: Hapi.Server, configs: IServerConfigurations, da
         path: '/contexts/{id}',
         config: {
             handler: contextController.getContextById,
-            // auth: "jwt",
+            // auth: 'jwt',
             auth: false,
             tags: ['api', 'contexts'],
             description: 'Get contexts by id.',
@@ -46,7 +48,7 @@ export default function (server: Hapi.Server, configs: IServerConfigurations, da
         path: '/contexts',
         config: {
             handler: contextController.getContexts,
-            // auth: "jwt",
+            // auth: 'jwt',
             auth: false,
             tags: ['api', 'contexts'],
             description: 'Get all contexts.',
@@ -65,14 +67,14 @@ export default function (server: Hapi.Server, configs: IServerConfigurations, da
         path: '/contexts/{id}',
         config: {
             handler: contextController.deleteContext,
-            auth: "jwt",
+            auth: 'jwt',
             tags: ['api', 'contexts'],
             description: 'Delete context by id.',
             validate: {
                 params: {
                     id: Joi.string().required()
                 }
-                //headers: jwtValidator
+                // headers: jwtValidator
             },
             plugins: {
                 'hapi-swagger': {
@@ -94,7 +96,7 @@ export default function (server: Hapi.Server, configs: IServerConfigurations, da
         path: '/contexts/{id}',
         config: {
             handler: contextController.updateContext,
-            auth: "jwt",
+            auth: 'jwt',
             tags: ['api', 'contexts'],
             description: 'Update context by id.',
             validate: {
@@ -124,7 +126,7 @@ export default function (server: Hapi.Server, configs: IServerConfigurations, da
         path: '/contexts',
         config: {
             handler: contextController.createContext,
-            // auth: "jwt",
+            // auth: 'jwt',
             auth: false,
             tags: ['api', 'contexts'],
             description: 'Create a context.',

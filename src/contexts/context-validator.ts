@@ -1,4 +1,4 @@
-import * as Joi from "joi";
+import * as Joi from 'joi';
 
 export const createContextModel = Joi.object().keys({
     scope: Joi.string().required()

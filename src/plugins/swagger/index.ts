@@ -1,5 +1,5 @@
-import {IPlugin, IPluginInfo} from "../interfaces";
-import * as Hapi from "hapi";
+import {IPlugin, IPluginInfo} from '../interfaces';
+import * as Hapi from 'hapi';
 
 export default (): IPlugin => {
     return {
@@ -41,8 +41,8 @@ export default (): IPlugin => {
         },
         info: () => {
             return {
-                name: "Swagger Documentation",
-                version: "1.0.0"
+                name: 'Swagger Documentation',
+                version: '1.0.0'
             };
         }
     };

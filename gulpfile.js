@@ -1,5 +1,3 @@
-'use strict';
-
 const gulp = require('gulp');
 const rimraf = require('gulp-rimraf');
 const tslint = require('gulp-tslint');
@@ -20,8 +18,10 @@ gulp.task('clean', function () {
  */
 gulp.task('tslint', () => {
   return gulp.src('src/**/*.ts')
-    .pipe(tslint())
-    .pipe(tslint.report('prose'));
+    .pipe(tslint({
+        formatter: "prose"
+    }))
+    .pipe(tslint.report());
 });
 
 /**
@@ -41,14 +41,14 @@ function compileTS(args, cb) {
 
 gulp.task('compile', shell.task([
   'npm run tsc',
-]))
+]));
 
 /**
  * Watch for changes in TypeScript
  */
 gulp.task('watch', shell.task([
   'npm run tsc-watch',
-]))
+]));
 /**
  * Copy config files
  */

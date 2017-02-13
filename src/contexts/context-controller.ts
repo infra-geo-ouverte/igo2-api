@@ -1,13 +1,13 @@
-import * as Hapi from "hapi";
-import * as Boom from "boom";
-import { IContext } from "./context.model";
-import { IDatabase } from "../database";
-import { IServerConfigurations } from "../configurations";
-import {Sequelize} from "sequelize";
+import * as Hapi from 'hapi';
+import * as Boom from 'boom';
+import { IContext } from './context.model';
+import { IDatabase } from '../database';
+import { IServerConfigurations } from '../configurations';
+import {Sequelize} from 'sequelize';
 
 export default class ContextController {
 
-    private database; //: IDatabase;
+    private database: IDatabase;
     private configs: IServerConfigurations;
 
     constructor(configs: IServerConfigurations, database: IDatabase) {
@@ -16,7 +16,7 @@ export default class ContextController {
     }
 
     public createContext(request: Hapi.Request, reply: Hapi.IReply) {
-        var newContext: IContext = request.payload;
+        const newContext: IContext = request.payload;
 
         this.database.context.create(newContext).then((context) => {
             reply(context).code(201);
@@ -26,8 +26,8 @@ export default class ContextController {
     }
 
     public updateContext(request: Hapi.Request, reply: Hapi.IReply) {
-        let id = request.params["id"];
-        let context: IContext = request.payload;
+        const id = request.params['id'];
+        const context: IContext = request.payload;
 
         this.database.context.update(context, {
             where: {
@@ -45,7 +45,7 @@ export default class ContextController {
     }
 
     public deleteContext(request: Hapi.Request, reply: Hapi.IReply) {
-        let id = request.params["id"];
+        const id = request.params['id'];
 
         this.database.context.destroy({
           where: {
@@ -63,7 +63,7 @@ export default class ContextController {
     }
 
     public getContextById(request: Hapi.Request, reply: Hapi.IReply) {
-        let id = request.params["id"];
+        const id = request.params['id'];
         this.database.context.findOne({
           where: {
             id: id
