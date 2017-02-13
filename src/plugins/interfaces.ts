@@ -1,6 +1,6 @@
-import * as Hapi from "hapi";
-import { IDatabase } from "../database";
-import { IServerConfigurations } from "../configurations";
+import * as Hapi from 'hapi';
+import { IDatabase } from '../database';
+import { IServerConfigurations } from '../configurations';
 
 
 export interface IPluginOptions {

@@ -1,9 +1,9 @@
-import * as Sequelize from "sequelize";
+import * as Sequelize from 'sequelize';
 import * as Glob from 'glob';
 import * as path from 'path';
-import * as Configs from "./configurations";
+import * as Configs from './configurations';
 
-import {ContextModel} from "./contexts/context.model";
+import {ContextModel} from './contexts/context.model';
 
 export interface IDatabase {
     sequelize: Sequelize.Sequelize;
@@ -12,12 +12,14 @@ export interface IDatabase {
 
 const dbConfigs = Configs.getDatabaseConfig();
 
+type IPostgresConf = Configs.IPostgresConfiguration;
+type ISqliteConf = Configs.ISqliteConfiguration;
 let sequelize;
-let dbPG: Configs.IPostgresConfiguration = <Configs.IPostgresConfiguration>dbConfigs;
+const dbPG: IPostgresConf = <IPostgresConf>dbConfigs;
 if (dbPG.connectionString) {
   sequelize = new Sequelize(dbPG.connectionString);
 } else {
-  let dbSqlite: Configs.ISqliteConfiguration = <Configs.ISqliteConfiguration>dbConfigs;
+  const dbSqlite: ISqliteConf = <ISqliteConf>dbConfigs;
   sequelize = new Sequelize('database', 'username', 'password', {
     host: dbSqlite.host,
     dialect: dbSqlite.dialect,
@@ -25,10 +27,10 @@ if (dbPG.connectionString) {
   });
 }
 
-let db = {};
-Glob.sync("./src/**/*.model.ts").forEach((file) => {
-  const fileName = file.replace("./src/", "./").replace(".ts", "");
-  var model = sequelize['import'](path.join(__dirname, fileName));
+const db = {};
+Glob.sync('./src/**/*.model.ts').forEach((file) => {
+  const fileName = file.replace('./src/', './').replace('.ts', '');
+  const model = sequelize['import'](path.join(__dirname, fileName));
   db[model['name']] = model;
 });
 

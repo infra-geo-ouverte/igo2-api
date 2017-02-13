@@ -1,5 +1,5 @@
-import { IPlugin } from "../interfaces";
-import * as Hapi from "hapi";
+import { IPlugin } from '../interfaces';
+import * as Hapi from 'hapi';
 
 export default (): IPlugin => {
     return {
@@ -33,8 +33,8 @@ export default (): IPlugin => {
         },
         info: () => {
             return {
-                name: "Good Logger",
-                version: "1.0.0"
+                name: 'Good Logger',
+                version: '1.0.0'
             };
         }
     };
