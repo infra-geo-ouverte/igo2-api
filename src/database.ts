@@ -27,8 +27,9 @@ if (dbPG.connectionString) {
 
 let db = {};
 Glob.sync("./src/**/*.model.ts").forEach((file) => {
-   var model = sequelize['import'](path.join(__dirname, file.replace("./src/", "./").replace(".ts", "")));
-   db[model['name']] = model;
+  const fileName = file.replace("./src/", "./").replace(".ts", "");
+  var model = sequelize['import'](path.join(__dirname, fileName));
+  db[model['name']] = model;
 });
 
 /*Object.keys(db).forEach(function(modelName) {
