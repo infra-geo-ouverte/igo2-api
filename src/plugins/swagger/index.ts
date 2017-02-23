@@ -12,14 +12,18 @@ export default (): IPlugin => {
                   register: require('hapi-swagger'),
                   options: {
                     info: {
-                      title: 'Task Api',
-                      description: 'Task Api Documentation',
-                      version: '1.0'
+                      title: 'Igo2 Api',
+                      description: 'Igo2 Api Documentation',
+                      version: '0.4.0'
                     },
                     tags: [
                       {
-                        'name': 'tasks',
-                        'description': 'Api tasks interface.'
+                        'name': 'contexts',
+                        'description': 'Api contexts interface.'
+                      },
+                      {
+                        'name': 'layers',
+                        'description': 'Api layers interface.'
                       },
                       {
                         'name': 'users',
@@ -29,8 +33,7 @@ export default (): IPlugin => {
                     documentationPath: '/docs'
                   }
                 }
-              ]
-              , (error) => {
+              ], (error) => {
                 if (error) {
                   console.log('error', error);
                 }

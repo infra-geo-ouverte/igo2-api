@@ -3,11 +3,13 @@ import * as Glob from 'glob';
 import * as path from 'path';
 import * as Configs from './configurations';
 
-import {ContextModel} from './contexts/context.model';
+import { ContextModel } from './contexts/context.model';
+import { LayerModel } from './layers/layer.model';
 
 export interface IDatabase {
     sequelize: Sequelize.Sequelize;
     context: ContextModel;
+    layer: LayerModel;
 }
 
 const dbConfigs = Configs.getDatabaseConfig();
