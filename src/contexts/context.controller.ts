@@ -1,9 +1,8 @@
 import * as Hapi from 'hapi';
 import * as Boom from 'boom';
-import { IContext } from './context.model';
+import { IContext, ContextInstance } from './context.model';
 import { IDatabase } from '../database';
 import { IServerConfigurations } from '../configurations';
-import {Sequelize} from 'sequelize';
 
 export default class ContextController {
 
@@ -17,7 +16,6 @@ export default class ContextController {
 
     public createContext(request: Hapi.Request, reply: Hapi.IReply) {
         const newContext: IContext = request.payload;
-
         this.database.context.create(newContext).then((context) => {
             reply(context).code(201);
         }).catch((error) => {
@@ -33,33 +31,32 @@ export default class ContextController {
             where: {
               id: id
             }
-          }).then((updatedContext: IContext) => {
-              if (updatedContext) {
-                  reply(updatedContext);
+          }).then((count: [number, ContextInstance[]]) => {
+              if (count[0]) {
+                  reply({});
               } else {
                   reply(Boom.notFound());
               }
           }).catch((error) => {
               reply(Boom.badImplementation(error));
-          });
+        });
     }
 
     public deleteContext(request: Hapi.Request, reply: Hapi.IReply) {
-        const id = request.params['id'];
-
-        this.database.context.destroy({
-          where: {
-            id: id
+      const id = request.params['id'];
+      this.database.context.destroy({
+        where: {
+          id: id
+        }
+      }).then((count: number) => {
+          if (count) {
+              reply({});
+          } else {
+              reply(Boom.notFound());
           }
-        }).then((deletedContext: IContext) => {
-            if (deletedContext) {
-                reply(deletedContext);
-            } else {
-                reply(Boom.notFound());
-            }
-        }).catch((error) => {
-            reply(Boom.badImplementation(error));
-        });
+      }).catch((error) => {
+          reply(Boom.badImplementation(error));
+      });
     }
 
     public getContextById(request: Hapi.Request, reply: Hapi.IReply) {
@@ -68,7 +65,7 @@ export default class ContextController {
           where: {
             id: id
           }
-        }).then((context: IContext) => {
+        }).then((context: ContextInstance) => {
             if (context) {
                 reply(context);
             } else {
@@ -80,7 +77,8 @@ export default class ContextController {
     }
 
     public getContexts(request: Hapi.Request, reply: Hapi.IReply) {
-        this.database.context.findAll().then((contexts: Array<IContext>) => {
+        this.database.context.findAll()
+        .then((contexts: Array<ContextInstance>) => {
             reply(contexts);
         }).catch((error) => {
             reply(Boom.badImplementation(error));

@@ -54,7 +54,7 @@ gulp.task('watch', shell.task([
  */
 gulp.task('configs', (cb) => {
   return gulp.src("src/configurations/*.json")
-    .pipe(gulp.dest('./build/src/configurations'));
+    .pipe(gulp.dest('./build/configurations'));
 });
 
 /**

@@ -6,7 +6,7 @@ export default (): IPlugin => {
   return {
     register: (server: Hapi.Server, options: IPluginOptions): Promise<void> => {
       return new Promise<void>(resolve => {
-        const database = options.database;
+        // const database = options.database;
           const serverConfig = options.serverConfigs;
 
           const validateUser = (decoded, request, cb) => {
