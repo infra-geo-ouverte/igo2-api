@@ -45,4 +45,4 @@ export function init(configs: IServerConfigurations): Promise<Hapi.Server> {
     });
 
   });
-};
+}

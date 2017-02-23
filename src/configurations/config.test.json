@@ -2,7 +2,7 @@
     "database": {
       "host": "localhost",
       "dialect": "sqlite",
-      "storage": "./igo.db"
+      "storage": "./igo-test.db"
     },
     "server": {
         "port": 5000,

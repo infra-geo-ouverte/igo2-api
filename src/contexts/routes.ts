@@ -1,7 +1,7 @@
 import * as Hapi from 'hapi';
 import * as Joi from 'joi';
-import ContextController from './context-controller';
-import * as ContextValidator from './context-validator';
+import ContextController from './context.controller';
+import * as ContextValidator from './context.validator';
 // import { jwtValidator } from '../users/user-validator';
 import { IDatabase } from '../database';
 import { IServerConfigurations } from '../configurations';
@@ -67,7 +67,8 @@ export default function (server: Hapi.Server,
         path: '/contexts/{id}',
         config: {
             handler: contextController.deleteContext,
-            auth: 'jwt',
+            // auth: 'jwt',
+            auth: false,
             tags: ['api', 'contexts'],
             description: 'Delete context by id.',
             validate: {
@@ -96,7 +97,8 @@ export default function (server: Hapi.Server,
         path: '/contexts/{id}',
         config: {
             handler: contextController.updateContext,
-            auth: 'jwt',
+            // auth: 'jwt',
+            auth: false,
             tags: ['api', 'contexts'],
             description: 'Update context by id.',
             validate: {
