@@ -3,6 +3,7 @@ import { IPlugin } from './plugins/interfaces';
 import { IServerConfigurations } from './configurations';
 import database from './database';
 import * as Contexts from './contexts';
+import * as Layers from './layers';
 
 
 export function init(configs: IServerConfigurations): Promise<Hapi.Server> {
@@ -39,6 +40,7 @@ export function init(configs: IServerConfigurations): Promise<Hapi.Server> {
       // Init Features
       console.log('Routes loading');
       Contexts.init(server, configs, database);
+      Layers.init(server, configs, database);
       console.log('Routes loaded');
 
       resolve(server);
