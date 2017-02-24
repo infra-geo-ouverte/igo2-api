@@ -84,4 +84,23 @@ export default class ContextController {
             reply(Boom.badImplementation(error));
         });
     }
+
+    public getContextDetailsById(request: Hapi.Request, reply: Hapi.IReply) {
+      const id = request.params['id'];
+
+      this.database.context.findAll({
+        include: [
+          this.database.layer,
+          this.database.tool
+        ],
+        where: {
+          id: id
+        }
+      }).then((layersContexts: Array<any>) => {
+        reply(layersContexts);
+      }).catch((error) => {
+        reply(Boom.badImplementation(error));
+      });
+    }
+
 }
