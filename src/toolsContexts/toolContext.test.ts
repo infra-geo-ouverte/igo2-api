@@ -39,7 +39,7 @@ Server.init(serverConfigs).then((server) => {
           payload: {
             context_id: 1,
             tool_id: 1,
-            properties: {}
+            options: {}
           }
       };
       server.inject(options, function(response) {

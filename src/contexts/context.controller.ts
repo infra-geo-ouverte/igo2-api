@@ -96,8 +96,8 @@ export default class ContextController {
         where: {
           id: id
         }
-      }).then((layersContexts: Array<any>) => {
-        reply(layersContexts);
+      }).then((contextDetails: Array<any>) => {
+        reply(contextDetails);
       }).catch((error) => {
         reply(Boom.badImplementation(error));
       });
