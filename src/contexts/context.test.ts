@@ -39,7 +39,7 @@ Server.init(serverConfigs).then((server) => {
           payload: {
             alias: 'dummy',
             scope: 'private',
-            properties_map: {}
+            map: {}
           }
       };
       server.inject(options, function(response) {

@@ -5,12 +5,14 @@ import * as Configs from './configurations';
 
 import { ContextModel } from './contexts/context.model';
 import { LayerModel } from './layers/layer.model';
+import { ToolModel } from './tools/tool.model';
 import { LayerContextModel } from './layersContexts/layerContext.model';
 
 export interface IDatabase {
     sequelize: Sequelize.Sequelize;
     context: ContextModel;
     layer: LayerModel;
+    tool: ToolModel;
     layerContext: LayerContextModel;
 }
 
