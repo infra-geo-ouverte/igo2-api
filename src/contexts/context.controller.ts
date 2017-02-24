@@ -88,7 +88,7 @@ export default class ContextController {
     public getContextDetailsById(request: Hapi.Request, reply: Hapi.IReply) {
       const id = request.params['id'];
 
-      this.database.context.findAll({
+      this.database.context.findOne({
         include: [
           this.database.layer,
           this.database.tool
@@ -96,8 +96,27 @@ export default class ContextController {
         where: {
           id: id
         }
-      }).then((contextDetails: Array<any>) => {
-        reply(contextDetails);
+      }).then((contextDetails: any) => {
+        let plainDetails = contextDetails.get();
+        plainDetails.layers = [];
+        plainDetails.tools = [];
+
+        for (let tool of contextDetails.tools) {
+          let plainTool = tool.get();
+          Object.assign(plainTool.options, plainTool.toolContext.options);
+          plainTool.toolContext = undefined;
+          plainDetails.tools.push(plainTool);
+        }
+
+        for (let layer of contextDetails.layers) {
+          let plainLayer = layer.get();
+          Object.assign(plainLayer.view, plainLayer.layerContext.view);
+          Object.assign(plainLayer.source, plainLayer.layerContext.source);
+          plainLayer.layerContext = undefined;
+          plainDetails.layers.push(plainLayer);
+        }
+
+        reply(plainDetails);
       }).catch((error) => {
         reply(Boom.badImplementation(error));
       });
