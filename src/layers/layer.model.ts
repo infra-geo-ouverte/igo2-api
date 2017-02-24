@@ -1,8 +1,9 @@
 import * as Sequelize from 'sequelize';
 
 interface PropertiesLayer {
-  center: string;
-  zoom: number;
+  attribution: string;
+  minZoom: number;
+  maxZoom: number;
 };
 
 export interface ILayer  {
@@ -25,6 +26,7 @@ export interface LayerInstance extends Sequelize.Instance<ILayer> {
 
 export interface LayerModel
        extends Sequelize.Model<LayerInstance, ILayer> { }
+
 
 export default function define(sequelize: Sequelize.Sequelize, DataTypes) {
     const layer = sequelize.define<LayerModel, ILayer>('layer', {
