@@ -14,7 +14,7 @@ interface Map {
 };
 
 export interface IContext  {
-    alias: string;
+    name: string;
     scope: Scope;
     title: string;
     icon: string;
@@ -26,7 +26,7 @@ export interface ContextInstance extends Sequelize.Instance<IContext> {
   createdAt: Date;
   updatedAt: Date;
 
-  alias: string;
+  name: string;
   scope: Scope;
   title: string;
   icon: string;
@@ -44,11 +44,13 @@ export default function define(sequelize: Sequelize.Sequelize, DataTypes) {
             'primaryKey': true,
             'autoIncrement': true
         },
-        'alias': {
-            'type': DataTypes.STRING(64)
+        'name': {
+            'type': DataTypes.STRING(64),
+            'allowNull': false
         },
         'title': {
-            'type': DataTypes.STRING(128)
+            'type': DataTypes.STRING(128),
+            'allowNull': false
         },
         'icon': {
             'type': DataTypes.STRING(128)

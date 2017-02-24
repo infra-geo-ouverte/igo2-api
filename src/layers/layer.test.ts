@@ -37,9 +37,11 @@ Server.init(serverConfigs).then((server) => {
           method: 'POST',
           url: '/layers',
           payload: {
-            name: 'dummy',
+            title: 'dummy',
+            type: 'osm',
             protected: false,
-            properties: {}
+            view: {},
+            source: {}
           }
       };
       server.inject(options, function(response) {
