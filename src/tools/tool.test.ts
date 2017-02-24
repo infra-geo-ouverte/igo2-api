@@ -38,8 +38,9 @@ Server.init(serverConfigs).then((server) => {
           url: '/tools',
           payload: {
             name: 'dummy',
+            title: 'dummy',
             protected: false,
-            properties: {}
+            options: {}
           }
       };
       server.inject(options, function(response) {

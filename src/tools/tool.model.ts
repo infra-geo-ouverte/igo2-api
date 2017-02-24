@@ -1,16 +1,12 @@
 import * as Sequelize from 'sequelize';
 
-interface PropertiesTool {
-  attribution: string;
-  minZoom: number;
-  maxZoom: number;
-};
-
 export interface ITool  {
     name: string;
-    url: string;
+    title: string;
+    icon?: string;
+    url?: string;
     protected: boolean;
-    properties: PropertiesTool;
+    options?: {[key: string]: any};
 };
 
 export interface ToolInstance extends Sequelize.Instance<ITool> {
@@ -19,9 +15,11 @@ export interface ToolInstance extends Sequelize.Instance<ITool> {
   updatedAt: Date;
 
   name: string;
-  url: string;
+  title: string;
+  icon?: string;
+  url?: string;
   protected: boolean;
-  properties: PropertiesTool;
+  options?: {[key: string]: any};
 }
 
 export interface ToolModel
@@ -37,7 +35,15 @@ export default function define(sequelize: Sequelize.Sequelize, DataTypes) {
             'autoIncrement': true
         },
         'name': {
-            'type': DataTypes.STRING(64)
+            'type': DataTypes.STRING(64),
+            'allowNull': false
+        },
+        'title': {
+            'type': DataTypes.STRING(64),
+            'allowNull': false
+        },
+        'icon': {
+            'type': DataTypes.STRING(128)
         },
         'url': {
             'type': DataTypes.STRING(255),
@@ -48,13 +54,13 @@ export default function define(sequelize: Sequelize.Sequelize, DataTypes) {
         'protected': {
             'type': DataTypes.BOOLEAN
         },
-        'properties': {
+        'options': {
             'type': DataTypes.TEXT,
             'get': function() {
-                return JSON.parse(this.getDataValue('properties'));
+                return JSON.parse(this.getDataValue('options'));
             },
             'set': function(val) {
-                this.setDataValue('properties', JSON.stringify({}));
+                this.setDataValue('options', JSON.stringify({}));
             }
         }
     },
