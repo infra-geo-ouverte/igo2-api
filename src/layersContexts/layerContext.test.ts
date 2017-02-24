@@ -7,10 +7,10 @@ const serverConfigs = Configs.getServerConfigs();
 
 Server.init(serverConfigs).then((server) => {
 
-  test('Basic HTTP Tests - GET /layerContexts', function(t) {
+  test('Basic HTTP Tests - GET /layersContexts', function(t) {
       const options = {
           method: 'GET',
-          url: '/layerContexts'
+          url: '/layersContexts'
       };
       server.inject(options, function(response) {
           t.equal(response.statusCode, 200);
@@ -20,10 +20,10 @@ Server.init(serverConfigs).then((server) => {
   });
 
 
-  test('Basic HTTP Tests - GET /layerContexts/{id}', function(t) {
+  test('Basic HTTP Tests - GET /layersContexts/{id}', function(t) {
       const options = {
           method: 'GET',
-          url: '/layerContexts/2'
+          url: '/layersContexts/2'
       };
       server.inject(options, function(response) {
           t.equal(response.statusCode, 404);
@@ -32,10 +32,10 @@ Server.init(serverConfigs).then((server) => {
   });
 
 
-  test('Basic HTTP Tests - POST /layerContexts', function(t) {
+  test('Basic HTTP Tests - POST /layersContexts', function(t) {
       const options = {
           method: 'POST',
-          url: '/layerContexts',
+          url: '/layersContexts',
           payload: {
             context_id: 1,
             layer_id: 1,
