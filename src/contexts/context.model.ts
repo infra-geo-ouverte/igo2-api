@@ -6,15 +6,19 @@ enum Scope {
     private
 }
 
-interface PropertiesMap {
-  center: string;
-  zoom: number;
+interface Map {
+  view: {
+    center: string;
+    zoom: number;
+  };
 };
 
 export interface IContext  {
     alias: string;
     scope: Scope;
-    properties_map: PropertiesMap;
+    title: string;
+    icon: string;
+    map: Map;
 };
 
 export interface ContextInstance extends Sequelize.Instance<IContext> {
@@ -24,7 +28,9 @@ export interface ContextInstance extends Sequelize.Instance<IContext> {
 
   alias: string;
   scope: Scope;
-  properties_map: string;
+  title: string;
+  icon: string;
+  map: string;
 }
 
 export interface ContextModel
@@ -41,6 +47,12 @@ export default function define(sequelize: Sequelize.Sequelize, DataTypes) {
         'alias': {
             'type': DataTypes.STRING(64)
         },
+        'title': {
+            'type': DataTypes.STRING(128)
+        },
+        'icon': {
+            'type': DataTypes.STRING(128)
+        },
         'scope': {
             'type': DataTypes.ENUM('public', 'protected', 'private'),
             'allowNull': false
@@ -49,13 +61,13 @@ export default function define(sequelize: Sequelize.Sequelize, DataTypes) {
                 'isEmail': true
             }*/
         },
-        'properties_map': {
+        'map': {
             'type': DataTypes.TEXT,
             'get': function() {
-                return JSON.parse(this.getDataValue('properties_map'));
+                return JSON.parse(this.getDataValue('map'));
             },
             'set': function(val) {
-                this.setDataValue('properties_map', JSON.stringify({}));
+                this.setDataValue('map', JSON.stringify({}));
             }
         }
     },
