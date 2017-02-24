@@ -1,13 +1,18 @@
 import * as Sequelize from 'sequelize';
 
-interface PropertiesLayerContext {
+interface ViewLayer {
   attribution: string;
   minZoom: number;
   maxZoom: number;
 };
 
+interface SourceLayer {
+  url: string;
+};
+
 export interface ILayerContext {
-  properties: PropertiesLayerContext;
+  view: ViewLayer;
+  source: SourceLayer;
 };
 
 export interface LayerContextInstance
@@ -16,7 +21,8 @@ export interface LayerContextInstance
   createdAt: Date;
   updatedAt: Date;
 
-  properties: PropertiesLayerContext;
+  view: ViewLayer;
+  source: SourceLayer;
 }
 
 export interface LayerContextModel
@@ -31,13 +37,22 @@ export default function define(sequelize: Sequelize.Sequelize, DataTypes) {
         'primaryKey': true,
         'autoIncrement': true
       },
-      'properties': {
+      'view': {
         'type': DataTypes.TEXT,
         'get': function() {
-          return JSON.parse(this.getDataValue('properties'));
+          return JSON.parse(this.getDataValue('view'));
         },
         'set': function(val) {
-          this.setDataValue('properties', JSON.stringify({}));
+          this.setDataValue('view', JSON.stringify({}));
+        }
+      },
+      'source': {
+        'type': DataTypes.TEXT,
+        'get': function() {
+          return JSON.parse(this.getDataValue('source'));
+        },
+        'set': function(val) {
+          this.setDataValue('source', JSON.stringify({}));
         }
       },
       context_id: {

@@ -39,7 +39,8 @@ Server.init(serverConfigs).then((server) => {
           payload: {
             context_id: 1,
             layer_id: 1,
-            properties: {}
+            view: {},
+            source: {}
           }
       };
       server.inject(options, function(response) {

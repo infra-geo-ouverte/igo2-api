@@ -1,13 +1,7 @@
 import * as Sequelize from 'sequelize';
 
-interface PropertiesToolContext {
-  attribution: string;
-  minZoom: number;
-  maxZoom: number;
-};
-
 export interface IToolContext {
-  properties: PropertiesToolContext;
+  options?: {[key: string]: any};
 };
 
 export interface ToolContextInstance
@@ -16,7 +10,7 @@ export interface ToolContextInstance
   createdAt: Date;
   updatedAt: Date;
 
-  properties: PropertiesToolContext;
+  options?: {[key: string]: any};
 }
 
 export interface ToolContextModel
@@ -31,13 +25,13 @@ export default function define(sequelize: Sequelize.Sequelize, DataTypes) {
         'primaryKey': true,
         'autoIncrement': true
       },
-      'properties': {
+      'options': {
         'type': DataTypes.TEXT,
         'get': function() {
-          return JSON.parse(this.getDataValue('properties'));
+          return JSON.parse(this.getDataValue('options'));
         },
         'set': function(val) {
-          this.setDataValue('properties', JSON.stringify({}));
+          this.setDataValue('options', JSON.stringify({}));
         }
       },
       context_id: {
