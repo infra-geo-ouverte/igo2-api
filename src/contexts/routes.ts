@@ -45,6 +45,36 @@ export default function (server: Hapi.Server,
 
     server.route({
         method: 'GET',
+        path: '/contexts/{id}/details',
+        config: {
+            handler: contextController.getContextDetailsById,
+            // auth: 'jwt',
+            auth: false,
+            tags: ['api', 'tools', 'layers', 'contexts'],
+            description: 'Get details of context by context id.',
+            validate: {
+                params: {
+                    id: Joi.string().required()
+                }
+                // headers: jwtValidator
+            },
+            plugins: {
+                'hapi-swagger': {
+                    responses: {
+                        '200': {
+                            'description': 'Context founded.'
+                        },
+                        '404': {
+                            'description': 'Context does not exists.'
+                        }
+                    }
+                }
+            }
+        }
+    });
+
+    server.route({
+        method: 'GET',
         path: '/contexts',
         config: {
             handler: contextController.getContexts,

@@ -90,8 +90,6 @@ export default class LayerContextController {
   public getLayersByContextId(request: Hapi.Request, reply: Hapi.IReply) {
     const id = request.params['id'];
 
-
-
     this.database.context.findAll({
       include: [ this.database.layer ],
       where: {
