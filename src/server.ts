@@ -6,6 +6,7 @@ import * as Contexts from './contexts';
 import * as Layers from './layers';
 import * as Tools from './tools';
 import * as LayersContexts from './layersContexts';
+import * as ToolsContexts from './toolsContexts';
 
 export function init(configs: IServerConfigurations): Promise<Hapi.Server> {
   return new Promise<Hapi.Server>(resolve => {
@@ -43,6 +44,7 @@ export function init(configs: IServerConfigurations): Promise<Hapi.Server> {
       Contexts.init(server, configs, database);
       Layers.init(server, configs, database);
       Tools.init(server, configs, database);
+      ToolsContexts.init(server, configs, database);
       LayersContexts.init(server, configs, database);
       console.log('Routes loaded');
 
