@@ -5,11 +5,13 @@ import * as Configs from './configurations';
 
 import { ContextModel } from './contexts/context.model';
 import { LayerModel } from './layers/layer.model';
+import { LayerContextModel } from './layersContexts/layerContext.model';
 
 export interface IDatabase {
     sequelize: Sequelize.Sequelize;
     context: ContextModel;
     layer: LayerModel;
+    layerContext: LayerContextModel;
 }
 
 const dbConfigs = Configs.getDatabaseConfig();

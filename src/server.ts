@@ -4,7 +4,7 @@ import { IServerConfigurations } from './configurations';
 import database from './database';
 import * as Contexts from './contexts';
 import * as Layers from './layers';
-
+import * as LayersContexts from './layersContexts';
 
 export function init(configs: IServerConfigurations): Promise<Hapi.Server> {
   return new Promise<Hapi.Server>(resolve => {
@@ -41,6 +41,7 @@ export function init(configs: IServerConfigurations): Promise<Hapi.Server> {
       console.log('Routes loading');
       Contexts.init(server, configs, database);
       Layers.init(server, configs, database);
+      LayersContexts.init(server, configs, database);
       console.log('Routes loaded');
 
       resolve(server);
