@@ -37,7 +37,7 @@ Server.init(serverConfigs).then((server) => {
           method: 'POST',
           url: '/contexts',
           payload: {
-            name: 'dummy',
+            uri: 'dummy',
             title: 'dummy',
             scope: 'private',
             map: {}
