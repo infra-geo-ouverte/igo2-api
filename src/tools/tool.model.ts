@@ -6,6 +6,7 @@ export interface ITool  {
     icon?: string;
     url?: string;
     protected: boolean;
+    inToolbar?: boolean;
     options?: {[key: string]: any};
 };
 
@@ -19,6 +20,7 @@ export interface ToolInstance extends Sequelize.Instance<ITool> {
   icon?: string;
   url?: string;
   protected: boolean;
+  inToolbar?: boolean;
   options?: {[key: string]: any};
 }
 
@@ -52,6 +54,9 @@ export default function define(sequelize: Sequelize.Sequelize, DataTypes) {
             }
         },
         'protected': {
+            'type': DataTypes.BOOLEAN
+        },
+        'inToolbar': {
             'type': DataTypes.BOOLEAN
         },
         'options': {

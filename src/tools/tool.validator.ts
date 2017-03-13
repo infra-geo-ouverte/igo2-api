@@ -6,6 +6,7 @@ export const createToolModel = Joi.object().keys({
   icon: Joi.string().max(128),
   url: Joi.string(),
   protected: Joi.boolean(),
+  inToolbar: Joi.boolean(),
   options:  Joi.object().required()
 });
 
@@ -15,5 +16,6 @@ export const updateToolModel = Joi.object().keys({
     icon: Joi.string().max(128),
     url: Joi.string(),
     protected: Joi.boolean(),
+    inToolbar: Joi.boolean(),
     options:  Joi.object().required()
 });
