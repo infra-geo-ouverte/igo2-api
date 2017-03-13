@@ -10,8 +10,8 @@
     "build.dev": "gulp build",
     "serve.dev": "node build/index.js",
     "lint": "gulp tslint",
-    "test": "rm igo-test.db && gulp tslint && NODE_ENV=test tape ./build/**/*.test.js | tap-spec",
-    "initDB": "rm igo.db && tape ./build/**/*.test.js | tap-spec",
+    "test": "rimraf igo-test.db && gulp tslint && NODE_ENV=test tape ./build/**/*.test.js | tap-spec",
+    "initDB": "rimraf igo.db && tape ./build/**/*.test.js | tap-spec",
     "coverage": "npm run build.coverage && npm run serve.coverage",
     "build.coverage": "NODE_ENV=test istanbul cover tape ./build/**/*.test.js",
     "serve.coverage": "node_modules/live-server/live-server.js ./coverage/lcov-report/ --port=4210 --no-browser"
@@ -68,6 +68,7 @@
     "istanbul": "^0.4.5",
     "live-server": "^1.2.0",
     "nodemon": "^1.11.0",
+    "rimraf": "^2.6.1",
     "tap-spec": "^4.1.1",
     "tape": "^4.6.3",
     "tslint": "^4.4.2",
