@@ -97,19 +97,19 @@ export default class ContextController {
           id: id
         }
       }).then((contextDetails: any) => {
-        let plainDetails = contextDetails.get();
+        const plainDetails = contextDetails.get();
         plainDetails.layers = [];
         plainDetails.tools = [];
 
-        for (let tool of contextDetails.tools) {
-          let plainTool = tool.get();
+        for (const tool of contextDetails.tools) {
+          const plainTool = tool.get();
           Object.assign(plainTool.options, plainTool.toolContext.options);
           plainTool.toolContext = undefined;
           plainDetails.tools.push(plainTool);
         }
 
-        for (let layer of contextDetails.layers) {
-          let plainLayer = layer.get();
+        for (const layer of contextDetails.layers) {
+          const plainLayer = layer.get();
           Object.assign(plainLayer.view, plainLayer.layerContext.view);
           Object.assign(plainLayer.source, plainLayer.layerContext.source);
           plainLayer.layerContext = undefined;
