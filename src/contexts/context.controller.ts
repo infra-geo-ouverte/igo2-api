@@ -100,12 +100,16 @@ export default class ContextController {
         const plainDetails = contextDetails.get();
         plainDetails.layers = [];
         plainDetails.tools = [];
+        plainDetails.toolbar = [];
 
         for (const tool of contextDetails.tools) {
           const plainTool = tool.get();
           Object.assign(plainTool.options, plainTool.toolContext.options);
           plainTool.toolContext = undefined;
           plainDetails.tools.push(plainTool);
+          if (plainTool.inToolbar) {
+            plainDetails.toolbar.push(plainTool.name);
+          }
         }
 
         for (const layer of contextDetails.layers) {

@@ -10,7 +10,7 @@
     "build.dev": "gulp build",
     "serve.dev": "node build/index.js",
     "lint": "gulp tslint",
-    "test": "rm igo-test.db && gulp tslint && NODE_ENV=test tape ./build/**/*.test.js | tap-spec",
+    "test": "rimraf igo-test.db && gulp tslint && NODE_ENV=test tape ./build/**/*.test.js | tap-spec",
     "initDB": "rimraf igo.db && tape ./build/**/*.test.js | tap-spec",
     "coverage": "npm run build.coverage && npm run serve.coverage",
     "build.coverage": "NODE_ENV=test istanbul cover tape ./build/**/*.test.js",
@@ -39,6 +39,7 @@
     "hapi-auth-jwt2": "^7.2.4",
     "hapi-swagger": "^7.5.0",
     "helmet": "^3.5.0",
+    "hoek": "^4.1.0",
     "inert": "^4.1.0",
     "joi": "^10.1.0",
     "jsonwebtoken": "^7.2.1",
@@ -48,7 +49,8 @@
     "pg-hstore": "^2.3.2",
     "sequelize": "^3.30.2",
     "sqlite3": "^3.1.8",
-    "vision": "^4.1.1"
+    "vision": "^4.1.1",
+    "xss": "^0.3.3"
   },
   "devDependencies": {
     "@types/acl": "^0.4.32",
@@ -70,6 +72,7 @@
     "istanbul": "^0.4.5",
     "live-server": "^1.2.0",
     "nodemon": "^1.11.0",
+    "rimraf": "^2.6.1",
     "tap-spec": "^4.1.1",
     "tape": "^4.6.3",
     "tslint": "^4.4.2",

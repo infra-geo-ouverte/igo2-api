@@ -2,7 +2,7 @@ import * as Joi from 'joi';
 
 export const createContextModel = Joi.object().keys({
   scope: Joi.string().required().valid('public', 'protected', 'private'),
-  name: Joi.string().required(),
+  uri: Joi.string().required(),
   title: Joi.string().required(),
   icon: Joi.string(),
   map:  Joi.object().required().keys({
@@ -15,7 +15,7 @@ export const createContextModel = Joi.object().keys({
 
 export const updateContextModel = Joi.object().keys({
     scope: Joi.string().valid('public', 'protected', 'private'),
-    name: Joi.string(),
+    uri: Joi.string(),
     title: Joi.string(),
     icon: Joi.string(),
     map:  Joi.object().keys({
