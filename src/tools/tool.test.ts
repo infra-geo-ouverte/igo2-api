@@ -40,6 +40,7 @@ Server.init(serverConfigs).then((server) => {
             name: 'dummy',
             title: 'dummy',
             protected: false,
+            inToolbar: true,
             options: {}
           }
       };

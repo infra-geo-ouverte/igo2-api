@@ -11,6 +11,7 @@
         "plugins": [
             "logger",
             "jwt-auth",
+            "sanitizer",
             "swagger"
         ]
     }
