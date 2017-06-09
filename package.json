@@ -11,6 +11,7 @@
     "serve.dev": "node build/index.js",
     "lint": "gulp tslint",
     "test": "rm igo-test.db && gulp tslint && NODE_ENV=test tape ./build/**/*.test.js | tap-spec",
+    "initDB": "rimraf igo.db && tape ./build/**/*.test.js | tap-spec",
     "coverage": "npm run build.coverage && npm run serve.coverage",
     "build.coverage": "NODE_ENV=test istanbul cover tape ./build/**/*.test.js",
     "serve.coverage": "node_modules/live-server/live-server.js ./coverage/lcov-report/ --port=4210 --no-browser"
@@ -37,6 +38,7 @@
     "hapi": "^16.0.3",
     "hapi-auth-jwt2": "^7.2.4",
     "hapi-swagger": "^7.5.0",
+    "helmet": "^3.5.0",
     "inert": "^4.1.0",
     "joi": "^10.1.0",
     "jsonwebtoken": "^7.2.1",
@@ -61,6 +63,7 @@
     "@types/sequelize": "^4.0.40",
     "gulp": "^3.9.1",
     "gulp-env": "^0.4.0",
+    "gulp-mocha": "^4.1.0",
     "gulp-rimraf": "^0.2.0",
     "gulp-shell": "^0.5.2",
     "gulp-tslint": "^7.1.0",

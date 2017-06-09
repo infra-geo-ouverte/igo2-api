@@ -11,6 +11,7 @@ export default (): IPlugin => {
                 {
                   register: require('hapi-swagger'),
                   options: {
+                    basePath: '/igo2/api/',
                     info: {
                       title: 'Igo2 Api',
                       description: 'Igo2 Api Documentation',
@@ -30,7 +31,11 @@ export default (): IPlugin => {
                         'description': 'Api users interface.'
                       }
                     ],
-                    documentationPath: '/docs'
+                    documentationPath: '/docs',
+                    jsonPath: '/igo2/api/swagger.json',
+                    lang: 'fr'
+                    //  swaggerUIPath: '/igo2/api/swaggerui/'
+
                   }
                 }
               ], (error) => {
