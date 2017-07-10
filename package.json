@@ -11,7 +11,7 @@
     "serve.dev": "node build/index.js",
     "lint": "gulp tslint",
     "test": "rimraf igo-test.db && gulp tslint && NODE_ENV=test tape ./build/**/*.test.js | tap-spec",
-    "initDB": "rimraf igo.db && tape ./build/**/*.test.js | tap-spec",
+    "initDB": "npm run build.dev && rimraf igo.db && node build/initDB.js",
     "coverage": "npm run build.coverage && npm run serve.coverage",
     "build.coverage": "NODE_ENV=test istanbul cover tape ./build/**/*.test.js",
     "serve.coverage": "node_modules/live-server/live-server.js ./coverage/lcov-report/ --port=4210 --no-browser"
@@ -47,6 +47,8 @@
     "path": "^0.12.7",
     "pg": "^6.1.2",
     "pg-hstore": "^2.3.2",
+    "request": "^2.81.0",
+    "rxjs": "^5.4.1",
     "sequelize": "^3.30.2",
     "sqlite3": "^3.1.8",
     "vision": "^4.1.1",

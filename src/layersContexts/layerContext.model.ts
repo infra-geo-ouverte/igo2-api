@@ -21,8 +21,8 @@ export interface LayerContextInstance
   createdAt: Date;
   updatedAt: Date;
 
-  view: ViewLayer;
-  source: SourceLayer;
+  view?: ViewLayer;
+  source?: SourceLayer;
 }
 
 export interface LayerContextModel
@@ -40,19 +40,21 @@ export default function define(sequelize: Sequelize.Sequelize, DataTypes) {
       'view': {
         'type': DataTypes.TEXT,
         'get': function() {
-          return JSON.parse(this.getDataValue('view'));
+          const view = this.getDataValue('view');
+          return view ? JSON.parse(view) : {};
         },
         'set': function(val) {
-          this.setDataValue('view', JSON.stringify({}));
+          this.setDataValue('view', JSON.stringify(val));
         }
       },
       'source': {
         'type': DataTypes.TEXT,
         'get': function() {
-          return JSON.parse(this.getDataValue('source'));
+          const source = this.getDataValue('source');
+          return source ? JSON.parse(source) : {};
         },
         'set': function(val) {
-          this.setDataValue('source', JSON.stringify({}));
+          this.setDataValue('source', JSON.stringify(val));
         }
       },
       context_id: {

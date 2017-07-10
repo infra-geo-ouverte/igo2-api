@@ -5,14 +5,17 @@ export const createLayerModel = Joi.object().keys({
   type: Joi.string().required().max(32),
   url: Joi.string(),
   protected: Joi.boolean(),
-  view:  Joi.object().required().keys({
+  view:  Joi.object().keys({
     attribution: Joi.string(),
     minZoom: Joi.number(),
     maxZoom: Joi.number()
   }),
-  source:  Joi.object().required().keys({
-    url: Joi.string()
-  })
+  source:  Joi.object().keys({
+    url: Joi.string(),
+    params: Joi.object()
+  }),
+  queryFormat: Joi.string(),
+  queryTitle: Joi.string()
 });
 
 export const updateLayerModel = Joi.object().keys({
@@ -20,12 +23,15 @@ export const updateLayerModel = Joi.object().keys({
     type: Joi.string().max(32),
     url: Joi.string(),
     protected: Joi.boolean(),
-    view:  Joi.object().required().keys({
+    view:  Joi.object().keys({
       attribution: Joi.string(),
       minZoom: Joi.number(),
       maxZoom: Joi.number()
     }),
-    source:  Joi.object().required().keys({
-      url: Joi.string()
-    })
+    source:  Joi.object().keys({
+      url: Joi.string(),
+      params: Joi.object()
+    }),
+    queryFormat: Joi.string(),
+    queryTitle: Joi.string()
 });

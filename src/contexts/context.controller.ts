@@ -1,5 +1,6 @@
 import * as Hapi from 'hapi';
 import * as Boom from 'boom';
+import { User } from '../users';
 import { IContext, ContextInstance } from './context.model';
 import { IDatabase } from '../database';
 import { IServerConfigurations } from '../configurations';
@@ -16,6 +17,9 @@ export default class ContextController {
 
     public createContext(request: Hapi.Request, reply: Hapi.IReply) {
         const newContext: IContext = request.payload;
+
+        newContext.owner = request.headers['x-consumer-username'];
+
         this.database.context.create(newContext).then((context) => {
             reply(context).code(201);
         }).catch((error) => {
@@ -60,6 +64,7 @@ export default class ContextController {
     }
 
     public getContextById(request: Hapi.Request, reply: Hapi.IReply) {
+        // TODO : verify permissions
         const id = request.params['id'];
         this.database.context.findOne({
           where: {
@@ -77,15 +82,58 @@ export default class ContextController {
     }
 
     public getContexts(request: Hapi.Request, reply: Hapi.IReply) {
-        this.database.context.findAll()
-        .then((contexts: Array<ContextInstance>) => {
-            reply(contexts);
-        }).catch((error) => {
-            reply(Boom.badImplementation(error));
+        const owner = request.headers['x-consumer-username'];
+        const id = request.headers['x-consumer-id'];
+        User.getProfils(id).subscribe((profils) => {
+          const promises = [];
+
+          promises.push(this.database.context.findAll({
+            where: {
+              owner: owner
+            }
+          }));
+
+          // TODO: promises where user has permission in contextPermission
+          promises.push(this.database.context.findAll({
+            include: [{
+              model: this.database.contextPermission,
+              where: {
+                profil: profils
+              }
+            }],
+            where: {
+              scope: 'protected',
+              owner: {
+                $ne: owner
+              }
+            }
+          }));
+
+          promises.push(this.database.context.findAll({
+            where: {
+              scope: 'public',
+              owner: {
+                $ne: owner
+              }
+            }
+          }));
+
+          Promise.all(promises)
+          .then((repPromises: Array<Array<ContextInstance>>) => {
+              const contexts = {
+                ours: repPromises[0],
+                shared: repPromises[1],
+                public: repPromises[2]
+              };
+              reply(contexts);
+          }).catch((error) => {
+              reply(Boom.badImplementation(error));
+          });
         });
     }
 
     public getContextDetailsById(request: Hapi.Request, reply: Hapi.IReply) {
+      // TODO : verify permissions
       const id = request.params['id'];
 
       this.database.context.findOne({

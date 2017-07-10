@@ -3,12 +3,12 @@ import * as Joi from 'joi';
 export const createLayerContextModel = Joi.object().keys({
   context_id: Joi.number().required(),
   layer_id: Joi.number().required(),
-  view:  Joi.object().required().keys({
+  view:  Joi.object().keys({
     attribution: Joi.string(),
     minZoom: Joi.number(),
     maxZoom: Joi.number()
   }),
-  source:  Joi.object().required().keys({
+  source:  Joi.object().keys({
     url: Joi.string()
   })
 });

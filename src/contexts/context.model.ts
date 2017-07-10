@@ -1,24 +1,26 @@
 import * as Sequelize from 'sequelize';
 
 enum Scope {
-    public,
-    protected,
-    private
+  public,
+  protected,
+  private
 }
 
 interface Map {
   view: {
-    center: string;
+    center: [number, number];
     zoom: number;
+    projection: string;
   };
 };
 
-export interface IContext  {
-    uri: string;
-    scope: Scope;
-    title: string;
-    icon: string;
-    map: Map;
+export interface IContext {
+  uri: string;
+  scope: Scope;
+  title: string;
+  icon: string;
+  map: Map;
+  owner: string;
 };
 
 export interface ContextInstance extends Sequelize.Instance<IContext> {
@@ -31,54 +33,60 @@ export interface ContextInstance extends Sequelize.Instance<IContext> {
   title: string;
   icon: string;
   map: string;
+  owner: string;
 }
 
 export interface ContextModel
-       extends Sequelize.Model<ContextInstance, IContext> { }
+  extends Sequelize.Model<ContextInstance, IContext> { }
 
 export default function define(sequelize: Sequelize.Sequelize, DataTypes) {
-    const context = sequelize.define<ContextModel, IContext>('context', {
-        'id': {
-            'type': DataTypes.INTEGER,
-            'allowNull': false,
-            'primaryKey': true,
-            'autoIncrement': true
-        },
-        'uri': {
-            'type': DataTypes.STRING(64),
-            'allowNull': false
-        },
-        'title': {
-            'type': DataTypes.STRING(128),
-            'allowNull': false
-        },
-        'icon': {
-            'type': DataTypes.STRING(128)
-        },
-        'scope': {
-            'type': DataTypes.ENUM('public', 'protected', 'private'),
-            'allowNull': false
-            /*'unique': true,
-            'validate': {
-                'isEmail': true
-            }*/
-        },
-        'map': {
-            'type': DataTypes.TEXT,
-            'get': function() {
-                return JSON.parse(this.getDataValue('map'));
-            },
-            'set': function(val) {
-                this.setDataValue('map', JSON.stringify({}));
-            }
-        }
+  const context = sequelize.define<ContextModel, IContext>('context', {
+    'id': {
+      'type': DataTypes.INTEGER,
+      'allowNull': false,
+      'primaryKey': true,
+      'autoIncrement': true
     },
+    'uri': {
+      'type': DataTypes.STRING(64),
+      'allowNull': false
+    },
+    'title': {
+      'type': DataTypes.STRING(128),
+      'allowNull': false
+    },
+    'icon': {
+      'type': DataTypes.STRING(128)
+    },
+    'owner': {
+      'type': DataTypes.STRING(128),
+      'allowNull': false
+    },
+    'scope': {
+      'type': DataTypes.ENUM('public', 'protected', 'private'),
+      'allowNull': false
+      /*'unique': true,
+      'validate': {
+          'isEmail': true
+      }*/
+    },
+    'map': {
+      'type': DataTypes.TEXT,
+      'get': function() {
+        const map = this.getDataValue('map');
+        return map ? JSON.parse(map) : {};
+      },
+      'set': function(val) {
+        this.setDataValue('map', JSON.stringify(val));
+      }
+    }
+  },
     {
-        'tableName': 'context',
-        'timestamps': true
+      'tableName': 'context',
+      'timestamps': true
     });
 
-    context.sync();
+  context.sync();
 
-    return context;
+  return context;
 }

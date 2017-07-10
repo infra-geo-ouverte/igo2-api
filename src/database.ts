@@ -3,19 +3,25 @@ import * as Glob from 'glob';
 import * as path from 'path';
 import * as Configs from './configurations';
 
+import { UserModel } from './users/user.model';
 import { ContextModel } from './contexts/context.model';
 import { LayerModel } from './layers/layer.model';
 import { ToolModel } from './tools/tool.model';
 import { ToolContextModel } from './toolsContexts/toolContext.model';
 import { LayerContextModel } from './layersContexts/layerContext.model';
+import {
+  ContextPermissionModel
+} from './contextsPermissions/contextPermission.model';
 
 export interface IDatabase {
     sequelize: Sequelize.Sequelize;
+    user: UserModel;
     context: ContextModel;
     layer: LayerModel;
     tool: ToolModel;
     layerContext: LayerContextModel;
     toolContext: ToolContextModel;
+    contextPermission: ContextPermissionModel;
 }
 
 const dbConfigs = Configs.getDatabaseConfig();

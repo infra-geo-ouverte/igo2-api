@@ -28,10 +28,11 @@ export default function define(sequelize: Sequelize.Sequelize, DataTypes) {
       'options': {
         'type': DataTypes.TEXT,
         'get': function() {
-          return JSON.parse(this.getDataValue('options'));
+          const options = this.getDataValue('options');
+          return options ? JSON.parse(options) : {};
         },
         'set': function(val) {
-          this.setDataValue('options', JSON.stringify({}));
+          this.setDataValue('options', JSON.stringify(val));
         }
       },
       context_id: {
