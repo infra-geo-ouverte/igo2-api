@@ -48,7 +48,7 @@ export default function (server: Hapi.Server,
             description: 'Get profils from user.',
             validate: {
                 // headers: UserValidator.jwtValidator,
-                headers: UserValidator.kongValidator,
+                // headers: UserValidator.kongValidator,
             },
             plugins: {
                 'hapi-swagger': {

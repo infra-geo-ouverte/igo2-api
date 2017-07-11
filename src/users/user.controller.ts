@@ -90,6 +90,9 @@ export default class UserController {
 
   public getProfilsReq(request: Hapi.Request, reply: Hapi.IReply) {
     const id = request.headers['x-consumer-id'];
+    if (!id) {
+      reply(Boom.notFound());
+    }
     User.getProfils(id).subscribe((profils) => {
       if (!profils) {
         reply(Boom.notFound());

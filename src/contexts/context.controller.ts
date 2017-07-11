@@ -84,6 +84,7 @@ export default class ContextController {
     public getContexts(request: Hapi.Request, reply: Hapi.IReply) {
         const owner = request.headers['x-consumer-username'];
         const id = request.headers['x-consumer-id'];
+
         User.getProfils(id).subscribe((profils) => {
           const promises = [];
 
