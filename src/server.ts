@@ -1,6 +1,6 @@
 import * as Hapi from 'hapi';
 import { IPlugin } from './plugins/interfaces';
-import { IServerConfigurations } from './configurations';
+import { IServerConfiguration } from './configurations';
 import database from './database';
 import * as Users from './users';
 import * as Contexts from './contexts';
@@ -10,7 +10,7 @@ import * as LayersContexts from './layersContexts';
 import * as ToolsContexts from './toolsContexts';
 import * as ContextsPermissions from './contextsPermissions';
 
-export function init(configs: IServerConfigurations): Promise<Hapi.Server> {
+export function init(configs: IServerConfiguration): Promise<Hapi.Server> {
   return new Promise<Hapi.Server>(resolve => {
     const port = process.env.port || configs.port;
     const server = new Hapi.Server();

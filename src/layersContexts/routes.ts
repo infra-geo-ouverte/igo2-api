@@ -1,13 +1,16 @@
 import * as Hapi from 'hapi';
 import * as Joi from 'joi';
+
+import { IDatabase } from '../database';
+import { IServerConfiguration } from '../configurations';
+
 import LayerContextController from './layerContext.controller';
 import * as LayerContextValidator from './layerContext.validator';
-// import { jwtValidator } from '../users/user-validator';
-import { IDatabase } from '../database';
-import { IServerConfigurations } from '../configurations';
+import * as UserValidator from '../users/user.validator';
+
 
 export default function (server: Hapi.Server,
-                         configs: IServerConfigurations,
+                         configs: IServerConfiguration,
                          database: IDatabase) {
 
   const layerContextController = new LayerContextController(configs, database);
@@ -15,18 +18,16 @@ export default function (server: Hapi.Server,
 
   server.route({
       method: 'GET',
-      path: '/contexts/{id}/layers',
+      path: '/contexts/{contextId}/layers',
       config: {
           handler: layerContextController.getLayersByContextId,
-          // auth: 'jwt',
-          auth: false,
           tags: ['api', 'layersContexts', 'layers', 'contexts'],
           description: 'Get layers by context id.',
           validate: {
               params: {
-                  id: Joi.string().required()
-              }
-              // headers: jwtValidator
+                  contextId: Joi.string().required()
+              },
+              headers: UserValidator.userValidator
           },
           plugins: {
               'hapi-swagger': {
@@ -45,18 +46,17 @@ export default function (server: Hapi.Server,
 
   server.route({
       method: 'GET',
-      path: '/layersContexts/{id}',
+      path: '/contexts/{contextId}/layers/{layerId}',
       config: {
           handler: layerContextController.getLayerContextById,
-          // auth: 'jwt',
-          auth: false,
           tags: ['api', 'layersContexts'],
           description: 'Get layersContexts by id.',
           validate: {
               params: {
-                  id: Joi.string().required()
-              }
-              // headers: jwtValidator
+                  layerId: Joi.string().required(),
+                  contextId: Joi.string().required()
+              },
+              headers: UserValidator.userValidator
           },
           plugins: {
               'hapi-swagger': {
@@ -74,43 +74,23 @@ export default function (server: Hapi.Server,
   });
 
   server.route({
-      method: 'GET',
-      path: '/layersContexts',
-      config: {
-          handler: layerContextController.getlayersContexts,
-          // auth: 'jwt',
-          auth: false,
-          tags: ['api', 'layersContexts'],
-          description: 'Get all layersContexts.',
-          validate: {
-              query: {
-                  // top: Joi.number().default(5),
-                  // skip: Joi.number().default(0)
-              }
-              // headers: jwtValidator
-          }
-      }
-  });
-
-  server.route({
       method: 'DELETE',
-      path: '/layersContexts/{id}',
+      path: '/contexts/{contextId}/layers/{layerId}',
       config: {
           handler: layerContextController.deleteLayerContext,
-          // auth: 'jwt',
-          auth: false,
           tags: ['api', 'layersContexts'],
           description: 'Delete layerContext by id.',
           validate: {
               params: {
-                  id: Joi.string().required()
-              }
-              // headers: jwtValidator
+                  layerId: Joi.string().required(),
+                  contextId: Joi.string().required()
+              },
+              headers: UserValidator.userValidator
           },
           plugins: {
               'hapi-swagger': {
                   responses: {
-                      '200': {
+                      '204': {
                           'description': 'Deleted LayerContext.',
                       },
                       '404': {
@@ -123,20 +103,19 @@ export default function (server: Hapi.Server,
   });
 
   server.route({
-      method: 'PUT',
-      path: '/layersContexts/{id}',
+      method: 'PATCH',
+      path: '/contexts/{contextId}/layers/{layerId}',
       config: {
           handler: layerContextController.updateLayerContext,
-          // auth: 'jwt',
-          auth: false,
           tags: ['api', 'layersContexts'],
           description: 'Update layerContext by id.',
           validate: {
               params: {
-                  id: Joi.string().required()
+                  layerId: Joi.string().required(),
+                  contextId: Joi.string().required()
               },
-              payload: LayerContextValidator.updateLayerContextModel
-              // headers: jwtValidator
+              payload: LayerContextValidator.updateLayerContextModel,
+              headers: UserValidator.userValidator
           },
           plugins: {
               'hapi-swagger': {
@@ -155,16 +134,14 @@ export default function (server: Hapi.Server,
 
   server.route({
       method: 'POST',
-      path: '/layersContexts',
+      path: '/contexts/{contextId}/layers',
       config: {
           handler: layerContextController.createLayerContext,
-          // auth: 'jwt',
-          auth: false,
           tags: ['api', 'layersContexts'],
           description: 'Create a layerContext.',
           validate: {
-              payload: LayerContextValidator.createLayerContextModel
-              // headers: jwtValidator
+              payload: LayerContextValidator.createLayerContextModel,
+              headers: UserValidator.userValidator
           },
           plugins: {
               'hapi-swagger': {

@@ -1,6 +1,6 @@
 import * as Sequelize from 'sequelize';
 
-enum Scope {
+export enum Scope {
   public,
   protected,
   private
@@ -34,6 +34,7 @@ export interface ContextInstance extends Sequelize.Instance<IContext> {
   icon: string;
   map: string;
   owner: string;
+  permission?: string;
 }
 
 export interface ContextModel
@@ -82,6 +83,11 @@ export default function define(sequelize: Sequelize.Sequelize, DataTypes) {
     }
   },
     {
+      'indexes': [{
+        'fields': ['scope']
+      }, {
+        'fields': ['owner']
+      }],
       'tableName': 'context',
       'timestamps': true
     });

@@ -35,14 +35,22 @@ export default function define(sequelize: Sequelize.Sequelize, DataTypes) {
           this.setDataValue('options', JSON.stringify(val));
         }
       },
-      context_id: {
+      contextId: {
         type: DataTypes.INTEGER
       },
-      tool_id: {
+      toolId: {
         type: DataTypes.INTEGER
       }
     },
     {
+      'indexes': [{
+        'unique': true,
+        'fields': ['contextId', 'toolId']
+      }, {
+        'fields': ['contextId']
+      }, {
+        'fields': ['toolId']
+      }],
       'tableName': 'toolContext',
       'timestamps': true
     }
@@ -57,7 +65,7 @@ export default function define(sequelize: Sequelize.Sequelize, DataTypes) {
       unique: false
     },
     foreignKey: {
-      name: 'tool_id',
+      name: 'toolId',
       allowNull: false
     }
   });
@@ -68,7 +76,7 @@ export default function define(sequelize: Sequelize.Sequelize, DataTypes) {
       unique: false
     },
     foreignKey: {
-      name: 'context_id',
+      name: 'contextId',
       allowNull: false
     }
   });

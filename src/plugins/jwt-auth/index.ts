@@ -7,7 +7,7 @@ export default (): IPlugin => {
     register: (server: Hapi.Server, options: IPluginOptions): Promise<void> => {
       return new Promise<void>(resolve => {
         // const database = options.database;
-          const serverConfig = options.serverConfigs;
+          // const serverConfig = options.serverConfigs;
 
           const validateUser = (decoded, request, cb) => {
               /*database.userModel.findById(decoded.id).lean(true)
@@ -26,7 +26,7 @@ export default (): IPlugin => {
                 console.log('error', error);
             } else {
                 server.auth.strategy('jwt', 'jwt', true, {
-                    key: serverConfig.jwtSecret,
+                    key: 'serverConfig.jwtSecret',
                     validateFunc: validateUser,
                     verifyOptions: { algorithms: ['HS256'] }
                 });

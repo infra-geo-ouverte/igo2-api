@@ -1,13 +1,8 @@
 import * as Joi from 'joi';
-
-export const createUserModel = Joi.object().keys({
-    sourceId: Joi.string().trim().required(),
-    source: Joi.string().trim().required()
-});
+import * as Boom from 'boom';
 
 export const updateUserModel = Joi.object().keys({
-    sourceId: Joi.string().trim(),
-    source: Joi.string().trim()
+    email: Joi.string().email()
 });
 
 export const loginUserModel = Joi.object().keys({
@@ -17,10 +12,25 @@ export const loginUserModel = Joi.object().keys({
     typeConnexion: Joi.string().valid('msp', 'facebook', 'google'),
 }).xor('username', 'token');
 
-export const jwtValidator = Joi.object({
-  'authorization': Joi.string().required()
+export const userValidator = Joi.object({
+  'x-consumer-id': Joi.string().required(),
+  'x-consumer-username': Joi.string().required()
 }).unknown();
 
-export const kongValidator = Joi.object({
-  'x-consumer-custom-id': Joi.string().required()
-}).unknown();
+export const authenticateValidator = (value, options, next) => {
+  const schema = userValidator.concat(
+    Joi.object({
+      'x-anonymous-consumer': Joi.boolean().forbidden()
+    }).unknown()
+  );
+  const valid = Joi.validate(
+    value,
+    schema
+  );
+
+  if (valid.error) {
+    next(Boom.unauthorized('Must be authenticated'));
+  } else {
+    next(null, value);
+  }
+};

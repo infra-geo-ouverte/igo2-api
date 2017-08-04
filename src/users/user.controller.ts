@@ -9,15 +9,15 @@ import * as querystring from 'querystring';
 import { IUser, UserInstance } from './user.model';
 import { User } from './user';
 import { IDatabase } from '../database';
-import { IServerConfigurations } from '../configurations';
-import { Base64 } from '../utils';
+import { IServerConfiguration } from '../configurations';
+import { Base64, ObjectUtils } from '../utils';
 
 export default class UserController {
 
   private database: IDatabase;
-  private configs: IServerConfigurations;
+  private configs: IServerConfiguration;
 
-  constructor(configs: IServerConfigurations, database: IDatabase) {
+  constructor(configs: IServerConfiguration, database: IDatabase) {
     this.database = database;
     this.configs = configs;
   }
@@ -32,7 +32,7 @@ export default class UserController {
   }
 
   public updateUser(request: Hapi.Request, reply: Hapi.IReply) {
-    const id = request.auth.credentials.user.id;
+    const id = request.headers['x-consumer-custom-id'];
     const user: IUser = request.payload;
 
     this.database.user.update(user, {
@@ -41,7 +41,7 @@ export default class UserController {
       }
     }).then((count: [number, UserInstance[]]) => {
       if (count[0]) {
-        reply({});
+        reply({ id: id });
       } else {
         reply(Boom.notFound());
       }
@@ -51,15 +51,18 @@ export default class UserController {
   }
 
   public deleteUser(request: Hapi.Request, reply: Hapi.IReply) {
-    const id = request.auth.credentials.user.id;
+    const customId = request.headers['x-consumer-custom-id'];
+    const id = request.headers['x-consumer-id'];
 
     this.database.user.destroy({
       where: {
-        id: id
+        id: customId
       }
     }).then((count: number) => {
       if (count) {
-        reply({});
+        this.deleteUserKong(id).subscribe(() => {
+          reply({}).code(204);
+        });
       } else {
         reply(Boom.notFound());
       }
@@ -69,17 +72,15 @@ export default class UserController {
   }
 
   public infoUser(request: Hapi.Request, reply: Hapi.IReply) {
-    const id = request.headers['x-consumer-custom-id'];
-    // request.auth.credentials.user.id;
-    // Jwt.decode(request.headers['authorization'].split(' ')[1])
+    const customId = request.headers['x-consumer-custom-id'];
 
     this.database.user.findOne({
       where: {
-        id: id
+        id: customId
       }
     }).then((user: UserInstance) => {
       if (user) {
-        reply(user);
+        reply(ObjectUtils.removeNull(user.get()));
       } else {
         reply(Boom.notFound());
       }
@@ -97,13 +98,12 @@ export default class UserController {
       if (!profils) {
         reply(Boom.notFound());
       } else {
-        reply({profils: profils});
+        reply({ profils: profils });
       }
     });
   }
 
   private getUserBySource(sourceId: string, sources: string | string[]) {
-    // TODO : use findOrCreate from sequlize
     if (sources === 'facebook' || sources === 'google') {
       sources = ['facebook', 'google'];
     }
@@ -127,8 +127,8 @@ export default class UserController {
           observer.complete();
         } else {
           this.createUserBySource({
-              sourceId: sourceId,
-              source: source
+            sourceId: sourceId,
+            source: source
           }).then((userCreated: UserInstance) => {
             observer.next(userCreated);
             observer.complete();
@@ -141,12 +141,12 @@ export default class UserController {
   private createUserKong(user: UserInstance) {
     return Rx.Observable.create(observer => {
       const userKongToCreate = querystring.stringify({
-        username: `${user.sourceId}`,
+        username: user.sourceId,
         custom_id: user.id
       });
       const options = {
-        host: 'localhost',
-        port: 8001,
+        host: this.configs.userApi.host,
+        port: this.configs.userApi.port,
         path: `/consumers`,
         method: 'POST',
         headers: {
@@ -156,7 +156,7 @@ export default class UserController {
       };
 
       const callback = (res) => {
-        res.setEncoding('utf8')  ;
+        res.setEncoding('utf8');
         res.on('data', function(d) {
           const data = JSON.parse(d);
           observer.next(data);
@@ -170,17 +170,40 @@ export default class UserController {
     });
   }
 
+  private deleteUserKong(id: string) {
+    return Rx.Observable.create(observer => {
+      const options = {
+        host: this.configs.userApi.host,
+        port: this.configs.userApi.port,
+        path: `/consumers/${id}`,
+        method: 'DELETE'
+      };
+
+      const callback = (res) => {
+        res.on('readable', () => {});
+        res.on('end', () => {
+          observer.next();
+          observer.complete();
+        });
+      };
+
+      const req = http.request(options, callback);
+      req.end();
+
+    });
+  }
+
   private getUserKong(user: UserInstance) {
     return Rx.Observable.create(observer => {
       const options = {
-        host: 'localhost',
-        port: 8001,
+        host: this.configs.userApi.host,
+        port: this.configs.userApi.port,
         path: `/consumers/${user.sourceId}`,
         method: 'GET'
       };
 
       const callback = (res) => {
-        res.setEncoding('utf8')  ;
+        res.setEncoding('utf8');
         res.on('data', function(d) {
           const data = JSON.parse(d);
           observer.next(data);
@@ -212,8 +235,8 @@ export default class UserController {
   private createAccessTokenUserKong(userKong) {
     return Rx.Observable.create(observer => {
       const options = {
-        host: 'localhost',
-        port: 8001,
+        host: this.configs.userApi.host,
+        port: this.configs.userApi.port,
         path: `/consumers/${userKong.id}/jwt`,
         method: 'POST',
         headers: {
@@ -222,7 +245,7 @@ export default class UserController {
       };
 
       const callback = (res) => {
-        res.setEncoding('utf8')  ;
+        res.setEncoding('utf8');
         res.on('data', function(d) {
           const data = JSON.parse(d);
           observer.next(data);
@@ -238,14 +261,14 @@ export default class UserController {
   private getAccessTokenUserKong(userKong) {
     return Rx.Observable.create(observer => {
       const options = {
-        host: 'localhost',
-        port: 8001,
+        host: this.configs.userApi.host,
+        port: this.configs.userApi.port,
         path: `/consumers/${userKong.id}/jwt`,
         method: 'GET'
       };
 
       const callback = (res) => {
-        res.setEncoding('utf8')  ;
+        res.setEncoding('utf8');
         res.on('data', (d) => {
           const data = JSON.parse(d);
           if (data.total) {
@@ -253,7 +276,7 @@ export default class UserController {
             observer.complete();
           } else {
             this.createAccessTokenUserKong(userKong).subscribe((tokenKong) => {
-              observer.next({data: [tokenKong]});
+              observer.next({ data: [tokenKong] });
               observer.complete();
             });
           }
@@ -267,14 +290,14 @@ export default class UserController {
 
   private deleteGroupUserKong(userKong, groupKong) {
     const options = {
-      host: 'localhost',
-      port: 8001,
+      host: this.configs.userApi.host,
+      port: this.configs.userApi.port,
       path: `/consumers/${userKong.id}/acls/${groupKong.id}`,
       method: 'DELETE'
     };
 
     const callback = (res) => {
-      res.setEncoding('utf8')  ;
+      res.setEncoding('utf8');
       res.on('data', (d) => {
 
       });
@@ -290,8 +313,8 @@ export default class UserController {
     });
 
     const options = {
-      host: 'localhost',
-      port: 8001,
+      host: this.configs.userApi.host,
+      port: this.configs.userApi.port,
       path: `/consumers/${userKong.id}/acls`,
       method: 'POST',
       headers: {
@@ -301,7 +324,7 @@ export default class UserController {
     };
 
     const callback = (res) => {
-      res.setEncoding('utf8')  ;
+      res.setEncoding('utf8');
       res.on('data', (d) => {
 
       });
@@ -320,14 +343,14 @@ export default class UserController {
         return;
       }
       const options = {
-        host: 'localhost',
-        port: 8001,
+        host: this.configs.userApi.host,
+        port: this.configs.userApi.port,
         path: `/consumers/${userKong.id}/acls`,
         method: 'GET'
       };
 
       const callback = (res) => {
-        res.setEncoding('utf8')  ;
+        res.setEncoding('utf8');
         res.on('data', (d) => {
           const data = JSON.parse(d);
           for (const acl of data.data) {
@@ -478,7 +501,7 @@ export default class UserController {
       };
 
       const callback = (res) => {
-        res.setEncoding('utf8')  ;
+        res.setEncoding('utf8');
         res.on('data', function(d) {
           const data = JSON.parse(d);
           if (data && !data.error) {
@@ -498,7 +521,7 @@ export default class UserController {
   private validateGoogleToken(token: string) {
     return Rx.Observable.create(observer => {
 
-      const key = 'AIzaSyCbc-E35ZNqAjPvpbr30bAXwfcQoq5XLBs';
+      const key = this.configs.googleKey;
       const fields = 'person.names,person.locales,person.emailAddresses';
 
       const options = {
@@ -511,7 +534,7 @@ export default class UserController {
       };
 
       const callback = (res) => {
-        res.setEncoding('utf8')  ;
+        res.setEncoding('utf8');
         res.on('data', function(d) {
           const data = JSON.parse(d);
           if (data && !data.error) {

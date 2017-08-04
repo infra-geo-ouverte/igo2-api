@@ -1,10 +1,12 @@
 import * as Hapi from 'hapi';
 import Routes from './routes';
 import { IDatabase } from '../database';
-import { IServerConfigurations } from '../configurations';
+import { IServerConfiguration } from '../configurations';
 
 export function init(server: Hapi.Server,
-                     configs: IServerConfigurations,
+                     configs: IServerConfiguration,
                      database: IDatabase) {
     Routes(server, configs, database);
 }
+
+export * from './context.model';

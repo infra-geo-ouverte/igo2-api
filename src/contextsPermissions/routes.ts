@@ -1,14 +1,16 @@
 import * as Hapi from 'hapi';
 import * as Joi from 'joi';
+
+import { IDatabase } from '../database';
+import { IServerConfiguration } from '../configurations';
+
 import ContextPermissionController from './contextPermission.controller';
 import * as ContextPermissionValidator from './contextPermission.validator';
-// import { jwtValidator } from '../users/user-validator';
-import { IDatabase } from '../database';
-import { IServerConfigurations } from '../configurations';
+import * as UserValidator from '../users/user.validator';
 
-export default function (server: Hapi.Server,
-                         configs: IServerConfigurations,
-                         database: IDatabase) {
+export default function(server: Hapi.Server,
+  configs: IServerConfiguration,
+  database: IDatabase) {
 
   const contextPermissionController =
     new ContextPermissionController(configs, database);
@@ -16,167 +18,115 @@ export default function (server: Hapi.Server,
   server.bind(contextPermissionController);
 
   server.route({
-      method: 'GET',
-      path: '/contexts/{id}/permissions',
-      config: {
-          handler: contextPermissionController.getPermissionsByContextId,
-          // auth: 'jwt',
-          auth: false,
-          tags: ['api', 'contextsPermissions', 'contexts', 'permissions'],
-          description: 'Get permissions by contexts id.',
-          validate: {
-              params: {
-                  id: Joi.string().required()
-              }
-              // headers: jwtValidator
-          },
-          plugins: {
-              'hapi-swagger': {
-                  responses: {
-                      '200': {
-                          'description': 'permissions founded.'
-                      },
-                      '404': {
-                          'description': 'Permission does not exists.'
-                      }
-                  }
-              }
+    method: 'GET',
+    path: '/contexts/{contextId}/permissions',
+    config: {
+      handler: contextPermissionController.getPermissionsByContextId,
+      tags: ['api', 'contextsPermissions', 'contexts', 'permissions'],
+      description: 'Get permissions by contexts id.',
+      validate: {
+        params: {
+          contextId: Joi.string().required()
+        },
+        headers: UserValidator.authenticateValidator
+      },
+      plugins: {
+        'hapi-swagger': {
+          responses: {
+            '200': {
+              'description': 'permissions founded.'
+            },
+            '404': {
+              'description': 'Permission does not exists.'
+            }
           }
+        }
       }
+    }
   });
 
   server.route({
-      method: 'GET',
-      path: '/contextsPermissions/{id}',
-      config: {
-          handler: contextPermissionController.getContextPermissionById,
-          // auth: 'jwt',
-          auth: false,
-          tags: ['api', 'contextsPermissions'],
-          description: 'Get contextsPermissions by id.',
-          validate: {
-              params: {
-                  id: Joi.string().required()
-              }
-              // headers: jwtValidator
-          },
-          plugins: {
-              'hapi-swagger': {
-                  responses: {
-                      '200': {
-                          'description': 'ContextPermission founded.'
-                      },
-                      '404': {
-                          'description': 'ContextPermission does not exists.'
-                      }
-                  }
-              }
+    method: 'DELETE',
+    path: '/contexts/{contextId}/permissions/{id}',
+    config: {
+      handler: contextPermissionController.deleteContextPermission,
+      tags: ['api', 'contextsPermissions', 'contexts', 'permissions'],
+      description: 'Delete contextPermission by id.',
+      validate: {
+        params: {
+          id: Joi.string().required(),
+          contextId: Joi.string().required()
+        },
+        headers: UserValidator.authenticateValidator
+      },
+      plugins: {
+        'hapi-swagger': {
+          responses: {
+            '204': {
+              'description': 'Deleted ContextPermission.',
+            },
+            '404': {
+              'description': 'ContextPermission does not exists.'
+            }
           }
+        }
       }
+    }
   });
 
   server.route({
-      method: 'GET',
-      path: '/contextsPermissions',
-      config: {
-          handler: contextPermissionController.getcontextsPermissions,
-          // auth: 'jwt',
-          auth: false,
-          tags: ['api', 'contextsPermissions'],
-          description: 'Get all contextsPermissions.',
-          validate: {
-              query: {
-                  // top: Joi.number().default(5),
-                  // skip: Joi.number().default(0)
-              }
-              // headers: jwtValidator
+    method: 'PATCH',
+    path: '/contexts/{contextId}/permissions/{id}',
+    config: {
+      handler: contextPermissionController.updateContextPermission,
+      tags: ['api', 'contextsPermissions', 'contexts', 'permissions'],
+      description: 'Update contextPermission by id.',
+      validate: {
+        params: {
+          id: Joi.string().required(),
+          contextId: Joi.string().required()
+        },
+        payload: ContextPermissionValidator.updateContextPermissionModel,
+        headers: UserValidator.authenticateValidator
+      },
+      plugins: {
+        'hapi-swagger': {
+          responses: {
+            '200': {
+              'description': 'Deleted ContextPermission.',
+            },
+            '404': {
+              'description': 'ContextPermission does not exists.'
+            }
           }
+        }
       }
+    }
   });
 
   server.route({
-      method: 'DELETE',
-      path: '/contextsPermissions/{id}',
-      config: {
-          handler: contextPermissionController.deleteContextPermission,
-          // auth: 'jwt',
-          auth: false,
-          tags: ['api', 'contextsPermissions'],
-          description: 'Delete contextPermission by id.',
-          validate: {
-              params: {
-                  id: Joi.string().required()
-              }
-              // headers: jwtValidator
-          },
-          plugins: {
-              'hapi-swagger': {
-                  responses: {
-                      '200': {
-                          'description': 'Deleted ContextPermission.',
-                      },
-                      '404': {
-                          'description': 'ContextPermission does not exists.'
-                      }
-                  }
-              }
+    method: 'POST',
+    path: '/contexts/{contextId}/permissions',
+    config: {
+      handler: contextPermissionController.createContextPermission,
+      tags: ['api', 'contextsPermissions', 'contexts', 'permissions'],
+      description: 'Create a contextPermission.',
+      validate: {
+        params: {
+          contextId: Joi.string().required()
+        },
+        payload: ContextPermissionValidator.createContextPermissionModel,
+        headers: UserValidator.authenticateValidator
+      },
+      plugins: {
+        'hapi-swagger': {
+          responses: {
+            '201': {
+              'description': 'Created ContextPermission.'
+            }
           }
+        }
       }
-  });
-
-  server.route({
-      method: 'PUT',
-      path: '/contextsPermissions/{id}',
-      config: {
-          handler: contextPermissionController.updateContextPermission,
-          // auth: 'jwt',
-          auth: false,
-          tags: ['api', 'contextsPermissions'],
-          description: 'Update contextPermission by id.',
-          validate: {
-              params: {
-                  id: Joi.string().required()
-              },
-              payload: ContextPermissionValidator.updateContextPermissionModel
-              // headers: jwtValidator
-          },
-          plugins: {
-              'hapi-swagger': {
-                  responses: {
-                      '200': {
-                          'description': 'Deleted ContextPermission.',
-                      },
-                      '404': {
-                          'description': 'ContextPermission does not exists.'
-                      }
-                  }
-              }
-          }
-      }
-  });
-
-  server.route({
-      method: 'POST',
-      path: '/contextsPermissions',
-      config: {
-          handler: contextPermissionController.createContextPermission,
-          // auth: 'jwt',
-          auth: false,
-          tags: ['api', 'contextsPermissions'],
-          description: 'Create a contextPermission.',
-          validate: {
-              payload: ContextPermissionValidator.createContextPermissionModel
-              // headers: jwtValidator
-          },
-          plugins: {
-              'hapi-swagger': {
-                  responses: {
-                      '201': {
-                          'description': 'Created ContextPermission.'
-                      }
-                  }
-              }
-          }
-      }
+    }
   });
 }

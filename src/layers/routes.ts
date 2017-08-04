@@ -1,13 +1,15 @@
 import * as Hapi from 'hapi';
 import * as Joi from 'joi';
+
+import { IDatabase } from '../database';
+import { IServerConfiguration } from '../configurations';
+
 import LayerController from './layer.controller';
 import * as LayerValidator from './layer.validator';
-// import { jwtValidator } from '../users/user-validator';
-import { IDatabase } from '../database';
-import { IServerConfigurations } from '../configurations';
+import * as UserValidator from '../users/user.validator';
 
 export default function (server: Hapi.Server,
-                         configs: IServerConfigurations,
+                         configs: IServerConfiguration,
                          database: IDatabase) {
 
     const layerController = new LayerController(configs, database);
@@ -18,15 +20,13 @@ export default function (server: Hapi.Server,
         path: '/layers/{id}',
         config: {
             handler: layerController.getLayerById,
-            // auth: 'jwt',
-            auth: false,
             tags: ['api', 'layers'],
             description: 'Get layers by id.',
             validate: {
                 params: {
                     id: Joi.string().required()
-                }
-                // headers: jwtValidator
+                },
+                headers: UserValidator.userValidator
             },
             plugins: {
                 'hapi-swagger': {
@@ -48,16 +48,10 @@ export default function (server: Hapi.Server,
         path: '/layers',
         config: {
             handler: layerController.getLayers,
-            // auth: 'jwt',
-            auth: false,
             tags: ['api', 'layers'],
             description: 'Get all layers.',
             validate: {
-                query: {
-                    // top: Joi.number().default(5),
-                    // skip: Joi.number().default(0)
-                }
-                // headers: jwtValidator
+                headers: UserValidator.authenticateValidator
             }
         }
     });
@@ -67,20 +61,18 @@ export default function (server: Hapi.Server,
         path: '/layers/{id}',
         config: {
             handler: layerController.deleteLayer,
-            // auth: 'jwt',
-            auth: false,
             tags: ['api', 'layers'],
             description: 'Delete layer by id.',
             validate: {
                 params: {
                     id: Joi.string().required()
-                }
-                // headers: jwtValidator
+                },
+                headers: UserValidator.authenticateValidator
             },
             plugins: {
                 'hapi-swagger': {
                     responses: {
-                        '200': {
+                        '204': {
                             'description': 'Deleted Layer.',
                         },
                         '404': {
@@ -93,20 +85,18 @@ export default function (server: Hapi.Server,
     });
 
     server.route({
-        method: 'PUT',
+        method: 'PATCH',
         path: '/layers/{id}',
         config: {
             handler: layerController.updateLayer,
-            // auth: 'jwt',
-            auth: false,
             tags: ['api', 'layers'],
             description: 'Update layer by id.',
             validate: {
                 params: {
                     id: Joi.string().required()
                 },
-                payload: LayerValidator.updateLayerModel
-                // headers: jwtValidator
+                payload: LayerValidator.updateLayerModel,
+                headers: UserValidator.authenticateValidator
             },
             plugins: {
                 'hapi-swagger': {
@@ -128,13 +118,11 @@ export default function (server: Hapi.Server,
         path: '/layers',
         config: {
             handler: layerController.createLayer,
-            // auth: 'jwt',
-            auth: false,
             tags: ['api', 'layers'],
             description: 'Create a layer.',
             validate: {
-                payload: LayerValidator.createLayerModel
-                // headers: jwtValidator
+                payload: LayerValidator.createLayerModel,
+                headers: UserValidator.authenticateValidator
             },
             plugins: {
                 'hapi-swagger': {

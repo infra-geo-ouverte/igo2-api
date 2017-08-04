@@ -1,20 +1,24 @@
 import * as test from 'tape';
-// import ContextCont from './context.controller';
 import * as Server from '../server';
 import * as Configs from '../configurations';
 
-const serverConfigs = Configs.getServerConfigs();
+const serverConfigs = Configs.getServerConfig();
+const testConfigs = Configs.getTestConfig();
+const xConsumerId = testConfigs.xConsumerId;
 
 Server.init(serverConfigs).then((server) => {
 
   test('Basic HTTP Tests - GET /contexts', function(t) {
       const options = {
           method: 'GET',
-          url: '/contexts'
+          url: '/contexts',
+          headers: {
+            'x-consumer-username': 'barm08',
+            'x-consumer-id': xConsumerId
+          },
       };
       server.inject(options, function(response) {
           t.equal(response.statusCode, 200);
-          t.equal(response.result.length, 0);
           server.stop(t.end);
       });
   });
@@ -23,7 +27,11 @@ Server.init(serverConfigs).then((server) => {
   test('Basic HTTP Tests - GET /contexts/{id}', function(t) {
       const options = {
           method: 'GET',
-          url: '/contexts/2'
+          url: '/contexts/2',
+          headers: {
+            'x-consumer-username': 'barm08',
+            'x-consumer-id': xConsumerId
+          },
       };
       server.inject(options, function(response) {
           t.equal(response.statusCode, 404);
@@ -36,6 +44,10 @@ Server.init(serverConfigs).then((server) => {
       const options = {
           method: 'POST',
           url: '/contexts',
+          headers: {
+            'x-consumer-username': 'barm08',
+            'x-consumer-id': xConsumerId
+          },
           payload: {
             uri: 'dummy',
             title: 'dummy',

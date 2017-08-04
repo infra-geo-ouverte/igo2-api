@@ -1,6 +1,7 @@
 import * as Sequelize from 'sequelize';
 
-enum TypePermission {
+export enum TypePermission {
+  null,
   read,
   write
 }
@@ -8,6 +9,7 @@ enum TypePermission {
 export interface IContextPermission {
   typePermission: TypePermission;
   profil: string;
+  contextId: string;
 };
 
 export interface ContextPermissionInstance
@@ -41,11 +43,19 @@ export default function define(sequelize: Sequelize.Sequelize, DataTypes) {
           'type': DataTypes.STRING,
           'allowNull': false
         },
-        'context_id': {
+        'contextId': {
           'type': DataTypes.INTEGER
         }
       },
       {
+        'indexes': [{
+          'unique': true,
+          'fields': ['contextId', 'profil']
+        }, {
+          'fields': ['contextId']
+        }, {
+          'fields': ['profil']
+        }],
         'tableName': 'contextPermission',
         'timestamps': true
       }
@@ -55,7 +65,7 @@ export default function define(sequelize: Sequelize.Sequelize, DataTypes) {
 
   context.hasMany(contextPermission, {
     foreignKey: {
-      name: 'context_id',
+      name: 'contextId',
       allowNull: false
     }
   });

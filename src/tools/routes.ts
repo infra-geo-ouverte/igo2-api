@@ -1,13 +1,15 @@
 import * as Hapi from 'hapi';
 import * as Joi from 'joi';
+
+import { IDatabase } from '../database';
+import { IServerConfiguration } from '../configurations';
+
 import ToolController from './tool.controller';
 import * as ToolValidator from './tool.validator';
-// import { jwtValidator } from '../users/user-validator';
-import { IDatabase } from '../database';
-import { IServerConfigurations } from '../configurations';
+import * as UserValidator from '../users/user.validator';
 
 export default function (server: Hapi.Server,
-                         configs: IServerConfigurations,
+                         configs: IServerConfiguration,
                          database: IDatabase) {
 
     const toolController = new ToolController(configs, database);
@@ -18,15 +20,13 @@ export default function (server: Hapi.Server,
         path: '/tools/{id}',
         config: {
             handler: toolController.getToolById,
-            // auth: 'jwt',
-            auth: false,
             tags: ['api', 'tools'],
             description: 'Get tools by id.',
             validate: {
                 params: {
                     id: Joi.string().required()
-                }
-                // headers: jwtValidator
+                },
+                headers: UserValidator.userValidator
             },
             plugins: {
                 'hapi-swagger': {
@@ -48,16 +48,10 @@ export default function (server: Hapi.Server,
         path: '/tools',
         config: {
             handler: toolController.getTools,
-            // auth: 'jwt',
-            auth: false,
             tags: ['api', 'tools'],
             description: 'Get all tools.',
             validate: {
-                query: {
-                    // top: Joi.number().default(5),
-                    // skip: Joi.number().default(0)
-                }
-                // headers: jwtValidator
+                headers: UserValidator.userValidator
             }
         }
     });
@@ -67,20 +61,18 @@ export default function (server: Hapi.Server,
         path: '/tools/{id}',
         config: {
             handler: toolController.deleteTool,
-            // auth: 'jwt',
-            auth: false,
             tags: ['api', 'tools'],
             description: 'Delete tool by id.',
             validate: {
                 params: {
                     id: Joi.string().required()
-                }
-                // headers: jwtValidator
+                },
+                headers: UserValidator.authenticateValidator
             },
             plugins: {
                 'hapi-swagger': {
                     responses: {
-                        '200': {
+                        '204': {
                             'description': 'Deleted Tool.',
                         },
                         '404': {
@@ -93,20 +85,18 @@ export default function (server: Hapi.Server,
     });
 
     server.route({
-        method: 'PUT',
+        method: 'PATCH',
         path: '/tools/{id}',
         config: {
             handler: toolController.updateTool,
-            // auth: 'jwt',
-            auth: false,
             tags: ['api', 'tools'],
             description: 'Update tool by id.',
             validate: {
                 params: {
                     id: Joi.string().required()
                 },
-                payload: ToolValidator.updateToolModel
-                // headers: jwtValidator
+                payload: ToolValidator.updateToolModel,
+                headers: UserValidator.authenticateValidator
             },
             plugins: {
                 'hapi-swagger': {
@@ -128,13 +118,11 @@ export default function (server: Hapi.Server,
         path: '/tools',
         config: {
             handler: toolController.createTool,
-            // auth: 'jwt',
-            auth: false,
             tags: ['api', 'tools'],
             description: 'Create a tool.',
             validate: {
-                payload: ToolValidator.createToolModel
-                // headers: jwtValidator
+                payload: ToolValidator.createToolModel,
+                headers: UserValidator.authenticateValidator
             },
             plugins: {
                 'hapi-swagger': {

@@ -3,41 +3,37 @@ import * as test from 'tape';
 import * as Server from '../server';
 import * as Configs from '../configurations';
 
-const serverConfigs = Configs.getServerConfigs();
+const serverConfigs = Configs.getServerConfig();
+const testConfigs = Configs.getTestConfig();
+const xConsumerId = testConfigs.xConsumerId;
 
 Server.init(serverConfigs).then((server) => {
 
-  test('Basic HTTP Tests - GET /contextsPermissions', function(t) {
+  test('Basic HTTP Tests - GET /contexts/{id}/permissions', function(t) {
       const options = {
           method: 'GET',
-          url: '/contextsPermissions'
+          url: '/contexts/1/permissions',
+          headers: {
+            'x-consumer-username': 'barm08',
+            'x-consumer-id': xConsumerId
+          }
       };
       server.inject(options, function(response) {
           t.equal(response.statusCode, 200);
-          t.equal(response.result.length, 0);
           server.stop(t.end);
       });
   });
 
 
-  test('Basic HTTP Tests - GET /contextsPermissions/{id}', function(t) {
-      const options = {
-          method: 'GET',
-          url: '/contextsPermissions/2'
-      };
-      server.inject(options, function(response) {
-          t.equal(response.statusCode, 404);
-          server.stop(t.end);
-      });
-  });
-
-
-  test('Basic HTTP Tests - POST /contextsPermissions', function(t) {
+  test('Basic HTTP Tests - POST /contexts/{id}/permissions', function(t) {
       const options = {
           method: 'POST',
-          url: '/contextsPermissions',
+          url: '/contexts/1/permissions',
+          headers: {
+            'x-consumer-username': 'barm08',
+            'x-consumer-id': xConsumerId
+          },
           payload: {
-            context_id: 1,
             profil: 'COG',
             typePermission: 'read'
           }

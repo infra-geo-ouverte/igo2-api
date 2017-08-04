@@ -1,13 +1,15 @@
 import * as Hapi from 'hapi';
 import * as Joi from 'joi';
+
+import { IDatabase } from '../database';
+import { IServerConfiguration } from '../configurations';
+
 import ToolContextController from './toolContext.controller';
 import * as ToolContextValidator from './toolContext.validator';
-// import { jwtValidator } from '../users/user-validator';
-import { IDatabase } from '../database';
-import { IServerConfigurations } from '../configurations';
+import * as UserValidator from '../users/user.validator';
 
 export default function (server: Hapi.Server,
-                         configs: IServerConfigurations,
+                         configs: IServerConfiguration,
                          database: IDatabase) {
 
   const toolContextController = new ToolContextController(configs, database);
@@ -15,18 +17,16 @@ export default function (server: Hapi.Server,
 
   server.route({
       method: 'GET',
-      path: '/contexts/{id}/tools',
+      path: '/contexts/{contextId}/tools',
       config: {
           handler: toolContextController.getToolsByContextId,
-          // auth: 'jwt',
-          auth: false,
           tags: ['api', 'toolsContexts', 'tools', 'contexts'],
           description: 'Get tools by context id.',
           validate: {
               params: {
-                  id: Joi.string().required()
-              }
-              // headers: jwtValidator
+                  contextId: Joi.string().required()
+              },
+              headers: UserValidator.userValidator
           },
           plugins: {
               'hapi-swagger': {
@@ -45,18 +45,17 @@ export default function (server: Hapi.Server,
 
   server.route({
       method: 'GET',
-      path: '/toolsContexts/{id}',
+      path: '/contexts/{contextId}/tools/{toolId}',
       config: {
           handler: toolContextController.getToolContextById,
-          // auth: 'jwt',
-          auth: false,
           tags: ['api', 'toolsContexts'],
           description: 'Get toolsContexts by id.',
           validate: {
               params: {
-                  id: Joi.string().required()
-              }
-              // headers: jwtValidator
+                  toolId: Joi.string().required(),
+                  contextId: Joi.string().required()
+              },
+              headers: UserValidator.userValidator
           },
           plugins: {
               'hapi-swagger': {
@@ -74,43 +73,23 @@ export default function (server: Hapi.Server,
   });
 
   server.route({
-      method: 'GET',
-      path: '/toolsContexts',
-      config: {
-          handler: toolContextController.gettoolsContexts,
-          // auth: 'jwt',
-          auth: false,
-          tags: ['api', 'toolsContexts'],
-          description: 'Get all toolsContexts.',
-          validate: {
-              query: {
-                  // top: Joi.number().default(5),
-                  // skip: Joi.number().default(0)
-              }
-              // headers: jwtValidator
-          }
-      }
-  });
-
-  server.route({
       method: 'DELETE',
-      path: '/toolsContexts/{id}',
+      path: '/contexts/{contextId}/tools/{toolId}',
       config: {
           handler: toolContextController.deleteToolContext,
-          // auth: 'jwt',
-          auth: false,
           tags: ['api', 'toolsContexts'],
           description: 'Delete toolContext by id.',
           validate: {
               params: {
-                  id: Joi.string().required()
-              }
-              // headers: jwtValidator
+                  toolId: Joi.string().required(),
+                  contextId: Joi.string().required()
+              },
+              headers: UserValidator.authenticateValidator
           },
           plugins: {
               'hapi-swagger': {
                   responses: {
-                      '200': {
+                      '204': {
                           'description': 'Deleted ToolContext.',
                       },
                       '404': {
@@ -123,20 +102,19 @@ export default function (server: Hapi.Server,
   });
 
   server.route({
-      method: 'PUT',
-      path: '/toolsContexts/{id}',
+      method: 'PATCH',
+      path: '/contexts/{contextId}/tools/{toolId}',
       config: {
           handler: toolContextController.updateToolContext,
-          // auth: 'jwt',
-          auth: false,
           tags: ['api', 'toolsContexts'],
           description: 'Update toolContext by id.',
           validate: {
               params: {
-                  id: Joi.string().required()
+                  toolId: Joi.string().required(),
+                  contextId: Joi.string().required()
               },
-              payload: ToolContextValidator.updateToolContextModel
-              // headers: jwtValidator
+              payload: ToolContextValidator.updateToolContextModel,
+              headers: UserValidator.authenticateValidator
           },
           plugins: {
               'hapi-swagger': {
@@ -155,16 +133,17 @@ export default function (server: Hapi.Server,
 
   server.route({
       method: 'POST',
-      path: '/toolsContexts',
+      path: '/contexts/{contextId}/tools',
       config: {
           handler: toolContextController.createToolContext,
-          // auth: 'jwt',
-          auth: false,
           tags: ['api', 'toolsContexts'],
           description: 'Create a toolContext.',
           validate: {
-              payload: ToolContextValidator.createToolContextModel
-              // headers: jwtValidator
+              params: {
+                  contextId: Joi.string().required()
+              },
+              payload: ToolContextValidator.createToolContextModel,
+              headers: UserValidator.authenticateValidator
           },
           plugins: {
               'hapi-swagger': {

@@ -3,14 +3,20 @@ import * as test from 'tape';
 import * as Server from '../server';
 import * as Configs from '../configurations';
 
-const serverConfigs = Configs.getServerConfigs();
+const serverConfigs = Configs.getServerConfig();
+const testConfigs = Configs.getTestConfig();
+const xConsumerId = testConfigs.xConsumerId;
 
 Server.init(serverConfigs).then((server) => {
 
   test('Basic HTTP Tests - GET /layers', function(t) {
       const options = {
           method: 'GET',
-          url: '/layers'
+          url: '/layers',
+          headers: {
+            'x-consumer-username': 'barm08',
+            'x-consumer-id': xConsumerId
+          }
       };
       server.inject(options, function(response) {
           t.equal(response.statusCode, 200);
@@ -23,7 +29,11 @@ Server.init(serverConfigs).then((server) => {
   test('Basic HTTP Tests - GET /layers/{id}', function(t) {
       const options = {
           method: 'GET',
-          url: '/layers/2'
+          url: '/layers/2',
+          headers: {
+            'x-consumer-username': 'barm08',
+            'x-consumer-id': xConsumerId
+          }
       };
       server.inject(options, function(response) {
           t.equal(response.statusCode, 404);
@@ -36,6 +46,10 @@ Server.init(serverConfigs).then((server) => {
       const options = {
           method: 'POST',
           url: '/layers',
+          headers: {
+            'x-consumer-username': 'barm08',
+            'x-consumer-id': xConsumerId
+          },
           payload: {
             title: 'dummy',
             type: 'osm',

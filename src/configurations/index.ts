@@ -11,11 +11,18 @@ const configs = new nconf.Provider({
   }
 });
 
-export interface IServerConfigurations {
+interface IUserApiConfiguration {
+  host: string;
+  port: number;
+}
+
+export interface IServerConfiguration {
     port: number;
     plugins: Array<string>;
-    jwtSecret: string;
     jwtExpiration: string;
+    userApi: IUserApiConfiguration;
+    googleKey?: string;
+    adminProfil?: string;
 }
 
 interface IDatabaseConfiguration {
@@ -31,11 +38,18 @@ export interface IPostgresConfiguration extends IDatabaseConfiguration {
 }
 export type IDataConfiguration = ISqliteConfiguration | IPostgresConfiguration;
 
+export interface ITestConfiguration {
+    xConsumerId?: string;
+}
 
 export function getDatabaseConfig(): IDataConfiguration {
     return configs.get('database');
 }
 
-export function getServerConfigs(): IServerConfigurations {
+export function getServerConfig(): IServerConfiguration {
     return configs.get('server');
+}
+
+export function getTestConfig(): ITestConfiguration {
+    return configs.get('test');
 }

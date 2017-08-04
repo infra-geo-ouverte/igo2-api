@@ -21,8 +21,8 @@ export interface LayerContextInstance
   createdAt: Date;
   updatedAt: Date;
 
-  view?: ViewLayer;
-  source?: SourceLayer;
+  view: ViewLayer;
+  source: SourceLayer;
 }
 
 export interface LayerContextModel
@@ -57,14 +57,22 @@ export default function define(sequelize: Sequelize.Sequelize, DataTypes) {
           this.setDataValue('source', JSON.stringify(val));
         }
       },
-      context_id: {
+      contextId: {
         type: DataTypes.INTEGER
       },
-      layer_id: {
+      layerId: {
         type: DataTypes.INTEGER
       }
     },
     {
+      'indexes': [{
+        'unique': true,
+        'fields': ['contextId', 'layerId']
+        }, {
+          'fields': ['contextId']
+        }, {
+          'fields': ['layerId']
+      }],
       'tableName': 'layerContext',
       'timestamps': true
     }
@@ -79,7 +87,7 @@ export default function define(sequelize: Sequelize.Sequelize, DataTypes) {
       unique: false
     },
     foreignKey: {
-      name: 'layer_id',
+      name: 'layerId',
       allowNull: false
     }
   });
@@ -90,7 +98,7 @@ export default function define(sequelize: Sequelize.Sequelize, DataTypes) {
       unique: false
     },
     foreignKey: {
-      name: 'context_id',
+      name: 'contextId',
       allowNull: false
     }
   });
