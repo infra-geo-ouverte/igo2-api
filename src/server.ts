@@ -16,10 +16,7 @@ export function init(configs: IServerConfiguration): Promise<Hapi.Server> {
     const server = new Hapi.Server();
 
     server.connection({
-      port: port,
-      routes: {
-        cors: true
-      }
+      port: port
     });
 
     //  Setup Hapi Plugins

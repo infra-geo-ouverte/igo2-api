@@ -1,6 +1,9 @@
 import * as Sequelize from 'sequelize';
 
 export interface IToolContext {
+  id?: string;
+  toolId?: string;
+  contextId?: string;
   options?: {[key: string]: any};
 };
 

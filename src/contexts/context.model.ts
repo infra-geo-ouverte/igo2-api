@@ -15,6 +15,7 @@ interface Map {
 };
 
 export interface IContext {
+  id?: string;
   uri: string;
   scope: Scope;
   title: string;

@@ -1,6 +1,7 @@
 import * as Sequelize from 'sequelize';
 
 export interface ITool {
+  id?: string;
   name: string;
   title?: string;
   icon?: string;

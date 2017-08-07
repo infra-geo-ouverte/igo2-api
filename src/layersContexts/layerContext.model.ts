@@ -11,6 +11,9 @@ interface SourceLayer {
 };
 
 export interface ILayerContext {
+  id?: string;
+  layerId?: string;
+  contextId?: string;
   view: ViewLayer;
   source: SourceLayer;
 };

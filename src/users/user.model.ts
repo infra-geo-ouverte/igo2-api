@@ -2,6 +2,7 @@ import * as Sequelize from 'sequelize';
 // import * as Bcrypt from "bcryptjs";
 
 export interface IUser {
+  id?: string;
   source: string;
   sourceId: string;
   email?: string;

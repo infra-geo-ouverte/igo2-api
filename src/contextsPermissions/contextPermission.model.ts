@@ -7,6 +7,7 @@ export enum TypePermission {
 }
 
 export interface IContextPermission {
+  id?: string;
   typePermission: TypePermission;
   profil: string;
   contextId: string;

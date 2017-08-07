@@ -39,17 +39,17 @@ export interface IPostgresConfiguration extends IDatabaseConfiguration {
 export type IDataConfiguration = ISqliteConfiguration | IPostgresConfiguration;
 
 export interface ITestConfiguration {
-    xConsumerId?: string;
+  xConsumerId?: string;
 }
 
 export function getDatabaseConfig(): IDataConfiguration {
-    return configs.get('database');
+  return configs.get('database');
 }
 
 export function getServerConfig(): IServerConfiguration {
-    return configs.get('server');
+  return configs.get('server');
 }
 
 export function getTestConfig(): ITestConfiguration {
-    return configs.get('test');
+  return configs.get('test');
 }

@@ -12,6 +12,7 @@ interface SourceLayer {
 };
 
 export interface ILayer {
+  id?: string;
   title: string;
   type: string;
   url: string;
