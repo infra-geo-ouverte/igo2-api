@@ -1,5 +1,7 @@
 import * as Sequelize from 'sequelize';
 
+import { TypePermission } from '../contextsPermissions';
+
 export enum Scope {
   public,
   protected,
@@ -22,6 +24,7 @@ export interface IContext {
   icon: string;
   map: Map;
   owner: string;
+  permission?: TypePermission;
 };
 
 export interface ContextInstance extends Sequelize.Instance<IContext> {

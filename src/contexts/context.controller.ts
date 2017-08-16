@@ -8,7 +8,7 @@ import { ObjectUtils } from '../utils';
 import { User } from '../users';
 import { TypePermission, ContextPermission } from '../contextsPermissions';
 
-import { IContext, ContextInstance } from './index';
+import { ContextInstance, Scope } from './index';
 
 
 export default class ContextController {
@@ -24,12 +24,98 @@ export default class ContextController {
   }
 
   public createContext(request: Hapi.Request, reply: Hapi.IReply) {
-    const newContext: IContext = request.payload;
+    const newContext = request.payload;
 
     newContext.owner = request.headers['x-consumer-username'];
 
-    this.database.context.create(newContext).then((context) => {
+    this.database.context.create(newContext/*, {
+      include: [
+        this.database.tool
+      ]
+    }*/).then((context) => {
+      if (newContext.tools) {
+        for (const tool of newContext.tools) {
+          if (tool.id) {
+            this.database.toolContext.create({
+              contextId: context.id,
+              toolId: tool.id
+            });
+          }
+        }
+      }
+      if (newContext.layers) {
+        for (const layer of newContext.layers) {
+          const where: any = {
+            $or: [
+              {id: layer.id},
+              {source: JSON.stringify(layer.source)}
+            ]
+          };
+          this.database.layer.findOne({
+            where: where
+          }).then((layerFound) => {
+            if (layerFound) {
+              this.database.layerContext.create({
+                contextId: context.id,
+                layerId: layerFound.id
+              });
+            } else {
+              this.database.layer.create(layer).then((layerCreated) => {
+                this.database.layerContext.create({
+                  contextId: context.id,
+                  layerId: layerCreated.id
+                });
+              });
+            }
+          });
+        }
+      }
       reply(context).code(201);
+    }).catch((error) => {
+      reply(Boom.badImplementation(error));
+    });
+  }
+
+  public cloneContext(request: Hapi.Request, reply: Hapi.IReply) {
+    const id = request.params['id'];
+    let properties = request.payload;
+    if (typeof request.payload === 'string') {
+      properties = JSON.parse(request.payload);
+    }
+    const owner = request.headers['x-consumer-username'];
+
+    this.database.context.findOne({
+      include: [
+        this.database.layer,
+        this.database.tool
+      ],
+      where: {
+        id: id
+      }
+    }).then((context: any) => {
+      if (!context) {
+        reply(Boom.notFound());
+        return;
+      }
+      this.contextPermission.getPermissions(context, owner).subscribe(
+        (permission) => {
+          if (permission) {
+            const plainContext = context.get();
+            Object.assign(plainContext, properties);
+            const newContext = {
+              scope: Scope.private,
+              uri: plainContext.uri,
+              title: plainContext.title,
+              icon: plainContext.icon,
+              map: plainContext.map,
+              tools: plainContext.tools,
+              layers: plainContext.layers
+            };
+            request.payload = newContext;
+            this.createContext(request, reply);
+          }
+        }
+      );
     }).catch((error) => {
       reply(Boom.badImplementation(error));
     });
@@ -37,46 +123,108 @@ export default class ContextController {
 
   public updateContext(request: Hapi.Request, reply: Hapi.IReply) {
     const id = request.params['id'];
-    const context: IContext = request.payload;
+    const context = request.payload;
     const owner = request.headers['x-consumer-username'];
 
-    this.database.context.update(context, {
-      where: {
-        id: id,
-        owner: owner
-      }
-    }).then((count: [number, ContextInstance[]]) => {
-      if (count[0]) {
-        reply({
-          id: id,
-          owner: owner
-        });
-      } else {
-        reply(Boom.notFound());
-      }
-    }).catch((error) => {
-      reply(Boom.badImplementation(error));
-    });
+    this.contextPermission.getPermissionsByContextId(id, owner)
+      .subscribe((permission) => {
+        if (permission === TypePermission.write) {
+          this.database.context.update(context, {
+            where: {
+              id: id
+            }
+          }).then((count: [number, ContextInstance[]]) => {
+            if (count[0]) {
+              if (context.tools) {
+                this.database.toolContext.destroy({
+                  where: {
+                    contextId: id
+                  }
+                }).then(() => {
+                  for (const tool of context.tools) {
+                    if (tool.id) {
+                      this.database.toolContext.create({
+                        contextId: id,
+                        toolId: tool.id
+                      });
+                    }
+                  }
+                });
+              }
+              if (context.layers) {
+                this.database.layerContext.destroy({
+                  where: {
+                    contextId: id
+                  }
+                }).then(() => {
+                  for (const layer of context.layers.reverse()) {
+                    const where: any = {
+                      $or: [
+                        {id: layer.id},
+                        {source: JSON.stringify(layer.source)}
+                      ]
+                    };
+                    this.database.layer.findOne({
+                      where: where
+                    }).then((layerFound) => {
+                      if (layerFound) {
+                        this.database.layerContext.create({
+                          contextId: id,
+                          layerId: layerFound.id
+                        });
+                      } else {
+                        this.database.layer.create(layer)
+                          .then((layerCreated) => {
+                            this.database.layerContext.create({
+                              contextId: id,
+                              layerId: layerCreated.id
+                            });
+                          });
+                      }
+                    });
+                  }
+                });
+              }
+              reply({
+                id: id,
+                owner: owner
+              });
+            } else {
+              reply(Boom.notFound());
+            }
+          }).catch((error) => {
+            reply(Boom.badImplementation(error));
+          });
+        } else {
+          reply(Boom.unauthorized());
+        }
+      });
   }
 
   public deleteContext(request: Hapi.Request, reply: Hapi.IReply) {
     const id = request.params['id'];
     const owner = request.headers['x-consumer-username'];
 
-    this.database.context.destroy({
-      where: {
-        id: id,
-        owner: owner
-      }
-    }).then((count: number) => {
-      if (count) {
-        reply({}).code(204);
-      } else {
-        reply(Boom.notFound());
-      }
-    }).catch((error) => {
-      reply(Boom.badImplementation(error));
-    });
+    this.contextPermission.getPermissionsByContextId(id, owner)
+      .subscribe((permission) => {
+        if (permission === TypePermission.write) {
+          this.database.context.destroy({
+            where: {
+              id: id
+            }
+          }).then((count: number) => {
+            if (count) {
+              reply({}).code(204);
+            } else {
+              reply(Boom.notFound());
+            }
+          }).catch((error) => {
+            reply(Boom.badImplementation(error));
+          });
+        } else {
+          reply(Boom.unauthorized());
+        }
+      });
   }
 
   public getContextById(request: Hapi.Request, reply: Hapi.IReply) {
@@ -144,6 +292,13 @@ export default class ContextController {
       }
 
       promises.push(this.database.context.findAll({
+        include: [{
+          model: this.database.contextPermission,
+          required: false,
+          where: {
+            profil: profils
+          }
+        }],
         where: {
           scope: 'public',
           owner: {
@@ -159,17 +314,45 @@ export default class ContextController {
           const publicPromises = repPromises[2] || [];
 
           const oursContexts = oursPromises.map(
-            (c) => ObjectUtils.removeNull(c.get())
+            (c) => {
+              const plainC = c.get();
+              plainC.permission = TypePermission.write;
+              return ObjectUtils.removeNull(plainC);
+            }
           );
           const sharedContexts = sharedPromises.map(
             (c) => {
               const plainC = c.get();
+
+              plainC.permission = TypePermission.read;
+              for (const cp of plainC['contextPermissions']) {
+                const typePerm: any = TypePermission[cp.typePermission];
+                if (typePerm === TypePermission.write) {
+                  plainC.permission = TypePermission.write;
+                  break;
+                }
+              }
+
               delete plainC['contextPermissions'];
               return ObjectUtils.removeNull(plainC);
             }
           );
           const publicContexts = publicPromises.map(
-            (c) => ObjectUtils.removeNull(c.get())
+            (c) => {
+              const plainC = c.get();
+
+              plainC.permission = TypePermission.read;
+              for (const cp of plainC['contextPermissions']) {
+                const typePerm: any = TypePermission[cp.typePermission];
+                if (typePerm === TypePermission.write) {
+                  plainC.permission = TypePermission.write;
+                  break;
+                }
+              }
+
+              delete plainC['contextPermissions'];
+              return ObjectUtils.removeNull(plainC);
+            }
           );
 
           const contexts = {

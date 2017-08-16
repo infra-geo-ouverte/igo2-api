@@ -75,6 +75,9 @@ export class ContextPermission {
 
     return Rx.Observable.create(observer => {
       User.getProfils(user).subscribe((profils) => {
+        if (user) {
+          profils.push(user);
+        }
         this.database.context.findAll({
           include: [{
             model: this.database.contextPermission,

@@ -173,4 +173,32 @@ export default function(server: Hapi.Server,
       }
     }
   });
+
+  server.route({
+    method: 'POST',
+    path: '/contexts/{id}/clone',
+    config: {
+      handler: contextController.cloneContext,
+      tags: ['api', 'contexts'],
+      description: 'Clone a context.',
+      validate: {
+        params: {
+          id: Joi.string().required()
+        },
+        headers: UserValidator.authenticateValidator
+      },
+      plugins: {
+        'hapi-swagger': {
+          responses: {
+            '201': {
+              description: 'Cloned context.'
+            },
+            '401': {
+              description: 'Must be authenticated'
+            }
+          }
+        }
+      }
+    }
+  });
 }
