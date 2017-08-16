@@ -1,5 +1,6 @@
 import * as Hapi from 'hapi';
 import * as Boom from 'boom';
+import * as async from 'async';
 
 import { IDatabase } from '../database';
 import { IServerConfiguration } from '../configurations';
@@ -34,17 +35,21 @@ export default class ContextController {
       ]
     }*/).then((context) => {
       if (newContext.tools) {
-        for (const tool of newContext.tools) {
+          async.forEach(newContext.tools, (tool: any, next) => {
           if (tool.id) {
             this.database.toolContext.create({
               contextId: context.id,
               toolId: tool.id
+            }).then(() => {
+              next();
             });
+          } else {
+            next();
           }
-        }
+        });
       }
       if (newContext.layers) {
-        for (const layer of newContext.layers) {
+        async.forEach(newContext.layers, (layer: any, next) => {
           const where: any = {
             $or: [
               {id: layer.id},
@@ -58,17 +63,21 @@ export default class ContextController {
               this.database.layerContext.create({
                 contextId: context.id,
                 layerId: layerFound.id
+              }).then(() => {
+                next();
               });
             } else {
               this.database.layer.create(layer).then((layerCreated) => {
                 this.database.layerContext.create({
                   contextId: context.id,
                   layerId: layerCreated.id
+                }).then(() => {
+                  next();
                 });
               });
             }
           });
-        }
+        });
       }
       reply(context).code(201);
     }).catch((error) => {
@@ -141,14 +150,18 @@ export default class ContextController {
                     contextId: id
                   }
                 }).then(() => {
-                  for (const tool of context.tools) {
+                  async.forEach(context.tools, (tool: any, next) => {
                     if (tool.id) {
                       this.database.toolContext.create({
                         contextId: id,
                         toolId: tool.id
+                      }).then(() => {
+                        next();
                       });
+                    } else {
+                      next();
                     }
-                  }
+                  });
                 });
               }
               if (context.layers) {
@@ -157,7 +170,7 @@ export default class ContextController {
                     contextId: id
                   }
                 }).then(() => {
-                  for (const layer of context.layers.reverse()) {
+                  async.forEach(context.layers, (layer: any, next) => {
                     const where: any = {
                       $or: [
                         {id: layer.id},
@@ -171,6 +184,8 @@ export default class ContextController {
                         this.database.layerContext.create({
                           contextId: id,
                           layerId: layerFound.id
+                        }).then(() => {
+                          next();
                         });
                       } else {
                         this.database.layer.create(layer)
@@ -178,11 +193,13 @@ export default class ContextController {
                             this.database.layerContext.create({
                               contextId: id,
                               layerId: layerCreated.id
+                            }).then(() => {
+                              next();
                             });
                           });
                       }
                     });
-                  }
+                  });
                 });
               }
               reply({
