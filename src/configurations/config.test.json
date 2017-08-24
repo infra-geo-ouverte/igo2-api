@@ -6,13 +6,20 @@
     },
     "server": {
         "port": 5000,
-        "jwtSecret": "random-secret-password",
+        "adminProfil": "admin",
         "jwtExpiration": "1h",
+        "googleKey": "AIzaSyCbc-E35ZNqAjPvpbr30bAXwfcQoq5XLBs",
+        "userApi": {
+          "host": "localhost",
+          "port": 8001
+        },
         "plugins": [
             "logger",
-            "jwt-auth",
             "sanitizer",
             "swagger"
         ]
+    },
+    "test": {
+      "xConsumerId": "3c56daca-c23f-47b2-8f6d-374ea5a987e3"
     }
 }

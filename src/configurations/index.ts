@@ -38,8 +38,16 @@ export interface IPostgresConfiguration extends IDatabaseConfiguration {
 }
 export type IDataConfiguration = ISqliteConfiguration | IPostgresConfiguration;
 
+export interface IConsumer {
+  xConsumerId: string;
+  xConsumerUsername: string;
+}
+
 export interface ITestConfiguration {
-  xConsumerId?: string;
+  admin: IConsumer;
+  anonyme: IConsumer;
+  user1: IConsumer;
+  user2: IConsumer;
 }
 
 export function getDatabaseConfig(): IDataConfiguration {

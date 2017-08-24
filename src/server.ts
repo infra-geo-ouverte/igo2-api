@@ -2,13 +2,14 @@ import * as Hapi from 'hapi';
 import { IPlugin } from './plugins/interfaces';
 import { IServerConfiguration } from './configurations';
 import database from './database';
-import * as Users from './users';
-import * as Contexts from './contexts';
-import * as Layers from './layers';
-import * as Tools from './tools';
-import * as LayersContexts from './layersContexts';
-import * as ToolsContexts from './toolsContexts';
-import * as ContextsPermissions from './contextsPermissions';
+import * as Users from './user';
+import * as Bookmarks from './bookmark';
+import * as Contexts from './context';
+import * as Layers from './layer';
+import * as Tools from './tool';
+import * as LayersContexts from './layerContext';
+import * as ToolsContexts from './toolContext';
+import * as ContextsPermissions from './contextPermission';
 
 export function init(configs: IServerConfiguration): Promise<Hapi.Server> {
   return new Promise<Hapi.Server>(resolve => {
@@ -40,13 +41,14 @@ export function init(configs: IServerConfiguration): Promise<Hapi.Server> {
 
       // Init Features
       console.log('Routes loading');
-      Users.init(server, configs, database);
-      Contexts.init(server, configs, database);
-      Layers.init(server, configs, database);
-      Tools.init(server, configs, database);
-      ToolsContexts.init(server, configs, database);
-      LayersContexts.init(server, configs, database);
-      ContextsPermissions.init(server, configs, database);
+      Users.init(server);
+      Bookmarks.init(server);
+      Contexts.init(server);
+      Layers.init(server);
+      Tools.init(server);
+      ToolsContexts.init(server);
+      LayersContexts.init(server);
+      ContextsPermissions.init(server);
       console.log('Routes loaded');
 
       resolve(server);
