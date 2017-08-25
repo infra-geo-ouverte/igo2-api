@@ -25,12 +25,12 @@ Server.init(serverConfigs).then((server) => {
     });
   });
 
-  test('POST /bookmarks - headers missing', function(t) {
+  test('POST /pois - headers missing', function(t) {
     const options = {
       method: 'POST',
-      url: '/bookmarks',
+      url: '/pois',
       payload: {
-        title: 'bookmark1',
+        title: 'poi1',
         zoom:  6,
         x: -73.22,
         y: 46.44
@@ -44,17 +44,17 @@ Server.init(serverConfigs).then((server) => {
     });
   });
 
-  test('POST /bookmarks - zoom missing', function(t) {
+  test('POST /pois - zoom missing', function(t) {
     const options = {
       method: 'POST',
-      url: '/bookmarks',
+      url: '/pois',
       headers: {
         'x-consumer-username': 'test',
         'x-consumer-id': user1.xConsumerId,
         'x-consumer-custom-id': '1'
       },
       payload: {
-        title: 'bookmark1',
+        title: 'poi1',
         x: -73.22,
         y: 46.44
       }
@@ -68,17 +68,17 @@ Server.init(serverConfigs).then((server) => {
     });
   });
 
-  test('POST /bookmarks - anonyme', function(t) {
+  test('POST /pois - anonyme', function(t) {
     const options = {
       method: 'POST',
-      url: '/bookmarks',
+      url: '/pois',
       headers: {
         'x-consumer-username': anonyme.xConsumerUsername,
         'x-consumer-id': anonyme.xConsumerId,
         'x-anonymous-consumer': 'true'
       },
       payload: {
-        title: 'bookmark1',
+        title: 'poi1',
         zoom:  6,
         x: -73.22,
         y: 46.44
@@ -92,17 +92,17 @@ Server.init(serverConfigs).then((server) => {
     });
   });
 
-  test('POST /bookmarks - user1', function(t) {
+  test('POST /pois - user1', function(t) {
     const options = {
       method: 'POST',
-      url: '/bookmarks',
+      url: '/pois',
       headers: {
         'x-consumer-username': 'test',
         'x-consumer-id': user1.xConsumerId,
         'x-consumer-custom-id': '1'
       },
       payload: {
-        title: 'bookmark1',
+        title: 'poi1',
         zoom:  6,
         x: -73.22,
         y: 46.44
@@ -110,7 +110,7 @@ Server.init(serverConfigs).then((server) => {
     };
     server.inject(options, function(response) {
       const result: any = response.result;
-      t.equal(result.title, 'bookmark1');
+      t.equal(result.title, 'poi1');
       t.equal(result.zoom, 6);
       t.equal(result.x, -73.22);
       t.equal(result.y, 46.44);
@@ -119,17 +119,17 @@ Server.init(serverConfigs).then((server) => {
     });
   });
 
-  test('POST /bookmarks - user1 bis', function(t) {
+  test('POST /pois - user1 bis', function(t) {
     const options = {
       method: 'POST',
-      url: '/bookmarks',
+      url: '/pois',
       headers: {
         'x-consumer-username': 'test',
         'x-consumer-id': user1.xConsumerId,
         'x-consumer-custom-id': '1'
       },
       payload: {
-        title: 'bookmark2',
+        title: 'poi2',
         zoom:  2,
         x: -53.22,
         y: 26.44
@@ -137,7 +137,7 @@ Server.init(serverConfigs).then((server) => {
     };
     server.inject(options, function(response) {
       const result: any = response.result;
-      t.equal(result.title, 'bookmark2');
+      t.equal(result.title, 'poi2');
       t.equal(result.zoom, 2);
       t.equal(result.x, -53.22);
       t.equal(result.y, 26.44);
@@ -148,10 +148,10 @@ Server.init(serverConfigs).then((server) => {
 
   // ----------------------------------------------------------------
 
-  test('GET /bookmarks - anonyme', function(t) {
+  test('GET /pois - anonyme', function(t) {
     const options = {
       method: 'GET',
-      url: '/bookmarks',
+      url: '/pois',
       headers: {
         'x-consumer-username': anonyme.xConsumerUsername,
         'x-consumer-id': anonyme.xConsumerId,
@@ -166,10 +166,10 @@ Server.init(serverConfigs).then((server) => {
     });
   });
 
-  test('GET /bookmarks - user1', function(t) {
+  test('GET /pois - user1', function(t) {
     const options = {
       method: 'GET',
-      url: '/bookmarks',
+      url: '/pois',
       headers: {
         'x-consumer-username': user1.xConsumerUsername,
         'x-consumer-id': user1.xConsumerId,
@@ -179,16 +179,16 @@ Server.init(serverConfigs).then((server) => {
     server.inject(options, function(response) {
       const result: any = response.result;
       t.equal(result.length, 2);
-      t.equal(result[0].title, 'bookmark1');
+      t.equal(result[0].title, 'poi1');
       t.equal(response.statusCode, 200);
       server.stop(t.end);
     });
   });
 
-  test('GET /bookmarks - user2', function(t) {
+  test('GET /pois - user2', function(t) {
     const options = {
       method: 'GET',
-      url: '/bookmarks',
+      url: '/pois',
       headers: {
         'x-consumer-username': user1.xConsumerUsername,
         'x-consumer-id': user1.xConsumerId,
@@ -205,10 +205,10 @@ Server.init(serverConfigs).then((server) => {
 
 // ----------------------------------------------------------------
 
-  test('PATCH /bookmarks/{id} - anonyme', function(t) {
+  test('PATCH /pois/{id} - anonyme', function(t) {
     const options = {
       method: 'PATCH',
-      url: '/bookmarks/2',
+      url: '/pois/2',
       headers: {
         'x-consumer-username': anonyme.xConsumerUsername,
         'x-consumer-id': anonyme.xConsumerId,
@@ -226,10 +226,10 @@ Server.init(serverConfigs).then((server) => {
     });
   });
 
-  test('PATCH /bookmarks/{id} - user1', function(t) {
+  test('PATCH /pois/{id} - user1', function(t) {
     const options = {
       method: 'PATCH',
-      url: '/bookmarks/2',
+      url: '/pois/2',
       headers: {
         'x-consumer-username': user1.xConsumerUsername,
         'x-consumer-id': user1.xConsumerId,
@@ -247,10 +247,10 @@ Server.init(serverConfigs).then((server) => {
     });
   });
 
-  test('PATCH /bookmarks/{id} - another user', function(t) {
+  test('PATCH /pois/{id} - another user', function(t) {
     const options = {
       method: 'PATCH',
-      url: '/bookmarks/2',
+      url: '/pois/2',
       headers: {
         'x-consumer-username': user1.xConsumerUsername,
         'x-consumer-id': user1.xConsumerId,
@@ -268,10 +268,10 @@ Server.init(serverConfigs).then((server) => {
 
   // ----------------------------------------------------------------
 
-  test('GET /bookmarks/{id} - anonyme', function(t) {
+  test('GET /pois/{id} - anonyme', function(t) {
     const options = {
       method: 'GET',
-      url: '/bookmarks/2',
+      url: '/pois/2',
       headers: {
         'x-consumer-username': anonyme.xConsumerUsername,
         'x-consumer-id': anonyme.xConsumerId,
@@ -286,10 +286,10 @@ Server.init(serverConfigs).then((server) => {
     });
   });
 
-  test('GET /bookmarks/{id} - user1', function(t) {
+  test('GET /pois/{id} - user1', function(t) {
     const options = {
       method: 'GET',
-      url: '/bookmarks/2',
+      url: '/pois/2',
       headers: {
         'x-consumer-username': user1.xConsumerUsername,
         'x-consumer-id': user1.xConsumerId,
@@ -304,10 +304,10 @@ Server.init(serverConfigs).then((server) => {
     });
   });
 
-  test('GET /bookmarks/{id} - another user', function(t) {
+  test('GET /pois/{id} - another user', function(t) {
     const options = {
       method: 'GET',
-      url: '/bookmarks/1',
+      url: '/pois/1',
       headers: {
         'x-consumer-username': user1.xConsumerUsername,
         'x-consumer-id': user1.xConsumerId,
@@ -322,10 +322,10 @@ Server.init(serverConfigs).then((server) => {
 
   // ----------------------------------------------------------------
 
-  test('DELETE /bookmarks/{id} - anonyme', function(t) {
+  test('DELETE /pois/{id} - anonyme', function(t) {
     const options = {
       method: 'DELETE',
-      url: '/bookmarks/2',
+      url: '/pois/2',
       headers: {
         'x-consumer-username': anonyme.xConsumerUsername,
         'x-consumer-id': anonyme.xConsumerId,
@@ -340,10 +340,10 @@ Server.init(serverConfigs).then((server) => {
     });
   });
 
-  test('DELETE /bookmarks/{id} - another user', function(t) {
+  test('DELETE /pois/{id} - another user', function(t) {
     const options = {
       method: 'DELETE',
-      url: '/bookmarks/2',
+      url: '/pois/2',
       headers: {
         'x-consumer-username': user1.xConsumerUsername,
         'x-consumer-id': user1.xConsumerId,
@@ -356,10 +356,10 @@ Server.init(serverConfigs).then((server) => {
     });
   });
 
-  test('DELETE /bookmarks/{id} - user1', function(t) {
+  test('DELETE /pois/{id} - user1', function(t) {
     const options = {
       method: 'DELETE',
-      url: '/bookmarks/2',
+      url: '/pois/2',
       headers: {
         'x-consumer-username': user1.xConsumerUsername,
         'x-consumer-id': user1.xConsumerId,
@@ -373,10 +373,10 @@ Server.init(serverConfigs).then((server) => {
   });
 
 
-  test('GET /bookmarks - after delete', function(t) {
+  test('GET /pois - after delete', function(t) {
     const options = {
       method: 'GET',
-      url: '/bookmarks',
+      url: '/pois',
       headers: {
         'x-consumer-username': user1.xConsumerUsername,
         'x-consumer-id': user1.xConsumerId,

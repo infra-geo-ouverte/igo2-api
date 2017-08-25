@@ -1,23 +1,23 @@
 import * as Hapi from 'hapi';
 import * as Boom from 'boom';
 
-import { Bookmark } from './bookmark';
-import { IBookmark, BookmarkInstance } from './bookmark.model';
+import { POI } from './poi';
+import { IPOI, POIInstance } from './poi.model';
 
-export class BookmarkController {
+export class POIController {
 
-  private bookmark: Bookmark;
+  private poi: POI;
 
   constructor() {
-    this.bookmark = new Bookmark();
+    this.poi = new POI();
   }
 
   public create(request: Hapi.Request, reply: Hapi.IReply) {
-    const bookmarkToCreate: IBookmark = request.payload;
-    bookmarkToCreate.userId = request.headers['x-consumer-custom-id'];
+    const poiToCreate: IPOI = request.payload;
+    poiToCreate.userId = request.headers['x-consumer-custom-id'];
 
-    this.bookmark.create(bookmarkToCreate).subscribe(
-      (bookmark: BookmarkInstance) => reply(bookmark).code(201),
+    this.poi.create(poiToCreate).subscribe(
+      (poi: POIInstance) => reply(poi).code(201),
       (error: Boom.BoomError) => reply(error)
     );
   }
@@ -25,10 +25,10 @@ export class BookmarkController {
   public update(request: Hapi.Request, reply: Hapi.IReply) {
     const id = request.params['id'];
     const userId = request.headers['x-consumer-custom-id'];
-    const bookmarkToUpdate: IBookmark = request.payload;
+    const poiToUpdate: IPOI = request.payload;
 
-    this.bookmark.update(id, userId, bookmarkToUpdate).subscribe(
-      (bookmark: BookmarkInstance) => reply(bookmark),
+    this.poi.update(id, userId, poiToUpdate).subscribe(
+      (poi: POIInstance) => reply(poi),
       (error: Boom.BoomError) => reply(error)
     );
   }
@@ -37,8 +37,8 @@ export class BookmarkController {
     const id = request.params['id'];
     const userId = request.headers['x-consumer-custom-id'];
 
-    this.bookmark.delete(id, userId).subscribe(
-      (bookmark: BookmarkInstance) => reply(bookmark).code(204),
+    this.poi.delete(id, userId).subscribe(
+      (poi: POIInstance) => reply(poi).code(204),
       (error: Boom.BoomError) => reply(error)
     );
   }
@@ -47,8 +47,8 @@ export class BookmarkController {
     const id = request.params['id'];
     const userId = request.headers['x-consumer-custom-id'];
 
-    this.bookmark.getById(id, userId).subscribe(
-      (bookmark: BookmarkInstance) => reply(bookmark),
+    this.poi.getById(id, userId).subscribe(
+      (poi: POIInstance) => reply(poi),
       (error: Boom.BoomError) => reply(error)
     );
   }
@@ -56,8 +56,8 @@ export class BookmarkController {
   public get(request: Hapi.Request, reply: Hapi.IReply) {
     const userId = request.headers['x-consumer-custom-id'];
 
-    this.bookmark.get(userId).subscribe(
-      (bookmarks: BookmarkInstance[]) => reply(bookmarks),
+    this.poi.get(userId).subscribe(
+      (pois: POIInstance[]) => reply(pois),
       (error: Boom.BoomError) => reply(error)
     );
   }

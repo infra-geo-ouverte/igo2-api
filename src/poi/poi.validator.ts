@@ -1,7 +1,7 @@
 import * as Joi from 'joi';
 
 
-export class BookmarkValidator {
+export class POIValidator {
 
   static createModel = Joi.object().keys({
     title: Joi.string().required(),

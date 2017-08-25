@@ -5,5 +5,5 @@ export function init(server: Hapi.Server) {
     Routes(server);
 }
 
-export * from './bookmark.model'
-export * from './bookmark'
+export * from './poi.model'
+export * from './poi'

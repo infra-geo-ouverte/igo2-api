@@ -4,18 +4,18 @@ import * as Boom from 'boom';
 import { IDatabase, database } from '../database';
 import { ObjectUtils } from '../utils';
 
-import { IBookmark, BookmarkInstance } from './bookmark.model';
+import { IPOI, POIInstance } from './poi.model';
 
-export class Bookmark {
+export class POI {
 
   private database: IDatabase = database;
 
   constructor() {}
 
-  public create(bookmark: IBookmark): Rx.Observable<BookmarkInstance> {
+  public create(poi: IPOI): Rx.Observable<POIInstance> {
     return Rx.Observable.create(observer => {
-      this.database.bookmark.create(bookmark).then((createdBookmark) => {
-        observer.next(createdBookmark);
+      this.database.poi.create(poi).then((createdPOI) => {
+        observer.next(createdPOI);
         observer.complete();
       }).catch((error) => {
         observer.error(Boom.badImplementation(error));
@@ -24,15 +24,15 @@ export class Bookmark {
   }
 
   public update(id: string, userId: string,
-    bookmark: IBookmark): Rx.Observable<BookmarkInstance> {
+    poi: IPOI): Rx.Observable<POIInstance> {
 
     return Rx.Observable.create(observer => {
-      this.database.bookmark.update(bookmark, {
+      this.database.poi.update(poi, {
         where: {
           id: id,
           userId: userId
         }
-      }).then((count: [number, BookmarkInstance[]]) => {
+      }).then((count: [number, POIInstance[]]) => {
         if (count[0]) {
           observer.next({id: id});
           observer.complete();
@@ -47,7 +47,7 @@ export class Bookmark {
 
   public delete(id: string, userId: string): Rx.Observable<{}> {
     return Rx.Observable.create(observer => {
-      this.database.bookmark.destroy({
+      this.database.poi.destroy({
         where: {
           id: id,
           userId: userId
@@ -65,17 +65,17 @@ export class Bookmark {
     });
   }
 
-  public get(userId: string): Rx.Observable<BookmarkInstance[]> {
+  public get(userId: string): Rx.Observable<POIInstance[]> {
     return Rx.Observable.create(observer => {
-      this.database.bookmark.findAll({
+      this.database.poi.findAll({
         where: {
           userId: userId
         }
-      }).then((bookmarks: BookmarkInstance[]) => {
-        const plainBookmarks = bookmarks.map(
-          (bookmark) => ObjectUtils.removeNull(bookmark.get())
+      }).then((pois: POIInstance[]) => {
+        const plainPOIs = pois.map(
+          (poi) => ObjectUtils.removeNull(poi.get())
         );
-        observer.next(plainBookmarks);
+        observer.next(plainPOIs);
         observer.complete();
       }).catch((error) => {
         observer.error(Boom.badImplementation(error));
@@ -83,16 +83,16 @@ export class Bookmark {
     });
   }
 
-  public getById(id: string, userId: string): Rx.Observable<BookmarkInstance> {
+  public getById(id: string, userId: string): Rx.Observable<POIInstance> {
     return Rx.Observable.create(observer => {
-      this.database.bookmark.findOne({
+      this.database.poi.findOne({
         where: {
           id: id,
           userId: userId
         }
-      }).then((bookmark: BookmarkInstance) => {
-        if (bookmark) {
-          observer.next(ObjectUtils.removeNull(bookmark.get()));
+      }).then((poi: POIInstance) => {
+        if (poi) {
+          observer.next(ObjectUtils.removeNull(poi.get()));
           observer.complete();
         } else {
           observer.error(Boom.notFound());

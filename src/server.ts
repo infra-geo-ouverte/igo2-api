@@ -3,7 +3,7 @@ import { IPlugin } from './plugins/interfaces';
 import { IServerConfiguration } from './configurations';
 import database from './database';
 import * as Users from './user';
-import * as Bookmarks from './bookmark';
+import * as POIs from './poi';
 import * as Contexts from './context';
 import * as Layers from './layer';
 import * as Tools from './tool';
@@ -42,7 +42,7 @@ export function init(configs: IServerConfiguration): Promise<Hapi.Server> {
       // Init Features
       console.log('Routes loading');
       Users.init(server);
-      Bookmarks.init(server);
+      POIs.init(server);
       Contexts.init(server);
       Layers.init(server);
       Tools.init(server);

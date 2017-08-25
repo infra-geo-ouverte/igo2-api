@@ -23,6 +23,19 @@ Server.init(serverConfigs).then((server) => {
       'x-consumer-id': admin.xConsumerId
     },
     payload: {
+      name: 'searchResults',
+      inToolbar: true
+    }
+  }, handleError);
+
+  server.inject({
+    method: 'POST',
+    url: '/tools',
+    headers: {
+      'x-consumer-username': admin.xConsumerUsername,
+      'x-consumer-id': admin.xConsumerId
+    },
+    payload: {
       name: 'contextManager',
       inToolbar: true
     }
@@ -48,8 +61,8 @@ Server.init(serverConfigs).then((server) => {
       'x-consumer-id': admin.xConsumerId
     },
     payload: {
-      name: 'mapDetails',
-      inToolbar: true
+      name: 'permissionsContextManager',
+      inToolbar: false
     }
   }, handleError);
 
@@ -61,8 +74,21 @@ Server.init(serverConfigs).then((server) => {
       'x-consumer-id': admin.xConsumerId
     },
     payload: {
-      name: 'permissionsContextManager',
+      name: 'toolsContextManager',
       inToolbar: false
+    }
+  }, handleError);
+
+  server.inject({
+    method: 'POST',
+    url: '/tools',
+    headers: {
+      'x-consumer-username': admin.xConsumerUsername,
+      'x-consumer-id': admin.xConsumerId
+    },
+    payload: {
+      name: 'mapDetails',
+      inToolbar: true
     }
   }, handleError);
 
@@ -87,34 +113,8 @@ Server.init(serverConfigs).then((server) => {
       'x-consumer-id': admin.xConsumerId
     },
     payload: {
-      name: 'searchResults',
-      inToolbar: true
-    }
-  }, handleError);
-
-  server.inject({
-    method: 'POST',
-    url: '/tools',
-    headers: {
-      'x-consumer-username': admin.xConsumerUsername,
-      'x-consumer-id': admin.xConsumerId
-    },
-    payload: {
       name: 'print',
       inToolbar: true
-    }
-  }, handleError);
-
-  server.inject({
-    method: 'POST',
-    url: '/tools',
-    headers: {
-      'x-consumer-username': admin.xConsumerUsername,
-      'x-consumer-id': admin.xConsumerId
-    },
-    payload: {
-      name: 'toolsContextManager',
-      inToolbar: false
     }
   }, handleError);
 

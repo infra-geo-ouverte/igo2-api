@@ -1,22 +1,22 @@
 import * as Hapi from 'hapi';
 import * as Joi from 'joi';
 
-import { BookmarkController } from './bookmark.controller';
-import { BookmarkValidator } from './bookmark.validator';
+import { POIController } from './poi.controller';
+import { POIValidator } from './poi.validator';
 import { UserValidator } from '../user/user.validator';
 
 export default function (server: Hapi.Server) {
 
-    const bookmarkController = new BookmarkController();
-    server.bind(bookmarkController);
+    const poiController = new POIController();
+    server.bind(poiController);
 
     server.route({
         method: 'GET',
-        path: '/bookmarks/{id}',
+        path: '/pois/{id}',
         config: {
-            handler: bookmarkController.getById,
-            tags: ['api', 'bookmarks'],
-            description: 'Get bookmarks by id.',
+            handler: poiController.getById,
+            tags: ['api', 'pois'],
+            description: 'Get pois by id.',
             validate: {
                 params: {
                     id: Joi.string().required()
@@ -27,10 +27,10 @@ export default function (server: Hapi.Server) {
                 'hapi-swagger': {
                     responses: {
                         '200': {
-                            'description': 'Bookmark founded.'
+                            'description': 'POI founded.'
                         },
                         '404': {
-                            'description': 'Bookmark does not exists.'
+                            'description': 'POI does not exists.'
                         }
                     }
                 }
@@ -40,11 +40,11 @@ export default function (server: Hapi.Server) {
 
     server.route({
         method: 'GET',
-        path: '/bookmarks',
+        path: '/pois',
         config: {
-            handler: bookmarkController.get,
-            tags: ['api', 'bookmarks'],
-            description: 'Get all bookmarks.',
+            handler: poiController.get,
+            tags: ['api', 'pois'],
+            description: 'Get all pois.',
             validate: {
                 headers: UserValidator.authenticateValidator
             }
@@ -53,11 +53,11 @@ export default function (server: Hapi.Server) {
 
     server.route({
         method: 'DELETE',
-        path: '/bookmarks/{id}',
+        path: '/pois/{id}',
         config: {
-            handler: bookmarkController.delete,
-            tags: ['api', 'bookmarks'],
-            description: 'Delete bookmark by id.',
+            handler: poiController.delete,
+            tags: ['api', 'pois'],
+            description: 'Delete poi by id.',
             validate: {
                 params: {
                     id: Joi.string().required()
@@ -68,10 +68,10 @@ export default function (server: Hapi.Server) {
                 'hapi-swagger': {
                     responses: {
                         '204': {
-                            'description': 'Deleted Bookmark.',
+                            'description': 'Deleted POI.',
                         },
                         '404': {
-                            'description': 'Bookmark does not exists.'
+                            'description': 'POI does not exists.'
                         }
                     }
                 }
@@ -81,26 +81,26 @@ export default function (server: Hapi.Server) {
 
     server.route({
         method: 'PATCH',
-        path: '/bookmarks/{id}',
+        path: '/pois/{id}',
         config: {
-            handler: bookmarkController.update,
-            tags: ['api', 'bookmarks'],
-            description: 'Update bookmark by id.',
+            handler: poiController.update,
+            tags: ['api', 'pois'],
+            description: 'Update poi by id.',
             validate: {
                 params: {
                     id: Joi.string().required()
                 },
-                payload: BookmarkValidator.updateModel,
+                payload: POIValidator.updateModel,
                 headers: UserValidator.authenticateValidator
             },
             plugins: {
                 'hapi-swagger': {
                     responses: {
                         '200': {
-                            'description': 'Deleted Bookmark.',
+                            'description': 'Deleted POI.',
                         },
                         '404': {
-                            'description': 'Bookmark does not exists.'
+                            'description': 'POI does not exists.'
                         }
                     }
                 }
@@ -110,20 +110,20 @@ export default function (server: Hapi.Server) {
 
     server.route({
         method: 'POST',
-        path: '/bookmarks',
+        path: '/pois',
         config: {
-            handler: bookmarkController.create,
-            tags: ['api', 'bookmarks'],
-            description: 'Create a bookmark.',
+            handler: poiController.create,
+            tags: ['api', 'pois'],
+            description: 'Create a poi.',
             validate: {
-                payload: BookmarkValidator.createModel,
+                payload: POIValidator.createModel,
                 headers: UserValidator.authenticateValidator
             },
             plugins: {
                 'hapi-swagger': {
                     responses: {
                         '201': {
-                            'description': 'Created Bookmark.'
+                            'description': 'Created POI.'
                         }
                     }
                 }

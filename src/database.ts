@@ -2,7 +2,7 @@ import * as Sequelize from 'sequelize';
 import * as Configs from './configurations';
 
 import { UserModel } from './user/user.model';
-import { BookmarkModel } from './bookmark/bookmark.model';
+import { POIModel } from './poi/poi.model';
 import { ContextModel } from './context/context.model';
 import { LayerModel } from './layer/layer.model';
 import { ToolModel } from './tool/tool.model';
@@ -15,7 +15,7 @@ import {
 export interface IDatabase {
     sequelize: Sequelize.Sequelize;
     user: UserModel;
-    bookmark: BookmarkModel;
+    poi: POIModel;
     context: ContextModel;
     layer: LayerModel;
     tool: ToolModel;
@@ -49,7 +49,7 @@ const db = {};
 // });
 
 db['user'] = sequelize['import']('./user/user.model');
-db['bookmark'] = sequelize['import']('./bookmark/bookmark.model');
+db['poi'] = sequelize['import']('./poi/poi.model');
 db['layer'] = sequelize['import']('./layer/layer.model');
 db['tool'] = sequelize['import']('./tool/tool.model');
 db['context'] = sequelize['import']('./context/context.model');
