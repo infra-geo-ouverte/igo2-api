@@ -227,7 +227,6 @@ Server.init(serverConfigs).then((server) => {
     };
     server.inject(options, function(response) {
       const result: any = response.result;
-      t.equal(result.uri, 'user1Private');
       t.equal(result.title, 'user1Private');
       t.equal(result.scope, 'private');
       t.equal(result.owner, user1.xConsumerUsername);
@@ -266,7 +265,6 @@ Server.init(serverConfigs).then((server) => {
     };
     server.inject(options, function(response) {
       const result: any = response.result;
-      t.equal(result.uri, 'user2Public');
       t.equal(result.title, 'user2Public');
       t.equal(result.scope, 'private');
       t.equal(result.owner, user1.xConsumerUsername);
@@ -286,7 +284,6 @@ Server.init(serverConfigs).then((server) => {
     };
     server.inject(options, function(response) {
       const result: any = response.result;
-      t.equal(result.uri, 'user2PublicWrite');
       t.equal(result.title, 'user2PublicWrite');
       t.equal(result.scope, 'private');
       t.equal(result.owner, user1.xConsumerUsername);
@@ -323,7 +320,6 @@ Server.init(serverConfigs).then((server) => {
     };
     server.inject(options, function(response) {
       const result: any = response.result;
-      t.equal(result.uri, 'user2ProtectedWrite');
       t.equal(result.title, 'user2ProtectedWrite');
       t.equal(result.scope, 'private');
       t.equal(result.owner, user1.xConsumerUsername);

@@ -41,6 +41,13 @@ export interface ContextInstance extends Sequelize.Instance<IContext> {
   permission?: TypePermission | string;
 }
 
+
+export interface ContextDetailed extends ContextInstance {
+  tools?: any[];
+  layers?: any[];
+  toolbar?: string[];
+}
+
 export interface ContextModel
   extends Sequelize.Model<ContextInstance, IContext> { }
 

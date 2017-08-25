@@ -229,14 +229,42 @@ Server.init(serverConfigs).then((server) => {
         layerId: 1,
         view: {
           minZoom: 5
-        }
+        },
+        order: 2
       }
     };
     server.inject(options, function(response) {
       const result: any = response.result;
       t.equal(result.layerId, 1);
+      t.equal(result.order, 2);
       t.equal(Number(result.contextId), 1);
       t.equal(result.view.minZoom, 5);
+      t.equal(response.statusCode, 201);
+      server.stop(t.end);
+    });
+  });
+
+  test('POST /contexts/1/layers - user1', function(t) {
+    const options = {
+      method: 'POST',
+      url: '/contexts/1/layers',
+      headers: {
+        'x-consumer-username': user1.xConsumerUsername,
+        'x-consumer-id': user1.xConsumerId
+      },
+      payload: {
+        layerId: 2,
+        view: {
+          minZoom: 4
+        },
+        order: 1
+      }
+    };
+    server.inject(options, function(response) {
+      const result: any = response.result;
+      t.equal(result.layerId, 2);
+      t.equal(result.order, 1);
+      t.equal(Number(result.contextId), 1);
       t.equal(response.statusCode, 201);
       server.stop(t.end);
     });
@@ -622,8 +650,10 @@ Server.init(serverConfigs).then((server) => {
     };
     server.inject(options, function(response) {
       const result: any = response.result;
-      t.equal(result.length, 1);
-      t.equal(result[0].view.minZoom, 3);
+      t.equal(result.length, 2);
+      t.equal(result[0].layerId, 2);
+      t.equal(result[1].layerId, 1);
+      t.equal(result[0].view.minZoom, 4);
       t.equal(response.statusCode, 200);
       server.stop(t.end);
     });
@@ -779,8 +809,8 @@ Server.init(serverConfigs).then((server) => {
     };
     server.inject(options, function(response) {
       const result: any = response.result;
-      t.equal(result.layers.length, 1);
-      t.equal(result.layers[0].title, 'dummyTitle');
+      t.equal(result.layers.length, 2);
+      t.equal(result.layers[0].title, 'dummyTitle2');
       t.equal(response.statusCode, 200);
       server.stop(t.end);
     });
@@ -818,20 +848,24 @@ Server.init(serverConfigs).then((server) => {
         scope: 'public',
         map: {},
         layers: [{
-          id: '1'
+          id: '1',
+          order: '4'
         }, {
           id: '90'
         }, {
-          id: '2'
+          id: '2',
+          order: '2'
         }, {
-          id: '3'
+          id: '3',
+          order: '1'
         }, {
           title: 'dummyTitleLayerContext',
           type: 'wms',
           view: {},
           source: {
             url: 'http://source.com'
-          }
+          },
+          order: '3'
         }]
       }
     };
@@ -843,7 +877,7 @@ Server.init(serverConfigs).then((server) => {
     });
   });
 
-  test('GET /contexts/{id}/details - context with layer ', function(t) {
+  test('GET /contexts/{id}/details - context with layer', function(t) {
     const options = {
       method: 'GET',
       url: `/contexts/${idContextWithLayer}/details`,
@@ -856,9 +890,47 @@ Server.init(serverConfigs).then((server) => {
       const result: any = response.result;
       t.equal(result.uri, 'withLayer');
       t.equal(result.layers.length, 3);
-      t.equal(result.layers[0].id, 1);
-      t.equal(result.layers[1].id, 2);
-      t.equal(result.layers[2].title, 'dummyTitleLayerContext');
+      t.equal(result.layers[2].id, 1);
+      t.equal(result.layers[0].id, 2);
+      t.equal(result.layers[1].title, 'dummyTitleLayerContext');
+      t.equal(response.statusCode, 200);
+      server.stop(t.end);
+    });
+  });
+
+  let idContextClonedWithLayer;
+  test('POST /contexts/{id}/clone - context with layer', function(t) {
+    const options = {
+      method: 'POST',
+      url: `/contexts/${idContextWithLayer}/clone`,
+      headers: {
+        'x-consumer-username': user1.xConsumerUsername,
+        'x-consumer-id': user1.xConsumerId
+      }
+    };
+    server.inject(options, function(response) {
+      const result: any = response.result;
+      idContextClonedWithLayer = result.id;
+      t.equal(response.statusCode, 201);
+      server.stop(t.end);
+    });
+  });
+
+  test('GET /contexts/{id}/details - context cloned with layer', function(t) {
+    const options = {
+      method: 'GET',
+      url: `/contexts/${idContextClonedWithLayer}/details`,
+      headers: {
+        'x-consumer-username': user1.xConsumerUsername,
+        'x-consumer-id': user1.xConsumerId
+      }
+    };
+    server.inject(options, function(response) {
+      const result: any = response.result;
+      t.equal(result.layers.length, 3);
+      t.equal(result.layers[2].id, 1);
+      t.equal(result.layers[0].id, 2);
+      t.equal(result.layers[1].title, 'dummyTitleLayerContext');
       t.equal(response.statusCode, 200);
       server.stop(t.end);
     });

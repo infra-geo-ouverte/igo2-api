@@ -109,8 +109,9 @@ export class LayerContext {
     return Rx.Observable.create(observer => {
       this.database.layerContext.findAll({
         where: {
-          contextId: contextId
-        }
+          contextId: contextId,
+        },
+        order: ['order']
       }).then((layerContextsContexts: LayerContextInstance[]) => {
           const plainLayerContextsContexts = layerContextsContexts.map(
             (layerContext) => ObjectUtils.removeNull(layerContext.get())
@@ -150,10 +151,11 @@ export class LayerContext {
     layers: ILayer[],
     createLayerIfNotExist = false) {
 
-    const createFct = (layerId, next) => {
+    const createFct = (layerId, order, next) => {
       this.create({
         contextId: contextId,
-        layerId: layerId
+        layerId: layerId,
+        order: order
       }).subscribe(
         (rep) => next(),
         (error) => next(error)
@@ -165,12 +167,14 @@ export class LayerContext {
         (layer: ILayer, next) => {
           this.layer.getBySource(layer).subscribe(
             (layerFound: LayerInstance) => {
-              createFct(layerFound.id, next);
+              createFct(layerFound.id, layer.order, next);
             },
             (error: Boom.BoomError) => {
               if (createLayerIfNotExist) {
                 this.layer.create(layer).subscribe(
-                  (layerCreated) => createFct(layerCreated.id, next),
+                  (layerCreated) => {
+                    createFct(layerCreated.id, layer.order, next);
+                  },
                   (createError) => next(createError)
                 );
               } else {

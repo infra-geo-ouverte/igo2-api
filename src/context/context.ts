@@ -4,7 +4,7 @@ import * as Boom from 'boom';
 import { IDatabase, database } from '../database';
 import { ObjectUtils } from '../utils';
 
-import { IContext, ContextInstance } from './context.model';
+import { IContext, ContextInstance, ContextDetailed } from './context.model';
 
 export class Context {
 
@@ -76,7 +76,7 @@ export class Context {
   }
 
   public getById(id: string, includeLayers = false,
-    includeTools = false): Rx.Observable<ContextInstance> {
+    includeTools = false): Rx.Observable<ContextDetailed> {
 
     const include = [];
     if (includeLayers) { include.push(this.database.layer); }
@@ -88,10 +88,11 @@ export class Context {
         where: {
           id: id
         }
-      }).then((context: ContextInstance) => {
+      }).then((context: ContextDetailed) => {
         if (context) {
           if (includeLayers || includeTools) {
-            observer.next(context);
+            const plainDetails = this.contextObjToPlainObj(context);
+            observer.next(plainDetails);
           } else {
             observer.next(ObjectUtils.removeNull(context.get()));
           }
@@ -103,6 +104,40 @@ export class Context {
         observer.error(Boom.badImplementation(error));
       });
     });
+  }
+
+  private contextObjToPlainObj(context): ContextDetailed {
+
+    let plain: any = context.get();
+    plain.layers = [];
+    plain.tools = [];
+    plain.toolbar = [];
+
+    for (const tool of context.tools) {
+      const plainTool = tool.get();
+      Object.assign(plainTool.options, plainTool.toolContext.options);
+      plainTool.toolContext = null;
+      plain.tools.push(plainTool);
+      if (plainTool.inToolbar) {
+        plain.toolbar.push(plainTool.name);
+      }
+    }
+
+    for (const layer of context.layers) {
+      const plainLayer = layer.get();
+      Object.assign(plainLayer.view, plainLayer.layerContext.view);
+      Object.assign(plainLayer.source, plainLayer.layerContext.source);
+      plainLayer.order = plainLayer.layerContext.order;
+      plainLayer.layerContext = null;
+      plain.layers.push(plainLayer);
+    }
+
+    plain = ObjectUtils.removeNull(plain);
+    plain.layers = plain.layers.sort(
+      (a, b) => a.order < b.order ? -1 : a.order > b.order ? 1 : 0
+    );
+
+    return plain;
   }
 
 }

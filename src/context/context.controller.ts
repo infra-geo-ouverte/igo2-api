@@ -2,7 +2,7 @@ import * as Hapi from 'hapi';
 import * as Boom from 'boom';
 
 import { IDatabase, database } from '../database';
-import { ObjectUtils } from '../utils';
+import { ObjectUtils, uuid } from '../utils';
 
 import { User } from '../user';
 import { TypePermission, ContextPermission } from '../contextPermission';
@@ -86,16 +86,15 @@ export class ContextController {
 
     this.context.getById(id, true, true).subscribe(
       (context: any) => {
-        const plainContext = context.get();
-        Object.assign(plainContext, properties);
+        Object.assign(context, properties);
         const newContext = {
           scope: Scope[Scope.private],
-          uri: plainContext.uri,
-          title: plainContext.title,
-          icon: plainContext.icon,
-          map: plainContext.map,
-          tools: plainContext.tools,
-          layers: plainContext.layers
+          uri: uuid(),
+          title: context.title,
+          icon: context.icon,
+          map: context.map,
+          tools: context.tools,
+          layers: context.layers
         };
         request.payload = newContext;
         this.create(request, reply);
@@ -319,31 +318,8 @@ export class ContextController {
       this.contextPermission.getPermission(contextDetails, owner).subscribe(
         (permission) => {
           if (permission) {
-            const plainDetails = contextDetails.get();
-            plainDetails.permission = TypePermission[permission];
-            plainDetails.layers = [];
-            plainDetails.tools = [];
-            plainDetails.toolbar = [];
-
-            for (const tool of contextDetails.tools) {
-              const plainTool = tool.get();
-              Object.assign(plainTool.options, plainTool.toolContext.options);
-              plainTool.toolContext = undefined;
-              plainDetails.tools.push(plainTool);
-              if (plainTool.inToolbar) {
-                plainDetails.toolbar.push(plainTool.name);
-              }
-            }
-
-            for (const layer of contextDetails.layers) {
-              const plainLayer = layer.get();
-              Object.assign(plainLayer.view, plainLayer.layerContext.view);
-              Object.assign(plainLayer.source, plainLayer.layerContext.source);
-              plainLayer.layerContext = undefined;
-              plainDetails.layers.push(plainLayer);
-            }
-
-            reply(ObjectUtils.removeNull(plainDetails));
+            contextDetails.permission = TypePermission[permission];
+            reply(contextDetails);
           } else {
             reply(Boom.unauthorized());
           }

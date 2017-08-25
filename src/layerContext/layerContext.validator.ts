@@ -8,7 +8,8 @@ export class LayerContextValidator {
       attribution: Joi.string().allow(''),
       minZoom: Joi.number(),
       maxZoom: Joi.number()
-    })
+    }),
+    order: Joi.number()
   });
 
   static updateModel = Joi.object().keys({
@@ -16,7 +17,8 @@ export class LayerContextValidator {
       attribution: Joi.string().allow(''),
       minZoom: Joi.number(),
       maxZoom: Joi.number()
-    })
+    }),
+    order: Joi.number()
   });
 
 }

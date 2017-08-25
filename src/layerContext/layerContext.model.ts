@@ -11,6 +11,7 @@ export interface ILayerContext {
   layerId?: string;
   contextId?: string;
   view?: ViewLayer;
+  order?: number;
 };
 
 export interface LayerContextInstance
@@ -22,6 +23,7 @@ export interface LayerContextInstance
   layerId: string;
   contextId: string;
   view: ViewLayer;
+  order: number;
 }
 
 export interface LayerContextModel
@@ -45,6 +47,9 @@ export default function define(sequelize: Sequelize.Sequelize, DataTypes) {
         'set': function(val) {
           this.setDataValue('view', JSON.stringify(val));
         }
+      },
+      order: {
+        type: DataTypes.INTEGER,
       },
       contextId: {
         type: DataTypes.INTEGER

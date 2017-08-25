@@ -17,6 +17,7 @@ export interface ILayer {
   type: string;
   view?: ViewLayer;
   source?: SourceLayer;
+  order?: number;
 };
 
 export interface LayerInstance extends Sequelize.Instance<ILayer> {

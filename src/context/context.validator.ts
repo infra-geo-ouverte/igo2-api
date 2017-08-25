@@ -7,9 +7,13 @@ const createToolModel = ToolValidator.createModel;
 const updateToolModel = ToolValidator.updateModel
   .keys({id: Joi.string()});
 
-const createLayerModel = LayerValidator.createModel;
+const createLayerModel = LayerValidator.createModel
+  .keys({order: Joi.number()});
 const updateLayerModel = LayerValidator.updateModel
-  .keys({id: Joi.string()});
+  .keys({
+    id: Joi.string(),
+    order: Joi.number()
+  });
 
 export class ContextValidator {
 
@@ -30,8 +34,7 @@ export class ContextValidator {
     ),
     tools: Joi.array().items(
       Joi.alternatives().try(createToolModel, updateToolModel)
-    ),
-    toolbar: Joi.array().items(Joi.string())
+    )
   });
 
   static updateModel = Joi.object().keys({
@@ -51,8 +54,7 @@ export class ContextValidator {
       ),
       tools: Joi.array().items(
         Joi.alternatives().try(createToolModel, updateToolModel)
-      ),
-      toolbar: Joi.array().items(Joi.string())
+      )
   });
 
 }
