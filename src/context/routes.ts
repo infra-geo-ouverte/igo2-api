@@ -181,7 +181,7 @@ export default function(server: Hapi.Server) {
         params: {
           contextId: Joi.string().required()
         },
-        headers: ContextPermissionValidator.readPermission
+        headers: ContextPermissionValidator.authenticatedAndReadPermission
       },
       plugins: {
         'hapi-swagger': {
