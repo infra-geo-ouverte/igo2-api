@@ -6,13 +6,19 @@
     },
     "server": {
         "port": 5000,
-        "jwtSecret": "random-secret-password",
+        "adminProfil": "admin",
         "jwtExpiration": "1h",
+        "userApi": {
+          "host": "localhost",
+          "port": 8001
+        },
         "plugins": [
             "logger",
-            "jwt-auth",
             "sanitizer",
             "swagger"
         ]
+    },
+    "test": {
+      "xConsumerId": ""
     }
 }
