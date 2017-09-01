@@ -8,7 +8,6 @@
         "port": 5000,
         "adminProfil": "admin",
         "jwtExpiration": "1h",
-        "googleKey": "AIzaSyCbc-E35ZNqAjPvpbr30bAXwfcQoq5XLBs",
         "userApi": {
           "host": "localhost",
           "port": 8001
@@ -20,6 +19,6 @@
         ]
     },
     "test": {
-      "xConsumerId": "3c56daca-c23f-47b2-8f6d-374ea5a987e3"
+      "xConsumerId": ""
     }
 }
