@@ -1,21 +1,27 @@
 import * as Sequelize from 'sequelize';
-import * as Glob from 'glob';
-import * as path from 'path';
 import * as Configs from './configurations';
 
-import { ContextModel } from './contexts/context.model';
-import { LayerModel } from './layers/layer.model';
-import { ToolModel } from './tools/tool.model';
-import { ToolContextModel } from './toolsContexts/toolContext.model';
-import { LayerContextModel } from './layersContexts/layerContext.model';
+import { UserModel } from './user/user.model';
+import { POIModel } from './poi/poi.model';
+import { ContextModel } from './context/context.model';
+import { LayerModel } from './layer/layer.model';
+import { ToolModel } from './tool/tool.model';
+import { ToolContextModel } from './toolContext/toolContext.model';
+import { LayerContextModel } from './layerContext/layerContext.model';
+import {
+  ContextPermissionModel
+} from './contextPermission/contextPermission.model';
 
 export interface IDatabase {
     sequelize: Sequelize.Sequelize;
+    user: UserModel;
+    poi: POIModel;
     context: ContextModel;
     layer: LayerModel;
     tool: ToolModel;
     layerContext: LayerContextModel;
     toolContext: ToolContextModel;
+    contextPermission: ContextPermissionModel;
 }
 
 const dbConfigs = Configs.getDatabaseConfig();
@@ -36,20 +42,25 @@ if (dbPG.connectionString) {
 }
 
 const db = {};
-Glob.sync('./src/**/*.model.ts').forEach((file) => {
-  const fileName = file.replace('./src/', './').replace('.ts', '');
-  const model = sequelize['import'](path.join(__dirname, fileName));
-  db[model['name']] = model;
-});
+// Glob.sync('./src/**/*.model.ts').forEach((file) => {
+//   const fileName = file.replace('./src/', './').replace('.ts', '');
+//   const model = sequelize['import'](path.join(__dirname, fileName));
+//   db[model['name']] = model;
+// });
 
-/*Object.keys(db).forEach(function(modelName) {
-    if (db[modelName].associate) {
-        db[modelName].associate(db);
-    }
-});*/
+db['user'] = sequelize['import']('./user/user.model');
+db['poi'] = sequelize['import']('./poi/poi.model');
+db['layer'] = sequelize['import']('./layer/layer.model');
+db['tool'] = sequelize['import']('./tool/tool.model');
+db['context'] = sequelize['import']('./context/context.model');
+db['contextPermission'] =
+  sequelize['import']('./contextPermission/contextPermission.model');
+db['layerContext'] = sequelize['import']('./layerContext/layerContext.model');
+db['toolContext'] = sequelize['import']('./toolContext/toolContext.model');
+
 
 db['sequelize'] = sequelize;
-// db['Sequelize'] = Sequelize;
 
-
-export default <IDatabase>db;
+const database = <IDatabase>db;
+export default database;
+export { database };

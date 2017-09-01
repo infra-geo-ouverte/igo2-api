@@ -1,11 +1,11 @@
 import * as Hapi from 'hapi';
 import { IDatabase } from '../database';
-import { IServerConfigurations } from '../configurations';
+import { IServerConfiguration } from '../configurations';
 
 
 export interface IPluginOptions {
     database?: IDatabase;
-    serverConfigs: IServerConfigurations;
+    serverConfigs: IServerConfiguration;
 }
 
 export interface IPlugin {
