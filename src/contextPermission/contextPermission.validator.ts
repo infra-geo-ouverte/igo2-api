@@ -64,4 +64,15 @@ export class ContextPermissionValidator {
     }
   }
 
+  static authenticatedAndReadPermission = (value, options, next) => {
+
+    const valid = Joi.validate(value, UserValidator.notAnonymousValidator);
+
+    if (valid.error) {
+      next(Boom.unauthorized('Must be authenticated'));
+    } else {
+      ContextPermissionValidator.readPermission(value, options, next);
+    }
+  }
+
 }

@@ -15,7 +15,6 @@ export class POIController {
   public create(request: Hapi.Request, reply: Hapi.IReply) {
     const poiToCreate: IPOI = request.payload;
     poiToCreate.userId = request.headers['x-consumer-custom-id'];
-
     this.poi.create(poiToCreate).subscribe(
       (poi: POIInstance) => reply(poi).code(201),
       (error: Boom.BoomError) => reply(error)
