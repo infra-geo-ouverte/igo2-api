@@ -84,18 +84,19 @@ export class User {
     });
   }
 
-  public loginMspUser(username: string,
+  public loginLdapUser(username: string,
     password: string): Rx.Observable<UserInstance> {
 
     return Rx.Observable.create(observer => {
       this.validatePassword(username, password).subscribe(
         userInfo => {
-          this.getOrCreateUser(username, 'msp').subscribe(
+          this.getOrCreateUser(username, 'ldap').subscribe(
             user => {
               user.email = userInfo.mail;
               const groups = [];
               for (const g of userInfo.groupMembership) {
-                if (g.search('ou=APP,ou=SSO,o=MSP') !== -1) {
+                const baseSearch = 'ou=APP,' + ServerConfigs.ldap.baseSearch;
+                if (g.search(baseSearch) !== -1) {
                   const iStart = g.indexOf('cn=') + 3;
                   const iEnd = g.indexOf(',');
                   const gName = g.substring(iStart, iEnd);
@@ -114,8 +115,7 @@ export class User {
           );
         },
         error => {
-          const message = 'Incorrect username and/or password';
-          observer.error(Boom.unauthorized(message));
+          observer.error(error);
         }
       );
     });
@@ -462,7 +462,7 @@ export class User {
 
   private updateGroupsUserKong(user: UserInstance, groups: string[], userKong) {
     return Rx.Observable.create(observer => {
-      if (user.source !== 'msp') {
+      if (user.source !== 'ldap') {
         observer.next();
         observer.complete();
         return;
@@ -537,7 +537,7 @@ export class User {
         observer.error(Boom.unauthorized('Username empty'));
       }
       const client = ldap.createClient({
-        url: 'ldap://ldap.sso.msp.gouv.qc.ca'
+        url: ServerConfigs.ldap.url
       });
 
       const opts = {
@@ -550,7 +550,7 @@ export class User {
       };
 
       let ldapres;
-      const baseSearch = 'ou=DTIA,ou=DGSG,ou=SSO,o=msp';
+      const baseSearch = ServerConfigs.ldap.baseSearch;
       client.search(baseSearch, opts, function(errSearch, search) {
         search.on('searchEntry', function(entry) {
           ldapres = entry.object;
@@ -560,8 +560,17 @@ export class User {
           if (ldapres) {
             client.bind(ldapres.dn, Base64.decode(password), function(errBind) {
               if (errBind) {
-                // TODO : gérer les mdp expirés.
-                observer.error(Boom.unauthorized('Wrong password'));
+                let codeError;
+                if (errBind.lde_message) {
+                    codeError = errBind.lde_message.substr(-4, 3);
+                }
+                if (codeError === '197' || codeError === '217') {
+                  observer.error(Boom.unauthorized('Maximun logins exceeded'));
+                } else if (codeError === '223') {
+                  observer.error(Boom.unauthorized('Password expired'));
+                } else {
+                  observer.error(Boom.unauthorized('Wrong password'));
+                }
               } else {
                 observer.next(ldapres);
                 observer.complete();

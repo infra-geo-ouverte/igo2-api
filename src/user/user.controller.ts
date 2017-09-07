@@ -14,9 +14,9 @@ export class UserController {
   }
 
   public login(request: Hapi.Request, reply: Hapi.IReply) {
-    const typeConnection = request.payload.typeConnection || 'msp';
-    if (typeConnection === 'msp') {
-      this.loginMspUser(request, reply);
+    const typeConnection = request.payload.typeConnection || 'ldap';
+    if (typeConnection === 'ldap') {
+      this.loginLdapUser(request, reply);
     } else if (typeConnection === 'test') {
       this.loginTestUser(request, reply);
     } else {
@@ -62,11 +62,11 @@ export class UserController {
     );
   }
 
-  private loginMspUser(request: Hapi.Request, reply: Hapi.IReply) {
+  private loginLdapUser(request: Hapi.Request, reply: Hapi.IReply) {
     const username = request.payload.username;
     const password = request.payload.password;
 
-    this.user.loginMspUser(username, password).subscribe(
+    this.user.loginLdapUser(username, password).subscribe(
       (token) => reply(token),
       (error: Boom.BoomError) => reply(error)
     );
