@@ -18,8 +18,22 @@ export class ContextPermission {
     contextPermission: IContextPermission
   ): Rx.Observable<ContextPermissionInstance> {
 
+    const bulkData: IContextPermission[] = [];
+
+    const profils = contextPermission.profil.split(/[,;]/);
+    for (let p of profils) {
+      p = p.trim();
+      if (p) {
+        bulkData.push({
+          profil: p,
+          typePermission: contextPermission.typePermission,
+          contextId: contextPermission.contextId
+        });
+      }
+    }
+
     return Rx.Observable.create(observer => {
-      this.database.contextPermission.create(contextPermission)
+      this.database.contextPermission.bulkCreate(bulkData)
         .then((contextPermissionCreated) => {
           observer.next(contextPermissionCreated);
           observer.complete();
