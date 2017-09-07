@@ -187,7 +187,7 @@ Server.init(serverConfigs).then((server) => {
       }
     };
     server.inject(options, function(response) {
-      const result: any = response.result;
+      const result: any = response.result[0];
       t.equal(result.profil, 'test');
       t.equal(result.typePermission, 'read');
       t.equal(Number(result.contextId), 1);
@@ -248,14 +248,17 @@ Server.init(serverConfigs).then((server) => {
       },
       payload: {
         typePermission: 'read',
-        profil: 'test'
+        profil: 'test, test2'
       }
     };
     server.inject(options, function(response) {
       const result: any = response.result;
-      t.equal(result.profil, 'test');
-      t.equal(result.typePermission, 'read');
-      t.equal(Number(result.contextId), 4);
+      t.equal(result[0].profil, 'test');
+      t.equal(result[0].typePermission, 'read');
+      t.equal(Number(result[0].contextId), 4);
+      t.equal(result[1].profil, 'test2');
+      t.equal(result[1].typePermission, 'read');
+      t.equal(Number(result[1].contextId), 4);
       t.equal(response.statusCode, 201);
       server.stop(t.end);
     });
@@ -296,7 +299,7 @@ Server.init(serverConfigs).then((server) => {
       }
     };
     server.inject(options, function(response) {
-      const result: any = response.result;
+      const result: any = response.result[0];
       t.equal(result.profil, 'test');
       t.equal(result.typePermission, 'write');
       t.equal(Number(result.contextId), 6);
@@ -383,7 +386,7 @@ Server.init(serverConfigs).then((server) => {
       }
     };
     server.inject(options, function(response) {
-      const result: any = response.result;
+      const result: any = response.result[0];
       t.equal(result.profil, 'test');
       t.equal(result.typePermission, 'read');
       t.equal(Number(result.contextId), 3);
