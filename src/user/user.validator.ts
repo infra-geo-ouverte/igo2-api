@@ -15,7 +15,7 @@ export class UserValidator {
       username: Joi.string(),
       password: Joi.string().trim(),
       token: Joi.string(),
-      typeConnection: Joi.string().valid('msp', 'facebook', 'google', 'test'),
+      typeConnection: Joi.string().valid('ldap', 'facebook', 'google', 'test'),
   }).xor('username', 'token');
 
   static userValidator = Joi.object({
