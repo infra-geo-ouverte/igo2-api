@@ -151,11 +151,15 @@ export class LayerContext {
     layers: ILayer[],
     createLayerIfNotExist = false) {
 
-    const createFct = (layerId, order, next) => {
+    const createFct = (layerCommun, layer, next) => {
       this.create({
         contextId: contextId,
-        layerId: layerId,
-        order: order
+        layerId: layerCommun.id,
+        order: layer.order,
+        options: {
+          visible: layer.visible,
+          title: layerCommun.title !== layer.title ? layer.title : undefined
+        }
       }).subscribe(
         (rep) => next(),
         (error) => next(error)
@@ -167,13 +171,14 @@ export class LayerContext {
         (layer: ILayer, next) => {
           this.layer.getBySource(layer).subscribe(
             (layerFound: LayerInstance) => {
-              createFct(layerFound.id, layer.order, next);
+              createFct(layerFound, layer, next);
             },
             (error: Boom.BoomError) => {
               if (createLayerIfNotExist) {
-                this.layer.create(layer).subscribe(
+                const layerToCreate = layer;
+                this.layer.create(layerToCreate).subscribe(
                   (layerCreated) => {
-                    createFct(layerCreated.id, layer.order, next);
+                    createFct(layerCreated, layer, next);
                   },
                   (createError) => next(createError)
                 );

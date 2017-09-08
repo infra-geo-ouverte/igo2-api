@@ -1,9 +1,14 @@
 import * as Sequelize from 'sequelize';
 
 interface ViewLayer {
-  attribution: string;
-  minZoom: number;
-  maxZoom: number;
+  attribution?: string;
+  minZoom?: number;
+  maxZoom?: number;
+};
+
+interface OptionsLayer {
+  visible?: boolean;
+  title?: string;
 };
 
 export interface ILayerContext {
@@ -12,6 +17,7 @@ export interface ILayerContext {
   contextId?: string;
   view?: ViewLayer;
   order?: number;
+  options?: OptionsLayer;
 };
 
 export interface LayerContextInstance
@@ -24,6 +30,7 @@ export interface LayerContextInstance
   contextId: string;
   view: ViewLayer;
   order: number;
+  options?: OptionsLayer;
 }
 
 export interface LayerContextModel
@@ -46,6 +53,16 @@ export default function define(sequelize: Sequelize.Sequelize, DataTypes) {
         },
         'set': function(val) {
           this.setDataValue('view', JSON.stringify(val));
+        }
+      },
+      'options': {
+        'type': DataTypes.TEXT,
+        'get': function() {
+          const options = this.getDataValue('options');
+          return options ? JSON.parse(options) : {};
+        },
+        'set': function(val) {
+          this.setDataValue('options', JSON.stringify(val));
         }
       },
       order: {

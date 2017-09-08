@@ -16,11 +16,17 @@ interface IUserApiConfiguration {
   port: number;
 }
 
+interface ILdapConfiguration {
+  url: string;
+  baseSearch: string;
+}
+
 export interface IServerConfiguration {
     port: number;
     plugins: Array<string>;
     jwtExpiration: string;
     userApi: IUserApiConfiguration;
+    ldap: ILdapConfiguration;
     googleKey?: string;
     adminProfil?: string;
 }

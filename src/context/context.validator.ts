@@ -8,11 +8,15 @@ const updateToolModel = ToolValidator.updateModel
   .keys({id: Joi.string()});
 
 const createLayerModel = LayerValidator.createModel
-  .keys({order: Joi.number()});
+  .keys({
+    order: Joi.number(),
+    visible: Joi.boolean()
+  });
 const updateLayerModel = LayerValidator.updateModel
   .keys({
     id: Joi.string(),
-    order: Joi.number()
+    order: Joi.number(),
+    visible: Joi.boolean()
   });
 
 export class ContextValidator {
