@@ -126,7 +126,7 @@ export class Context {
     for (const layer of context.layers) {
       const plainLayer = layer.get();
       Object.assign(plainLayer.view, plainLayer.layerContext.view);
-      Object.assign(plainLayer.source, plainLayer.layerContext.source);
+      Object.assign(plainLayer, plainLayer.layerContext.options);
       plainLayer.order = plainLayer.layerContext.order;
       plainLayer.layerContext = null;
       plain.layers.push(plainLayer);

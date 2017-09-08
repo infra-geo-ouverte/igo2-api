@@ -230,6 +230,10 @@ Server.init(serverConfigs).then((server) => {
         view: {
           minZoom: 5
         },
+        options: {
+          title: 'New Title',
+          visible: false
+        },
         order: 2
       }
     };
@@ -239,6 +243,7 @@ Server.init(serverConfigs).then((server) => {
       t.equal(result.order, 2);
       t.equal(Number(result.contextId), 1);
       t.equal(result.view.minZoom, 5);
+      t.equal(result.options.visible, false);
       t.equal(response.statusCode, 201);
       server.stop(t.end);
     });
@@ -493,6 +498,9 @@ Server.init(serverConfigs).then((server) => {
       payload: {
         view: {
           minZoom: 3
+        },
+        options: {
+          title: 'patch title'
         }
       }
     };
@@ -651,6 +659,7 @@ Server.init(serverConfigs).then((server) => {
     server.inject(options, function(response) {
       const result: any = response.result;
       t.equal(result.length, 2);
+      t.equal(result[1].options.title, 'patch title');
       t.equal(result[0].layerId, 2);
       t.equal(result[1].layerId, 1);
       t.equal(result[0].view.minZoom, 4);
@@ -849,7 +858,8 @@ Server.init(serverConfigs).then((server) => {
         map: {},
         layers: [{
           id: '1',
-          order: '4'
+          order: '4',
+          visible: false
         }, {
           id: '90'
         }, {
@@ -865,7 +875,8 @@ Server.init(serverConfigs).then((server) => {
           source: {
             url: 'http://source.com'
           },
-          order: '3'
+          order: '3',
+          visible: false
         }]
       }
     };
@@ -893,6 +904,8 @@ Server.init(serverConfigs).then((server) => {
       t.equal(result.layers[2].id, 1);
       t.equal(result.layers[0].id, 2);
       t.equal(result.layers[1].title, 'dummyTitleLayerContext');
+      t.equal(result.layers[1].visible, false);
+      t.equal(result.layers[2].visible, false);
       t.equal(response.statusCode, 200);
       server.stop(t.end);
     });
