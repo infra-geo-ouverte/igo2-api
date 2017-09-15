@@ -95,7 +95,7 @@ export class Context {
             this.contextObjToPlainObj(context, user).subscribe((plainD) => {
               observer.next(plainD);
               observer.complete();
-            })
+            });
           } else {
             observer.next(ObjectUtils.removeNull(context.get()));
             observer.complete();
