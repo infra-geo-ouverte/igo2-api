@@ -21,6 +21,11 @@ interface ILdapConfiguration {
   baseSearch: string;
 }
 
+interface ILocalhostConfiguration {
+  hosts: string[];
+  basePaths: string[];
+}
+
 export interface IServerConfiguration {
     port: number;
     plugins: Array<string>;
@@ -29,6 +34,7 @@ export interface IServerConfiguration {
     ldap: ILdapConfiguration;
     googleKey?: string;
     adminProfil?: string;
+    localhost?: ILocalhostConfiguration;
 }
 
 interface IDatabaseConfiguration {
