@@ -126,6 +126,12 @@ export class Layer {
   }
 
   public getBySource(layer: ILayer): Rx.Observable<LayerInstance> {
+    const localhost = ServerConfigs.localhost;
+    const hosts = localhost ? localhost.hosts : [];
+    const urlObj = URL.parse(layer.source.url);
+    if (hosts.indexOf(urlObj.hostname) !== -1) {
+      layer.source.url = urlObj.path;
+    }
 
     const where: any = {
       $or: [
