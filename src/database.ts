@@ -3,6 +3,7 @@ import * as Configs from './configurations';
 
 import { UserModel } from './user/user.model';
 import { POIModel } from './poi/poi.model';
+import { CatalogModel } from './catalog/catalog.model';
 import { ContextModel } from './context/context.model';
 import { LayerModel } from './layer/layer.model';
 import { ToolModel } from './tool/tool.model';
@@ -16,6 +17,7 @@ export interface IDatabase {
     sequelize: Sequelize.Sequelize;
     user: UserModel;
     poi: POIModel;
+    catalog: CatalogModel;
     context: ContextModel;
     layer: LayerModel;
     tool: ToolModel;
@@ -50,6 +52,7 @@ const db = {};
 
 db['user'] = sequelize['import']('./user/user.model');
 db['poi'] = sequelize['import']('./poi/poi.model');
+db['catalog'] = sequelize['import']('./catalog/catalog.model');
 db['layer'] = sequelize['import']('./layer/layer.model');
 db['tool'] = sequelize['import']('./tool/tool.model');
 db['context'] = sequelize['import']('./context/context.model');

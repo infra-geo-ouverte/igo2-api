@@ -120,6 +120,32 @@ Server.init(serverConfigs).then((server) => {
 
   server.inject({
     method: 'POST',
+    url: '/tools',
+    headers: {
+      'x-consumer-username': admin.xConsumerUsername,
+      'x-consumer-id': admin.xConsumerId
+    },
+    payload: {
+      name: 'catalog',
+      inToolbar: true
+    }
+  }, handleError);
+
+  server.inject({
+    method: 'POST',
+    url: '/tools',
+    headers: {
+      'x-consumer-username': admin.xConsumerUsername,
+      'x-consumer-id': admin.xConsumerId
+    },
+    payload: {
+      name: 'catalogLayers',
+      inToolbar: false
+    }
+  }, handleError);
+
+  server.inject({
+    method: 'POST',
     url: '/contexts',
     headers: {
       'x-consumer-username': admin.xConsumerUsername,
@@ -144,7 +170,9 @@ Server.init(serverConfigs).then((server) => {
         {id: '5'},
         {id: '6'},
         {id: '7'},
-        {id: '8'}
+        {id: '8'},
+        {id: '9'},
+        {id: '10'}
       ],
       layers: [{
         title: 'MSP Base Map',

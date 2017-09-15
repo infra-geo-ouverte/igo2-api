@@ -3,6 +3,7 @@ import * as Boom from 'boom';
 
 import { IDatabase, database } from '../database';
 import { ObjectUtils } from '../utils';
+import { User, Api } from '../user';
 
 import { IContext, ContextInstance, ContextDetailed } from './context.model';
 
@@ -75,7 +76,7 @@ export class Context {
     });
   }
 
-  public getById(id: string, includeLayers = false,
+  public getById(id: string, user: string, includeLayers = false,
     includeTools = false): Rx.Observable<ContextDetailed> {
 
     const include = [];
@@ -91,7 +92,7 @@ export class Context {
       }).then((context: ContextDetailed) => {
         if (context) {
           if (includeLayers || includeTools) {
-            const plainDetails = this.contextObjToPlainObj(context);
+            const plainDetails = this.contextObjToPlainObj(context, user);
             observer.next(plainDetails);
           } else {
             observer.next(ObjectUtils.removeNull(context.get()));
@@ -106,7 +107,7 @@ export class Context {
     });
   }
 
-  private contextObjToPlainObj(context): ContextDetailed {
+  private contextObjToPlainObj(context, user): ContextDetailed {
 
     let plain: any = context.get();
     plain.layers = [];
@@ -125,11 +126,20 @@ export class Context {
 
     for (const layer of context.layers) {
       const plainLayer = layer.get();
-      Object.assign(plainLayer.view, plainLayer.layerContext.view);
-      Object.assign(plainLayer, plainLayer.layerContext.options);
-      plainLayer.order = plainLayer.layerContext.order;
-      plainLayer.layerContext = null;
-      plain.layers.push(plainLayer);
+
+      User.getProfils(user).subscribe((profils) => {
+        profils.push(user);
+        Api.verifyPermissionByUrl(plainLayer.source.url, profils)
+          .subscribe((isAllowed) => {
+            if (isAllowed) {
+              Object.assign(plainLayer.view, plainLayer.layerContext.view);
+              Object.assign(plainLayer, plainLayer.layerContext.options);
+              plainLayer.order = plainLayer.layerContext.order;
+              plainLayer.layerContext = null;
+              plain.layers.push(plainLayer);
+            }
+        });
+      });
     }
 
     plain = ObjectUtils.removeNull(plain);

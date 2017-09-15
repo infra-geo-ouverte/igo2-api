@@ -5,6 +5,5 @@ export function init(server: Hapi.Server) {
     Routes(server);
 }
 
-export * from './api'
-export * from './user'
-export * from './user.validator'
+export * from './catalog.model'
+export * from './catalog'

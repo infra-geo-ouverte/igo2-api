@@ -4,6 +4,7 @@ import { IServerConfiguration } from './configurations';
 import database from './database';
 import * as Users from './user';
 import * as POIs from './poi';
+import * as Catalogs from './catalog';
 import * as Contexts from './context';
 import * as Layers from './layer';
 import * as Tools from './tool';
@@ -43,6 +44,7 @@ export function init(configs: IServerConfiguration): Promise<Hapi.Server> {
       console.log('Routes loading');
       Users.init(server);
       POIs.init(server);
+      Catalogs.init(server);
       Contexts.init(server);
       Layers.init(server);
       Tools.init(server);
