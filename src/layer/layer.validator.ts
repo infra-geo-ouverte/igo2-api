@@ -4,7 +4,7 @@ import * as Joi from 'joi';
 export class LayerValidator {
 
   static createModel = Joi.object().keys({
-    title: Joi.string().required().max(64),
+    title: Joi.string().required().max(128),
     type: Joi.string().required().max(32),
     view:  Joi.object().keys({
       attribution: Joi.string().allow(''),
@@ -18,7 +18,7 @@ export class LayerValidator {
   });
 
   static updateModel = Joi.object().keys({
-      title: Joi.string().max(64),
+      title: Joi.string().max(128),
       type: Joi.string().max(32),
       view:  Joi.object().keys({
         attribution: Joi.string().allow(''),

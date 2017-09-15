@@ -1,36 +1,36 @@
 import * as Hapi from 'hapi';
 import * as Joi from 'joi';
 
-import { LayerController } from './layer.controller';
-import { LayerValidator } from './layer.validator';
+import { CatalogController } from './catalog.controller';
+import { CatalogValidator } from './catalog.validator';
 import { UserValidator } from '../user/user.validator';
 
 export default function (server: Hapi.Server) {
 
-    const layerController = new LayerController();
-    server.bind(layerController);
+    const catalogController = new CatalogController();
+    server.bind(catalogController);
 
     server.route({
         method: 'GET',
-        path: '/layers/{id}',
+        path: '/catalogs/{id}',
         config: {
-            handler: layerController.getById,
-            tags: ['api', 'layers'],
-            description: 'Get layers by id.',
+            handler: catalogController.getById,
+            tags: ['api', 'catalogs'],
+            description: 'Get catalogs by id.',
             validate: {
                 params: {
                     id: Joi.string().required()
                 },
-                headers: UserValidator.authenticateValidator
+                headers: UserValidator.userValidator
             },
             plugins: {
                 'hapi-swagger': {
                     responses: {
                         '200': {
-                            'description': 'Layer founded.'
+                            'description': 'Catalog founded.'
                         },
                         '404': {
-                            'description': 'Layer does not exists.'
+                            'description': 'Catalog does not exists.'
                         }
                     }
                 }
@@ -40,24 +40,24 @@ export default function (server: Hapi.Server) {
 
     server.route({
         method: 'GET',
-        path: '/layers',
+        path: '/catalogs',
         config: {
-            handler: layerController.get,
-            tags: ['api', 'layers'],
-            description: 'Get all layers.',
+            handler: catalogController.get,
+            tags: ['api', 'catalogs'],
+            description: 'Get all catalogs.',
             validate: {
-                headers: UserValidator.adminValidator
+                headers: UserValidator.userValidator
             }
         }
     });
 
     server.route({
         method: 'DELETE',
-        path: '/layers/{id}',
+        path: '/catalogs/{id}',
         config: {
-            handler: layerController.delete,
-            tags: ['api', 'layers'],
-            description: 'Delete layer by id.',
+            handler: catalogController.delete,
+            tags: ['api', 'catalogs'],
+            description: 'Delete catalog by id.',
             validate: {
                 params: {
                     id: Joi.string().required()
@@ -68,10 +68,10 @@ export default function (server: Hapi.Server) {
                 'hapi-swagger': {
                     responses: {
                         '204': {
-                            'description': 'Deleted Layer.',
+                            'description': 'Deleted Catalog.',
                         },
                         '404': {
-                            'description': 'Layer does not exists.'
+                            'description': 'Catalog does not exists.'
                         }
                     }
                 }
@@ -81,26 +81,26 @@ export default function (server: Hapi.Server) {
 
     server.route({
         method: 'PATCH',
-        path: '/layers/{id}',
+        path: '/catalogs/{id}',
         config: {
-            handler: layerController.update,
-            tags: ['api', 'layers'],
-            description: 'Update layer by id.',
+            handler: catalogController.update,
+            tags: ['api', 'catalogs'],
+            description: 'Update catalog by id.',
             validate: {
                 params: {
                     id: Joi.string().required()
                 },
-                payload: LayerValidator.updateModel,
+                payload: CatalogValidator.updateModel,
                 headers: UserValidator.adminValidator
             },
             plugins: {
                 'hapi-swagger': {
                     responses: {
                         '200': {
-                            'description': 'Deleted Layer.',
+                            'description': 'Deleted Catalog.',
                         },
                         '404': {
-                            'description': 'Layer does not exists.'
+                            'description': 'Catalog does not exists.'
                         }
                     }
                 }
@@ -110,20 +110,20 @@ export default function (server: Hapi.Server) {
 
     server.route({
         method: 'POST',
-        path: '/layers',
+        path: '/catalogs',
         config: {
-            handler: layerController.create,
-            tags: ['api', 'layers'],
-            description: 'Create a layer.',
+            handler: catalogController.create,
+            tags: ['api', 'catalogs'],
+            description: 'Create a catalog.',
             validate: {
-                payload: LayerValidator.createModel,
-                headers: UserValidator.authenticateValidator
+                payload: CatalogValidator.createModel,
+                headers: UserValidator.adminValidator
             },
             plugins: {
                 'hapi-swagger': {
                     responses: {
                         '201': {
-                            'description': 'Created Layer.'
+                            'description': 'Created Catalog.'
                         }
                     }
                 }

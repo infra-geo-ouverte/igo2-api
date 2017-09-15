@@ -44,7 +44,7 @@ export default function define(sequelize: Sequelize.Sequelize, DataTypes) {
       'autoIncrement': true
     },
     'title': {
-      'type': DataTypes.STRING(64),
+      'type': DataTypes.STRING(128),
       'allowNull': false
     },
     'type': {

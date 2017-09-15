@@ -42,8 +42,9 @@ export class LayerController {
 
   public getById(request: Hapi.Request, reply: Hapi.IReply) {
     const id = request.params['id'];
+    const user = request.headers['x-consumer-username'];
 
-    this.layer.getById(id).subscribe(
+    this.layer.getById(id, user).subscribe(
       (layer: LayerInstance) => reply(layer),
       (error: Boom.BoomError) => reply(error)
     );

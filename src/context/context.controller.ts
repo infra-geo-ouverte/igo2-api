@@ -78,13 +78,14 @@ export class ContextController {
   }
 
   public clone(request: Hapi.Request, reply: Hapi.IReply) {
+    const owner = request.headers['x-consumer-username'];
     const id = request.params['contextId'];
     let properties = request.payload;
     if (typeof request.payload === 'string') {
       properties = JSON.parse(request.payload);
     }
 
-    this.context.getById(id, true, true).subscribe(
+    this.context.getById(id, owner, true, true).subscribe(
       (context: any) => {
         Object.assign(context, properties);
         const newContext = {
@@ -176,7 +177,7 @@ export class ContextController {
     const owner = request.headers['x-consumer-username'];
     const id = request.params['contextId'];
 
-    this.context.getById(id).subscribe(
+    this.context.getById(id, owner).subscribe(
       (context: ContextInstance) => {
         this.contextPermission.getPermission(context, owner).subscribe(
           (permission) => {
@@ -314,19 +315,20 @@ export class ContextController {
     const owner = request.headers['x-consumer-username'];
     const id = request.params['contextId'];
 
-    this.context.getById(id, true, true).subscribe((contextDetails: any) => {
-      this.contextPermission.getPermission(contextDetails, owner).subscribe(
-        (permission) => {
-          if (permission) {
-            contextDetails.permission = TypePermission[permission];
-            reply(contextDetails);
-          } else {
-            reply(Boom.unauthorized());
-          }
-        },
-        (error: Boom.BoomError) => reply(error)
-      );
-    });
+    this.context.getById(id, owner, true, true)
+      .subscribe((contextDetails: any) => {
+        this.contextPermission.getPermission(contextDetails, owner).subscribe(
+          (permission) => {
+            if (permission) {
+              contextDetails.permission = TypePermission[permission];
+              reply(contextDetails);
+            } else {
+              reply(Boom.unauthorized());
+            }
+          },
+          (error: Boom.BoomError) => reply(error)
+        );
+      });
   }
 
 }

@@ -1,10 +1,16 @@
 import * as Rx from 'rxjs';
 import * as Boom from 'boom';
+import * as URL from 'url';
+
+import * as Configs from '../configurations';
 
 import { IDatabase, database } from '../database';
 import { ObjectUtils } from '../utils';
+import { User, Api } from '../user';
 
 import { ILayer, LayerInstance } from './layer.model';
+
+const ServerConfigs = Configs.getServerConfig();
 
 export class Layer {
 
@@ -13,6 +19,13 @@ export class Layer {
   constructor() {}
 
   public create(layer: ILayer): Rx.Observable<LayerInstance> {
+    const localhost = ServerConfigs.localhost;
+    const hosts = localhost ? localhost.hosts : [];
+    const urlObj = URL.parse(layer.source.url);
+    if (hosts.indexOf(urlObj.hostname) !== -1) {
+      layer.source.url = urlObj.path;
+    }
+
     return Rx.Observable.create(observer => {
       this.database.layer.create(layer).then((createdLayer) => {
         observer.next(createdLayer);
@@ -24,6 +37,13 @@ export class Layer {
   }
 
   public update(id: string, layer: ILayer): Rx.Observable<LayerInstance> {
+    const localhost = ServerConfigs.localhost;
+    const hosts = localhost ? localhost.hosts : [];
+    const urlObj = URL.parse(layer.source.url);
+    if (hosts.indexOf(urlObj.hostname) !== -1) {
+      layer.source.url = urlObj.path;
+    }
+
     return Rx.Observable.create(observer => {
       this.database.layer.update(layer, {
         where: {
@@ -75,7 +95,7 @@ export class Layer {
     });
   }
 
-  public getById(id: string): Rx.Observable<LayerInstance> {
+  public getById(id: string, user: string): Rx.Observable<LayerInstance> {
     return Rx.Observable.create(observer => {
       this.database.layer.findOne({
         where: {
@@ -83,8 +103,19 @@ export class Layer {
         }
       }).then((layer: LayerInstance) => {
         if (layer) {
-          observer.next(ObjectUtils.removeNull(layer.get()));
-          observer.complete();
+          const layerPlain = ObjectUtils.removeNull(layer.get());
+          User.getProfils(user).subscribe((profils) => {
+            profils.push(user);
+            Api.verifyPermissionByUrl(layerPlain.source.url, profils)
+              .subscribe((isAllowed) => {
+                if (isAllowed) {
+                  observer.next(layerPlain);
+                  observer.complete();
+                } else {
+                  observer.error(Boom.forbidden());
+                }
+            });
+          });
         } else {
           observer.error(Boom.notFound());
         }
