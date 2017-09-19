@@ -94,8 +94,10 @@ export class User {
             user => {
               user.email = userInfo.mail;
               const groups = [];
+
               for (const g of userInfo.groupMembership) {
-                const baseSearch = 'ou=APP,' + ServerConfigs.ldap.baseSearch;
+                // TODO: improve GRAPP research
+                const baseSearch = 'ou=APP,';
                 if (g.search(baseSearch) !== -1) {
                   const iStart = g.indexOf('cn=') + 3;
                   const iEnd = g.indexOf(',');
@@ -103,6 +105,7 @@ export class User {
                   groups.push(gName);
                 }
               }
+
               this.generateToken(user, groups).subscribe(
                 token => {
                   observer.next({
