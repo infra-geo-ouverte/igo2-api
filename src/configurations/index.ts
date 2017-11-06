@@ -37,7 +37,7 @@ export interface IServerConfiguration {
     localhost?: ILocalhostConfiguration;
 }
 
-interface IDatabaseConfiguration {
+export interface IDatabaseConfiguration {
   dialect?: string; // [sqlite, postgres]
 }
 export interface ISqliteConfiguration extends IDatabaseConfiguration {
@@ -46,9 +46,19 @@ export interface ISqliteConfiguration extends IDatabaseConfiguration {
   storage: string;
 }
 export interface IPostgresConfiguration extends IDatabaseConfiguration {
+  dialect: string;
+  host: string;
+  port: number;
+  database: string;
+  username?: string;
+  password?: string;
+}
+export interface IDBStringConfiguration extends IDatabaseConfiguration {
   connectionString: string;
 }
-export type IDataConfiguration = ISqliteConfiguration | IPostgresConfiguration;
+export type IDataConfiguration = ISqliteConfiguration |
+                                 IPostgresConfiguration |
+                                 IDBStringConfiguration;
 
 export interface IConsumer {
   xConsumerId: string;
