@@ -28,12 +28,22 @@ export interface IDatabase {
 
 const dbConfigs = Configs.getDatabaseConfig();
 
+type IDBConf = Configs.IDatabaseConfiguration;
+type IDBStringConf = Configs.IDBStringConfiguration;
 type IPostgresConf = Configs.IPostgresConfiguration;
 type ISqliteConf = Configs.ISqliteConfiguration;
 let sequelize;
-const dbPG: IPostgresConf = <IPostgresConf>dbConfigs;
-if (dbPG.connectionString) {
-  sequelize = new Sequelize(dbPG.connectionString);
+const dbString: IDBStringConf = <IDBStringConf>dbConfigs;
+const dbConf: IDBConf = <IDBConf>dbConfigs;
+if (dbString.connectionString) {
+  sequelize = new Sequelize(dbString.connectionString);
+} else if (dbConf) {
+  const dbPG: IPostgresConf = <IPostgresConf>dbConfigs;
+  sequelize = new Sequelize(dbPG.database, dbPG.username, dbPG.password, {
+    host: dbPG.host,
+    port: dbPG.port,
+    dialect: dbPG.dialect
+  });
 } else {
   const dbSqlite: ISqliteConf = <ISqliteConf>dbConfigs;
   sequelize = new Sequelize('database', 'username', 'password', {
