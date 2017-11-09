@@ -33,8 +33,9 @@ export class ContextPermission {
     }
 
     return Rx.Observable.create(observer => {
-      this.database.contextPermission.bulkCreate(bulkData)
-        .then((contextPermissionCreated) => {
+      this.database.contextPermission.bulkCreate(bulkData, {
+          individualHooks: true
+      }).then((contextPermissionCreated) => {
           observer.next(contextPermissionCreated);
           observer.complete();
         }).catch((error) => {
