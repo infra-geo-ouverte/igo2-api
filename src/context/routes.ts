@@ -13,11 +13,36 @@ export default function(server: Hapi.Server) {
 
   server.route({
     method: 'GET',
+    path: '/contexts/default',
+    config: {
+      handler: contextController.getDefault,
+      tags: ['api', 'contexts'],
+      description: 'Get default context.',
+      validate: {
+        headers: UserValidator.authenticateValidator
+      },
+      plugins: {
+        'hapi-swagger': {
+          responses: {
+            '200': {
+              description: 'Context founded.'
+            },
+            '404': {
+              description: 'Context does not exists.'
+            }
+          }
+        }
+      }
+    }
+  });
+
+  server.route({
+    method: 'GET',
     path: '/contexts/{contextId}',
     config: {
       handler: contextController.getById,
       tags: ['api', 'contexts'],
-      description: 'Get contexts by id.',
+      description: 'Get context by id.',
       validate: {
         params: {
           contextId: Joi.string().required()

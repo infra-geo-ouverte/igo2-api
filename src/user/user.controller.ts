@@ -48,7 +48,7 @@ export class UserController {
     const customId = request.headers['x-consumer-custom-id'];
 
     this.user.info(customId).subscribe(
-      (tool: UserInstance) => reply(tool),
+      (user: UserInstance) => reply(user),
       (error: Boom.BoomError) => reply(error)
     );
   }

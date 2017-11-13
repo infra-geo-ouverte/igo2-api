@@ -6,6 +6,7 @@ export interface IUser {
   source: string;
   sourceId: string;
   email?: string;
+  defaultContextId?: string;
 };
 
 export interface UserInstance extends Sequelize.Instance<IUser> {
@@ -13,6 +14,7 @@ export interface UserInstance extends Sequelize.Instance<IUser> {
   source: string;
   sourceId: string;
   email?: string;
+  defaultContextId?: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -47,6 +49,10 @@ export default function define(sequelize: Sequelize.Sequelize, DataTypes) {
         'tableName': 'user',
         'timestamps': true
     });
+
+    const context = sequelize.models['context'];
+
+    user.belongsTo(context, {foreignKey: 'defaultContextId'});
 
     user.sync();
 

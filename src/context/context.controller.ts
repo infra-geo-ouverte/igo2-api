@@ -4,7 +4,7 @@ import * as Boom from 'boom';
 import { IDatabase, database } from '../database';
 import { ObjectUtils, uuid } from '../utils';
 
-import { User } from '../user';
+import { User, UserInstance } from '../user';
 import { TypePermission, ContextPermission } from '../contextPermission';
 import { ToolContext } from '../toolContext';
 import { LayerContext } from '../layerContext';
@@ -329,6 +329,22 @@ export class ContextController {
           (error: Boom.BoomError) => reply(error)
         );
       });
+  }
+
+  public getDefault(request: Hapi.Request, reply: Hapi.IReply) {
+    const customId = request.headers['x-consumer-custom-id'];
+
+    new User().info(customId).subscribe(
+      (user: UserInstance) => {
+        if (user.defaultContextId) {
+          request.params['contextId'] = user.defaultContextId;
+          this.getDetailsById(request, reply);
+        } else {
+          reply(Boom.notFound());
+        }
+      },
+      (error: Boom.BoomError) => reply(error)
+    );
   }
 
 }
