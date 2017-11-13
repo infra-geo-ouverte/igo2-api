@@ -15,10 +15,10 @@ import {
 
 export interface IDatabase {
     sequelize: Sequelize.Sequelize;
+    context: ContextModel;
     user: UserModel;
     poi: POIModel;
     catalog: CatalogModel;
-    context: ContextModel;
     layer: LayerModel;
     tool: ToolModel;
     layerContext: LayerContextModel;
@@ -60,12 +60,12 @@ const db = {};
 //   db[model['name']] = model;
 // });
 
+db['context'] = sequelize['import']('./context/context.model');
 db['user'] = sequelize['import']('./user/user.model');
 db['poi'] = sequelize['import']('./poi/poi.model');
 db['catalog'] = sequelize['import']('./catalog/catalog.model');
 db['layer'] = sequelize['import']('./layer/layer.model');
 db['tool'] = sequelize['import']('./tool/tool.model');
-db['context'] = sequelize['import']('./context/context.model');
 db['contextPermission'] =
   sequelize['import']('./contextPermission/contextPermission.model');
 db['layerContext'] = sequelize['import']('./layerContext/layerContext.model');

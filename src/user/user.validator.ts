@@ -8,7 +8,8 @@ import { User } from './user';
 export class UserValidator {
 
   static updateModel = Joi.object().keys({
-      email: Joi.string().email()
+      email: Joi.string().email(),
+      defaultContextId: Joi.string()
   });
 
   static loginModel = Joi.object().keys({
