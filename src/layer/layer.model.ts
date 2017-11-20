@@ -15,6 +15,7 @@ export interface ILayer {
   id?: string;
   title: string;
   type: string;
+  baseLayer: boolean;
   view?: ViewLayer;
   source?: SourceLayer;
   order?: number;
@@ -27,8 +28,12 @@ export interface LayerInstance extends Sequelize.Instance<ILayer> {
 
   title: string;
   type: string;
+  baseLayer: boolean;
   view?: ViewLayer;
   source?: SourceLayer;
+  metadata?: any;
+  timeFilter?: any;
+  options?: any;
 }
 
 export interface LayerModel
@@ -51,6 +56,9 @@ export default function define(sequelize: Sequelize.Sequelize, DataTypes) {
       'type': DataTypes.STRING(32),
       'allowNull': false
     },
+    'baseLayer': {
+      'type': DataTypes.BOOLEAN
+    },
     'view': {
       'type': DataTypes.TEXT,
       'get': function() {
@@ -69,6 +77,36 @@ export default function define(sequelize: Sequelize.Sequelize, DataTypes) {
       },
       'set': function(val) {
         this.setDataValue('source', JSON.stringify(val));
+      }
+    },
+    'metadata': {
+      'type': DataTypes.TEXT,
+      'get': function() {
+        const metadata = this.getDataValue('metadata');
+        return metadata ? JSON.parse(metadata) : {};
+      },
+      'set': function(val) {
+        this.setDataValue('metadata', JSON.stringify(val));
+      }
+    },
+    'timeFilter': {
+      'type': DataTypes.TEXT,
+      'get': function() {
+        const timeFilter = this.getDataValue('timeFilter');
+        return timeFilter ? JSON.parse(timeFilter) : {};
+      },
+      'set': function(val) {
+        this.setDataValue('timeFilter', JSON.stringify(val));
+      }
+    },
+    'options': {
+      'type': DataTypes.TEXT,
+      'get': function() {
+        const options = this.getDataValue('options');
+        return options ? JSON.parse(options) : {};
+      },
+      'set': function(val) {
+        this.setDataValue('options', JSON.stringify(val));
       }
     }
   },
