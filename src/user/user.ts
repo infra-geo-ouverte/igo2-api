@@ -87,6 +87,7 @@ export class User {
   public loginLdapUser(username: string,
     password: string): Rx.Observable<UserInstance> {
 
+    username = username.toLowerCase();
     return Rx.Observable.create(observer => {
       this.validatePassword(username, password).subscribe(
         userInfo => {
