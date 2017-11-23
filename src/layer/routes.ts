@@ -52,6 +52,19 @@ export default function (server: Hapi.Server) {
     });
 
     server.route({
+        method: 'GET',
+        path: '/baselayers',
+        config: {
+            handler: layerController.getBaseLayers,
+            tags: ['api', 'layers'],
+            description: 'Get base layers.',
+            validate: {
+                headers: UserValidator.userValidator
+            }
+        }
+    });
+
+    server.route({
         method: 'DELETE',
         path: '/layers/{id}',
         config: {

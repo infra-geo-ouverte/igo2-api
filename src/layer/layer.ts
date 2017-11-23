@@ -95,6 +95,25 @@ export class Layer {
     });
   }
 
+  public getBaseLayers(): Rx.Observable<LayerInstance[]> {
+    return Rx.Observable.create(observer => {
+      this.database.layer.findAll({
+        where: {
+          baseLayer: true
+        }
+      }).then((layers: LayerInstance[]) => {
+        const plainLayers = layers.map(
+          (layer) => ObjectUtils.removeNull(layer.get())
+        );
+        // TODO verify permission
+        observer.next(plainLayers);
+        observer.complete();
+      }).catch((error) => {
+        observer.error(Boom.badImplementation(error));
+      });
+    });
+  }
+
   public getById(id: string, user: string): Rx.Observable<LayerInstance> {
     return Rx.Observable.create(observer => {
       this.database.layer.findOne({

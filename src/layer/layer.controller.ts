@@ -56,4 +56,12 @@ export class LayerController {
       (error: Boom.BoomError) => reply(error)
     );
   }
+
+  public getBaseLayers(request: Hapi.Request, reply: Hapi.IReply) {
+    this.layer.getBaseLayers().subscribe(
+      (layers: LayerInstance[]) => reply(layers),
+      (error: Boom.BoomError) => reply(error)
+    );
+  }
+
 }
