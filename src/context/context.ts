@@ -19,7 +19,12 @@ export class Context {
         observer.next(createdContext);
         observer.complete();
       }).catch((error) => {
-        observer.error(Boom.badImplementation(error));
+        if (error.name === 'SequelizeUniqueConstraintError') {
+          const message = 'URI must be unique.';
+          observer.error(Boom.conflict(message));
+        } else {
+          observer.error(Boom.badImplementation(error));
+        }
       });
     });
   }
@@ -38,7 +43,12 @@ export class Context {
           observer.error(Boom.notFound());
         }
       }).catch((error) => {
-        observer.error(Boom.badImplementation(error));
+        if (error.name === 'SequelizeUniqueConstraintError') {
+          const message = 'URI must be unique.';
+          observer.error(Boom.conflict(message));
+        } else {
+          observer.error(Boom.badImplementation(error));
+        }
       });
     });
   }
