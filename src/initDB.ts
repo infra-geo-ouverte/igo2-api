@@ -146,6 +146,55 @@ Server.init(serverConfigs).then((server) => {
 
   server.inject({
     method: 'POST',
+    url: '/tools',
+    headers: {
+      'x-consumer-username': admin.xConsumerUsername,
+      'x-consumer-id': admin.xConsumerId
+    },
+    payload: {
+      name: 'shareMap',
+      inToolbar: true
+    }
+  }, handleError);
+
+  server.inject({
+    method: 'POST',
+    url: '/layers',
+    headers: {
+      'x-consumer-username': admin.xConsumerUsername,
+      'x-consumer-id': admin.xConsumerId
+    },
+    payload: {
+      title: 'Relief',
+      type: 'xyz',
+      baseLayer: true,
+      source: {
+        url: 'https://geoegl.msp.gouv.qc.ca/carto/tms/1.0.0/' +
+        'carte_relief@EPSG_3857/{z}/{x}/{-y}.png'
+      }
+    }
+  }, handleError);
+
+  server.inject({
+    method: 'POST',
+    url: '/layers',
+    headers: {
+      'x-consumer-username': admin.xConsumerUsername,
+      'x-consumer-id': admin.xConsumerId
+    },
+    payload: {
+      title: 'Satellite',
+      type: 'xyz',
+      baseLayer: true,
+      source: {
+        url: 'https://geoegl.msp.gouv.qc.ca/carto/tms/1.0.0/' +
+        'orthos@EPSG_3857/{z}/{x}/{-y}.png'
+      }
+    }
+  }, handleError);
+
+  server.inject({
+    method: 'POST',
     url: '/contexts',
     headers: {
       'x-consumer-username': admin.xConsumerUsername,
@@ -172,11 +221,14 @@ Server.init(serverConfigs).then((server) => {
         {id: '7'},
         {id: '8'},
         {id: '9'},
-        {id: '10'}
+        {id: '10'},
+        {id: '11'}
       ],
       layers: [{
-        title: 'MSP Base Map',
+        title: 'Plan',
         type: 'xyz',
+        baseLayer: true,
+        visible: true,
         source: {
           url: 'https://geoegl.msp.gouv.qc.ca/carto/tms/1.0.0/' +
           'carte_gouv_qc_ro@EPSG_3857/{z}/{x}/{-y}.png'
