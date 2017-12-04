@@ -83,12 +83,17 @@ export class Context {
     if (includeLayers) { include.push(this.database.layer); }
     if (includeTools) { include.push(this.database.tool); }
 
+    const where: any = {
+      $or: [
+        {id: id},
+        {uri: id}
+      ]
+    };
+
     return Rx.Observable.create(observer => {
       this.database.context.findOne({
         include: include,
-        where: {
-          id: id
-        }
+        where: where
       }).then((context: ContextDetailed) => {
         if (context) {
           if (includeLayers || includeTools) {

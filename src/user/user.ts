@@ -192,6 +192,32 @@ export class User {
     });
   }
 
+  public get(id: string): Rx.Observable<UserInstance[]> {
+    return Rx.Observable.create(observer => {
+      this.database.user.findAll({
+        where: {
+          source: 'ldap',
+          id: {
+            $ne: id
+          }
+        }
+      }).then((users: UserInstance[]) => {
+        const plainUsers = users.map(
+          (instance) => {
+            const user = instance.get();
+            return {
+              sourceId: user.sourceId
+            };
+          }
+        );
+        observer.next(ObjectUtils.removeNull(plainUsers));
+        observer.complete();
+      }).catch((error) => {
+        observer.error(Boom.badImplementation(error));
+      });
+    });
+  }
+
   public info(id: string): Rx.Observable<UserInstance> {
     return Rx.Observable.create(observer => {
       this.database.user.findOne({

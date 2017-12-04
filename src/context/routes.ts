@@ -74,8 +74,7 @@ export default function(server: Hapi.Server) {
       validate: {
         params: {
           contextId: Joi.string().required()
-        },
-        headers: ContextPermissionValidator.readPermission
+        }
       },
       plugins: {
         'hapi-swagger': {
@@ -178,7 +177,7 @@ export default function(server: Hapi.Server) {
       description: 'Create a context.',
       validate: {
         payload: ContextValidator.createModel,
-        headers: UserValidator.authenticateValidator
+        headers: UserValidator.userValidator
       },
       plugins: {
         'hapi-swagger': {

@@ -34,6 +34,31 @@ export default function(server: Hapi.Server) {
 
   server.route({
     method: 'GET',
+    path: '/users',
+    config: {
+      handler: userController.get,
+      tags: ['api', 'users'],
+      description: 'Get all users of your group',
+      validate: {
+        headers: UserValidator.adminValidator,
+      },
+      plugins: {
+        'hapi-swagger': {
+          responses: {
+            '200': {
+              'description': 'Users founded.'
+            },
+            '401': {
+              'description': 'Please login.'
+            }
+          }
+        }
+      }
+    }
+  });
+
+  server.route({
+    method: 'GET',
     path: '/users/profils',
     config: {
       handler: userController.getProfils,

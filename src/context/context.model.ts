@@ -61,7 +61,8 @@ export default function define(sequelize: Sequelize.Sequelize, DataTypes) {
     },
     'uri': {
       'type': DataTypes.STRING(64),
-      'allowNull': false
+      'allowNull': false,
+      'unique': true
     },
     'title': {
       'type': DataTypes.STRING(128),
@@ -89,15 +90,15 @@ export default function define(sequelize: Sequelize.Sequelize, DataTypes) {
       }
     }
   },
-    {
-      'indexes': [{
-        'fields': ['scope']
-      }, {
-        'fields': ['owner']
-      }],
-      'tableName': 'context',
-      'timestamps': true
-    });
+  {
+    'indexes': [{
+      'fields': ['scope']
+    }, {
+      'fields': ['owner']
+    }],
+    'tableName': 'context',
+    'timestamps': true
+  });
 
   context.sync();
 

@@ -283,7 +283,12 @@ export class ContextController {
           );
           const publicContexts = publicPromises.map(
             (c) => {
-              const plainC = c.get();
+              const plainC: any = c.get();
+              if (!plainC.contextPermissions.length &&
+                  plainC.owner !== 'admin') {
+
+                return;
+              }
               plainC.permission = TypePermission[TypePermission.read];
               for (const cp of plainC['contextPermissions']) {
                 const typePerm: any = cp.typePermission;
@@ -296,7 +301,7 @@ export class ContextController {
               delete plainC['contextPermissions'];
               return ObjectUtils.removeNull(plainC);
             }
-          );
+          ).filter(c => c);
 
           const contexts = {
             ours: oursContexts,
@@ -323,11 +328,17 @@ export class ContextController {
               contextDetails.permission = TypePermission[permission];
               reply(contextDetails);
             } else {
-              reply(Boom.unauthorized());
+              const msg = 'Must have read permission for this context';
+              reply(Boom.forbidden(msg));
             }
           },
-          (error: Boom.BoomError) => reply(error)
+          (error: Boom.BoomError) => {
+            reply(error);
+          }
         );
+      },
+      (error: Boom.BoomError) => {
+        reply(error);
       });
   }
 
@@ -336,12 +347,8 @@ export class ContextController {
 
     new User().info(customId).subscribe(
       (user: UserInstance) => {
-        if (user.defaultContextId) {
-          request.params['contextId'] = user.defaultContextId;
-          this.getDetailsById(request, reply);
-        } else {
-          reply(Boom.notFound());
-        }
+        request.params['contextId'] = user.defaultContextId || 'default';
+        this.getDetailsById(request, reply);
       },
       (error: Boom.BoomError) => reply(error)
     );

@@ -53,6 +53,16 @@ export class UserController {
     );
   }
 
+
+  public get(request: Hapi.Request, reply: Hapi.IReply) {
+    const customId = request.headers['x-consumer-custom-id'];
+
+    this.user.get(customId).subscribe(
+      (users: UserInstance[]) => reply(users),
+      (error: Boom.BoomError) => reply(error)
+    );
+  }
+
   public getProfils(request: Hapi.Request, reply: Hapi.IReply) {
     const kongId = request.headers['x-consumer-id'];
 
