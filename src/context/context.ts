@@ -93,12 +93,16 @@ export class Context {
     if (includeLayers) { include.push(this.database.layer); }
     if (includeTools) { include.push(this.database.tool); }
 
-    const where: any = {
+    let where: any = {
       $or: [
         {id: id},
         {uri: id}
       ]
     };
+
+    if (isNaN(<number><any>id)) {
+      where = {uri: id};
+    }
 
     return Rx.Observable.create(observer => {
       this.database.context.findOne({
