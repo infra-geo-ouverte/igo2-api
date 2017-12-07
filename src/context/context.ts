@@ -93,12 +93,7 @@ export class Context {
     if (includeLayers) { include.push(this.database.layer); }
     if (includeTools) { include.push(this.database.tool); }
 
-    let where: any = {
-      $or: [
-        {id: id},
-        {uri: id}
-      ]
-    };
+    let where: any = {id: id};
 
     if (isNaN(<number><any>id)) {
       where = {uri: id};
