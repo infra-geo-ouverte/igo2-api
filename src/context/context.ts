@@ -163,7 +163,7 @@ export class Context {
           for (const plainLayer of plainLayers) {
             if (observables[i]) {
               Object.assign(plainLayer.view, plainLayer.layerContext.view);
-              Object.assign(plainLayer, plainLayer.layerContext.options);
+              Object.assign(plainLayer, plainLayer.options, plainLayer.layerContext.options);
               plainLayer.order = plainLayer.layerContext.order;
               plainLayer.layerContext = null;
               plain.layers.push(plainLayer);
