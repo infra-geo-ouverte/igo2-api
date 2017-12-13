@@ -12,7 +12,7 @@ import { IDatabase, database } from '../database';
 
 import { IUser, UserInstance } from './user.model';
 
-const ServerConfigs = Configs.getServerConfig();
+const ServerConfigs: Configs.IServerConfiguration = Configs.getServerConfig();
 
 export class User {
 
@@ -89,7 +89,7 @@ export class User {
 
     username = username.toLowerCase();
     return Rx.Observable.create(observer => {
-      this.validatePassword(username, password).subscribe(
+      this.validateUserLdap(username, password).subscribe(
         userInfo => {
           this.getOrCreateUser(username, 'ldap').subscribe(
             user => {
@@ -561,13 +561,47 @@ export class User {
     });
   }
 
-  private validatePassword(username: string, password: string) {
+  private validateUserLdap(username: string, password: string) {
     return Rx.Observable.create(observer => {
+      const ldapC = ServerConfigs.ldap;
+
       if (!username) {
         observer.error(Boom.unauthorized('Username empty'));
+        return;
+      } else if (!ldapC || !ldapC.length) {
+        observer.error(Boom.badImplementation('Config Ldap missing'));
+        return;
       }
+
+      const validate = (index) => {
+        this.validatePasswordLdap(ldapC[index], username, password).subscribe(
+          userInfo => {
+            observer.next(userInfo);
+            observer.complete();
+          },
+          error => {
+            index++;
+            if (error.output.payload.message === 'Invalid username' &&
+                ldapC[index]) {
+              validate(index);
+            } else {
+              observer.error(error);
+            }
+          }
+        );
+      };
+
+      validate(0);
+    });
+  }
+
+  private validatePasswordLdap(ldapConfig: Configs.ILdapConfiguration,
+                               username: string,
+                               password: string) {
+
+    return Rx.Observable.create(observer => {
       const client = ldap.createClient({
-        url: ServerConfigs.ldap.url
+        url: ldapConfig.url
       });
 
       const opts = {
@@ -580,7 +614,7 @@ export class User {
       };
 
       let ldapres;
-      const baseSearch = ServerConfigs.ldap.baseSearch;
+      const baseSearch = ldapConfig.baseSearch;
       client.search(baseSearch, opts, function(errSearch, search) {
         search.on('searchEntry', function(entry) {
           ldapres = entry.object;
