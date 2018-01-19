@@ -141,7 +141,8 @@ export default function(server: Hapi.Server) {
       tags: ['api', 'users'],
       description: 'Login a user.',
       validate: {
-        payload: UserValidator.loginModel
+        payload: UserValidator.loginModel,
+        failAction: userController.failLogin
       },
       plugins: {
         'hapi-swagger': {
