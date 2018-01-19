@@ -72,6 +72,13 @@ export class UserController {
     );
   }
 
+  public failLogin = (request, reply, source, error) => {
+    if (error.output.statusCode === 400) {
+      reply(Boom.badRequest('Invalid username'));
+    }
+    reply(error);
+  }
+
   private loginLdapUser(request: Hapi.Request, reply: Hapi.IReply) {
     const username = request.payload.username;
     const password = request.payload.password;
