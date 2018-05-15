@@ -7,6 +7,8 @@ const admin = testConfigs.admin;
 
 Server.init(serverConfigs).then((server) => {
 
+  setTimeout(() => {
+
   const handleError = (response) => {
     if (response.statusCode < 200 || response.statusCode >= 400) {
       console.log('=====================ERROR===================');
@@ -14,6 +16,19 @@ Server.init(serverConfigs).then((server) => {
       console.log('=============================================');
     }
   };
+
+  server.inject({
+    method: 'POST',
+    url: '/tools',
+    headers: {
+      'x-consumer-username': admin.xConsumerUsername,
+      'x-consumer-id': admin.xConsumerId
+    },
+    payload: {
+      name: 'ogcFilter',
+      inToolbar: true
+    }
+  }, handleError);
 
   server.inject({
     method: 'POST',
@@ -253,8 +268,81 @@ Server.init(serverConfigs).then((server) => {
             version: '1.3.0'
           }
         }
-      }]
+      },
+      {
+        visible: false,
+        title: 'cs avec filtre',
+        type: 'wfs',
+        source: {
+          url: '/ws/igo_gouvouvert.fcgi',
+          featureTypes: 'bgr_v_centr_servc_geomt_act',
+          fieldNameGeometry: 'geometry',
+          maxFeatures: 10000,
+          version: '2.0.0',
+          outputFormat: 'geojson',
+          outputFormatDownload: 'shp'
+        },
+        isOgcFilterable: true,
+        ogcFilters: {
+          filtersAreEditable: true,
+          filters: {
+            logical: 'Or',
+            filters: [{
+                operator: 'During',
+                propertyName: 'dat_debut_',
+                begin: '2014',
+                end: '2016'
+              },
+              {
+                operator: 'PropertyIsEqualTo',
+                propertyName: 'nom_unite_',
+                expression: 'CS de Lévis'
+              },
+              {
+                operator: 'PropertyIsLike',
+                propertyName: 'ide_unite_',
+                pattern: '3*'
+              }
+            ]
+          }
+        },
+        sourceFields: [
+          {name: 'nom_unite_', alias: 'Nom du CS'},
+          {name: 'dat_debut_', alias: 'Début CS'},
+          {name: 'ide_unite_', alias: 'Identifiant du CS'},
+      ],
+      },
+
+      {
+        title: 'WMS-WFS isOgcFilterable HasFilters HasSourceFields',
+        type: 'wms',
+        source: {
+          url: '/geoserver/wms',
+         params: {'layers': 'water_areas',
+         version: '1.3.0' }},
+        isOgcFilterable: true,
+        ogcFilters: {
+          filtersAreEditable: true,
+          filters: {
+          operator: 'Intersects',
+          geometryName: 'the_geom',
+          wkt_geometry: 'POLYGON((-8015003 5942074,' +
+          '-8015003 5780349,-7792364 5780349,' +
+          '-7792364 5942074,-8015003 5942074))'
+        }},
+        sourceFields: [{'name': 'landuse', 'alias': 'Land use alias'}],
+        wfsSource: {
+          'url': '/geoserver/wms',
+          'featureTypes': 'water_areas',
+          'fieldNameGeometry': 'the_geom',
+          'maxFeatures': 10000,
+          version: '1.1.0',
+          outputFormat: 'application/json',
+          outputFormatDownload: 'application/vnd.google-earth.kml+xml'
+        }
+      }
+    ]
     }
   }, handleError);
-
+}, 1000);
 });
