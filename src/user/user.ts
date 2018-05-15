@@ -674,7 +674,7 @@ export class User {
       const callback = (res) => {
         res.setEncoding('utf8');
 
-        let dataStr= '';
+        let dataStr = '';
         res.on('data', (chunk) => {
           dataStr += chunk;
         });
@@ -713,7 +713,7 @@ export class User {
       const callback = (res) => {
         res.setEncoding('utf8');
 
-        let dataStr= '';
+        let dataStr = '';
         res.on('data', (chunk) => {
           dataStr += chunk;
         });
