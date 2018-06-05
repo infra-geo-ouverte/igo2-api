@@ -140,7 +140,7 @@ export class Context {
         }
       }
 
-      if (!context.layers) {
+      if (!context.layers || !context.layers.length) {
         observer.next(ObjectUtils.removeNull(plain));
         observer.complete();
         return;
