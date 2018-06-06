@@ -673,8 +673,14 @@ export class User {
 
       const callback = (res) => {
         res.setEncoding('utf8');
-        res.on('data', function(d) {
-          const data = JSON.parse(d);
+
+        let dataStr = '';
+        res.on('data', (chunk) => {
+          dataStr += chunk;
+        });
+
+        res.on('end', () => {
+          const data = JSON.parse(dataStr);
           if (data && !data.error) {
             observer.next(data);
           } else {
@@ -706,8 +712,14 @@ export class User {
 
       const callback = (res) => {
         res.setEncoding('utf8');
-        res.on('data', function(d) {
-          const data = JSON.parse(d);
+
+        let dataStr = '';
+        res.on('data', (chunk) => {
+          dataStr += chunk;
+        });
+
+        res.on('end', () => {
+          const data = JSON.parse(dataStr);
           if (data && !data.error) {
             const userInfo = {
               email: data.emailAddresses[0].value,

@@ -14,8 +14,35 @@ export class LayerValidator {
     }),
     source:  Joi.object().keys({
       url: Joi.string().allow(''),
-      params: Joi.object()
+      params: Joi.object(),
+      featureTypes: Joi.string().allow(''),
+      fieldNameGeometry: Joi.string().allow(''),
+      maxFeatures: Joi.number(),
+      version: Joi.string().allow(''),
+      outputFormat: Joi.string().allow(''),
+      outputFormatDownload: Joi.string().allow('')
     }),
+    isOgcFilterable: Joi.boolean(),
+    ogcFilters: Joi.object().keys({
+      filtersAreEditable: Joi.boolean(),
+      filters: Joi.object()
+    }),
+    sourceFields: Joi.array().items(
+      Joi.object().keys({
+        name: Joi.string(),
+        alias: Joi.string(),
+      })
+    ),
+    wfsSource:  Joi.object().keys({
+      url: Joi.string().allow(''),
+      featureTypes: Joi.string().allow(''),
+      fieldNameGeometry: Joi.string().allow(''),
+      maxFeatures: Joi.number(),
+      version: Joi.string().allow(''),
+      outputFormat: Joi.string().allow(''),
+      outputFormatDownload: Joi.string().allow('')
+    }),
+    download: Joi.object(),
     metadata: Joi.object(),
     timeFilter: Joi.object(),
     options: Joi.object()
@@ -32,8 +59,35 @@ export class LayerValidator {
       }),
       source:  Joi.object().keys({
         url: Joi.string().allow(''),
-        params: Joi.object()
+        params: Joi.object(),
+        featureTypes: Joi.string().allow(''),
+        fieldNameGeometry: Joi.string().allow(''),
+        maxFeatures: Joi.number(),
+        version: Joi.string().allow(''),
+        outputFormat: Joi.string().allow(''),
+        outputFormatDownload: Joi.string().allow('')
       }),
+      isOgcFilterable: Joi.boolean(),
+      ogcFilters: Joi.object().keys({
+        filtersAreEditable: Joi.boolean(),
+        filters: Joi.object()
+      }),
+      sourceFields: Joi.array().items(
+        Joi.object().keys({
+          name: Joi.string(),
+          alias: Joi.string(),
+        })
+      ),
+      wfsSource:  Joi.object().keys({
+        url: Joi.string().allow(''),
+        featureTypes: Joi.string().allow(''),
+        fieldNameGeometry: Joi.string().allow(''),
+        maxFeatures: Joi.number(),
+        version: Joi.string().allow(''),
+        outputFormat: Joi.string().allow(''),
+        outputFormatDownload: Joi.string().allow('')
+      }),
+      download: Joi.object(),
       metadata: Joi.object(),
       timeFilter: Joi.object(),
       options: Joi.object()

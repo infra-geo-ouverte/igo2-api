@@ -6,10 +6,28 @@ interface ViewLayer {
   maxZoom: number;
 };
 
+export interface OgcFilterLayer {
+  filtersAreEditable: boolean;
+  filters?: { [key: string]: any };
+};
+
+
+
 export interface SourceLayer {
   url: string;
   params?: { [key: string]: any };
+  featureTypes?: string;
+  fieldNameGeometry?: string;
+  maxFeatures?: number;
+  version?: string;
+  outputFormat?: string;
+  outputFormatDownload?: string;
 };
+
+export interface SourceField {
+  name: string;
+  alias: string;
+}
 
 export interface ILayer {
   id?: string;
@@ -18,6 +36,10 @@ export interface ILayer {
   baseLayer: boolean;
   view?: ViewLayer;
   source?: SourceLayer;
+  isOgcFilterable?: boolean;
+  ogcFilters?: any;
+  sourceFields?: SourceField[];
+  wfsSource?: SourceLayer;
   order?: number;
 };
 
@@ -31,6 +53,11 @@ export interface LayerInstance extends Sequelize.Instance<ILayer> {
   baseLayer: boolean;
   view?: ViewLayer;
   source?: SourceLayer;
+  isOgcFilterable?: boolean;
+  ogcFilters?: any;
+  sourceFields?: SourceField[];
+  wfsSource?: SourceLayer;
+  download?: any;
   metadata?: any;
   timeFilter?: any;
   options?: any;
@@ -77,6 +104,49 @@ export default function define(sequelize: Sequelize.Sequelize, DataTypes) {
       },
       'set': function(val) {
         this.setDataValue('source', JSON.stringify(val));
+      }
+    },
+    'isOgcFilterable': {
+      'type': DataTypes.BOOLEAN
+    },
+    'ogcFilters': {
+      'type': DataTypes.TEXT,
+      'get': function() {
+        const ogcFilters = this.getDataValue('ogcFilters');
+        return ogcFilters ? JSON.parse(ogcFilters) : {};
+      },
+      'set': function(val) {
+        this.setDataValue('ogcFilters', JSON.stringify(val));
+      }
+    },
+    'sourceFields': {
+      'type': DataTypes.TEXT,
+      'get': function() {
+        const sourceFields = this.getDataValue('sourceFields');
+        return sourceFields ? JSON.parse(sourceFields) : {};
+      },
+      'set': function(val) {
+        this.setDataValue('sourceFields', JSON.stringify(val));
+      }
+    },
+    'wfsSource': {
+      'type': DataTypes.TEXT,
+      'get': function() {
+        const wfsSource = this.getDataValue('wfsSource');
+        return wfsSource ? JSON.parse(wfsSource) : {};
+      },
+      'set': function(val) {
+        this.setDataValue('wfsSource', JSON.stringify(val));
+      }
+    },
+    'download': {
+      'type': DataTypes.TEXT,
+      'get': function() {
+        const download = this.getDataValue('download');
+        return download ? JSON.parse(download) : {};
+      },
+      'set': function(val) {
+        this.setDataValue('download', JSON.stringify(val));
       }
     },
     'metadata': {

@@ -13,7 +13,7 @@ export class UserValidator {
   });
 
   static loginModel = Joi.object().keys({
-      username: Joi.string(),
+      username: Joi.string().alphanum(),
       password: Joi.string().trim(),
       token: Joi.string(),
       typeConnection: Joi.string().valid('ldap', 'facebook', 'google', 'test'),
@@ -58,5 +58,4 @@ export class UserValidator {
       });
     }
   }
-
 }
