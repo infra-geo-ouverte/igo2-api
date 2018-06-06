@@ -21,8 +21,8 @@ export class Layer {
   public create(layer: ILayer): Rx.Observable<LayerInstance> {
     const localhost = ServerConfigs.localhost;
     const hosts = localhost ? localhost.hosts : [];
-    const urlObj = URL.parse(layer.source.url);
-    if (hosts.indexOf(urlObj.hostname) !== -1) {
+    const urlObj = URL.parse(layer.source.url || '');
+    if (urlObj && hosts.indexOf(urlObj.hostname) !== -1) {
       layer.source.url = urlObj.path;
     }
 
@@ -39,8 +39,8 @@ export class Layer {
   public update(id: string, layer: ILayer): Rx.Observable<LayerInstance> {
     const localhost = ServerConfigs.localhost;
     const hosts = localhost ? localhost.hosts : [];
-    const urlObj = URL.parse(layer.source.url);
-    if (hosts.indexOf(urlObj.hostname) !== -1) {
+    const urlObj = URL.parse(layer.source.url || '');
+    if (urlObj && hosts.indexOf(urlObj.hostname) !== -1) {
       layer.source.url = urlObj.path;
     }
 
@@ -147,8 +147,8 @@ export class Layer {
   public getBySource(layer: ILayer): Rx.Observable<LayerInstance> {
     const localhost = ServerConfigs.localhost;
     const hosts = localhost ? localhost.hosts : [];
-    const urlObj = URL.parse(layer.source.url);
-    if (hosts.indexOf(urlObj.hostname) !== -1) {
+    const urlObj = URL.parse(layer.source.url || '');
+    if (urlObj && hosts.indexOf(urlObj.hostname) !== -1) {
       layer.source.url = urlObj.path;
     }
 
