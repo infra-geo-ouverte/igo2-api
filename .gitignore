@@ -40,3 +40,10 @@ jspm_packages
 # igo2-api
 igo.db
 igo-test.db
+
+#ignore configs
+src/configurations/config.dev.json
+src/configurations/config.prod.json
+
+#pm2
+ecosystem.config.js
