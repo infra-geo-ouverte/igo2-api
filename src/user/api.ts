@@ -6,22 +6,23 @@ import * as Configs from '../configurations';
 
 const ServerConfigs = Configs.getServerConfig();
 
+
 export class Api {
 
-  static get() {
+  static getRoutes() {
     return Rx.Observable.create(observer => {
       const options = {
         host: ServerConfigs.userApi.host,
         port: ServerConfigs.userApi.port,
-        path: `/apis`,
+        path: `/routes`,
         method: 'GET'
       };
 
       const callback = (res) => {
         res.setEncoding('utf8')  ;
         res.on('data', (d) => {
-          const apis = JSON.parse(d);
-          observer.next(apis);
+          const routes = JSON.parse(d);
+          observer.next(routes);
           observer.complete();
         });
       };
@@ -31,7 +32,7 @@ export class Api {
     });
   }
 
-  static getByUri(uri: string) {
+  static getRouteByUri(uri: string) {
     return Rx.Observable.create(observer => {
       if (!uri) {
         observer.next(undefined);
@@ -39,29 +40,31 @@ export class Api {
         return;
       }
 
-      Api.get().subscribe((apis) => {
-        if (!apis || !apis.data || !apis.data.length ) {
+      Api.getRoutes().subscribe((routes) => {
+        if (!routes || !routes.data || !routes.data.length ) {
           observer.next(undefined);
           observer.complete();
           return;
         }
 
-        const apiFound = apis.data.find((api) => {
-          return api.uris && !!api.uris.length && api.uris.indexOf(uri) !== -1;
+        const routeFound = routes.data.find((route) => {
+          return route.paths
+            && !!route.paths.length
+            && route.paths.indexOf(uri) !== -1;
         });
 
-        observer.next(apiFound);
+        observer.next(routeFound);
         observer.complete();
       });
     });
   }
 
-  static getById(id) {
+  static getServiceById(id) {
     return Rx.Observable.create(observer => {
       const options = {
         host: ServerConfigs.userApi.host,
         port: ServerConfigs.userApi.port,
-        path: `/apis/${id}`,
+        path: `/services/${id}`,
         method: 'GET'
       };
 
@@ -84,7 +87,7 @@ export class Api {
       const options = {
         host: ServerConfigs.userApi.host,
         port: ServerConfigs.userApi.port,
-        path: `/apis/${id}/plugins`,
+        path: `/services/${id}/plugins`,
         method: 'GET'
       };
 
@@ -103,19 +106,27 @@ export class Api {
   }
 
 
-  static verifyPermission(api, profils) {
+  static verifyServicePermission(route, profils) {
     return Rx.Observable.create(observer => {
-      if (!api) {
+      if (!route || !route.service) {
         observer.next(false);
         observer.complete();
         return;
       }
 
-      Api.getPlugins(api.id).subscribe((plugins) => {
-        const acl = plugins.data.find((plugin) => plugin.name === 'acl');
+      Api.getPlugins(route.service.id).subscribe((plugins) => {
+        if (!plugins.data) {
+          observer.next(false);
+          observer.complete();
+          return;
+        }
+        const acl = plugins.data.find(
+          (plugin) => plugin.name === 'acl' && plugin.enabled
+        );
         let allowed = acl ? false : true;
         if (acl && acl.config.whitelist) {
           for (const profil of profils) {
+	    // TODO blacklist
             const i = acl.config.whitelist.indexOf(profil);
             if (i !== -1) {
               allowed = true;
@@ -139,11 +150,13 @@ export class Api {
           Api.isInBasePath(url.pathname)) {
 
         const uri = url.pathname.substring(9);
-        Api.getByUri(uri).subscribe((api) => {
-          Api.verifyPermission(api, profils).subscribe((isAllowed) => {
-            observer.next(isAllowed);
-            observer.complete();
-          });
+        Api.getRouteByUri(uri).subscribe((route) => {
+          Api.verifyServicePermission(route, profils).subscribe(
+            (isAllowed) => {
+              observer.next(isAllowed);
+              observer.complete();
+            }
+          );
         });
       } else {
         observer.next(true);
