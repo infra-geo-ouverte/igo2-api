@@ -5,8 +5,16 @@ console.log(`Running enviroment ${process.env.NODE_ENV || 'dev'}`);
 
 // Starting Application Server
 const serverConfigs = Configs.getServerConfig();
-Server.init(serverConfigs).then((server) => {
-  server.start(() => {
-    console.log('Server running at:', server.info.uri);
-  });
+
+const start = async () => {
+  const server = await Server.init(serverConfigs);
+  await server.start();
+  console.log(`Server running at: ${server.info.uri}`);
+};
+
+process.on('unhandledRejection', err => {
+  console.log(err);
+  process.exit(1);
 });
+
+start();

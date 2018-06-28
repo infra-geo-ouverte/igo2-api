@@ -1,24 +1,38 @@
 {
-    "database": {
-      "host": "localhost",
-      "dialect": "sqlite",
-      "storage": "./igo-test.db"
+  "database": {
+    "host": "localhost",
+    "dialect": "sqlite",
+    "storage": "./igo-test.db"
+  },
+  "server": {
+    "port": 5000,
+    "adminProfil": "admin",
+    "jwtExpiration": "1h",
+    "userApi": "http://localhost:8001",
+    "plugins": [
+      "logger",
+      "sanitizer",
+      "swagger"
+    ],
+    "routes": ["layer", "tool", "poi", "catalog", "context",
+      "contextPermission", "layerContext", "toolContext"]
+  },
+  "test": {
+    "admin": {
+      "xConsumerId": "3bcb9fc6-b701-4dfd-b8d3-eb6c16879ecf",
+      "xConsumerUsername": "admin"
     },
-    "server": {
-        "port": 5000,
-        "adminProfil": "admin",
-        "jwtExpiration": "1h",
-        "userApi": {
-          "host": "localhost",
-          "port": 8001
-        },
-        "plugins": [
-            "logger",
-            "sanitizer",
-            "swagger"
-        ]
+    "anonyme": {
+      "xConsumerId": "f29742d4-1a35-4ac8-a608-b5639986d36b",
+      "xConsumerUsername": "anonyme"
     },
-    "test": {
-      "xConsumerId": ""
+    "standard": {
+      "xConsumerId": "f011924a-0c9b-46f9-ba08-a8f01fa62905",
+      "xConsumerUsername": "standard"
+    },
+    "standard2": {
+      "xConsumerId": "aaasgfas-asfsasf-gagag-gag43324t4",
+      "xConsumerUsername": "standard2"
     }
+  }
 }

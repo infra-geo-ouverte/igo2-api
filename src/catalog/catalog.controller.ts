@@ -1,8 +1,9 @@
 import * as Hapi from 'hapi';
-import * as Boom from 'boom';
+
+import { handleError } from '../utils';
 
 import { Catalog } from './catalog';
-import { ICatalog, CatalogInstance } from './catalog.model';
+import { ICatalog } from './catalog.model';
 
 export class CatalogController {
 
@@ -12,50 +13,39 @@ export class CatalogController {
     this.catalog = new Catalog();
   }
 
-  public create(request: Hapi.Request, reply: Hapi.IReply) {
-    const catalogToCreate: ICatalog = request.payload;
+  public async create(request: Hapi.Request, h: Hapi.ResponseToolkit) {
+    const catalogToCreate: ICatalog = request.payload as ICatalog;
 
-    this.catalog.create(catalogToCreate).subscribe(
-      (catalog: CatalogInstance) => reply(catalog).code(201),
-      (error: Boom.BoomError) => reply(error)
-    );
+    const res = await this.catalog.create(catalogToCreate)
+      .catch(handleError);
+    return h.response(res).code(201)
   }
 
-  public update(request: Hapi.Request, reply: Hapi.IReply) {
+  public async update(request: Hapi.Request, h: Hapi.ResponseToolkit) {
     const id = request.params['id'];
-    const catalogToUpdate: ICatalog = request.payload;
+    const catalogToUpdate: ICatalog = request.payload as ICatalog;
 
-    this.catalog.update(id, catalogToUpdate).subscribe(
-      (catalog: CatalogInstance) => reply(catalog),
-      (error: Boom.BoomError) => reply(error)
-    );
+    return await this.catalog.update(id, catalogToUpdate).catch(handleError);
   }
 
-  public delete(request: Hapi.Request, reply: Hapi.IReply) {
+  public async delete(request: Hapi.Request, h: Hapi.ResponseToolkit) {
     const id = request.params['id'];
 
-    this.catalog.delete(id).subscribe(
-      (catalog: CatalogInstance) => reply(catalog).code(204),
-      (error: Boom.BoomError) => reply(error)
-    );
+    await this.catalog.delete(id).catch(handleError);
+
+    return h.response().code(204);
   }
 
-  public getById(request: Hapi.Request, reply: Hapi.IReply) {
+  public async getById(request: Hapi.Request, h: Hapi.ResponseToolkit) {
     const id = request.params['id'];
     const user = request.headers['x-consumer-username'];
 
-    this.catalog.getById(id, user).subscribe(
-      (catalog: CatalogInstance) => reply(catalog),
-      (error: Boom.BoomError) => reply(error)
-    );
+    return await this.catalog.getById(id, user).catch(handleError);
   }
 
-  public get(request: Hapi.Request, reply: Hapi.IReply) {
+  public async get(request: Hapi.Request, h: Hapi.ResponseToolkit) {
     const user = request.headers['x-consumer-username'];
 
-    this.catalog.get(user).subscribe(
-      (catalogs: CatalogInstance[]) => reply(catalogs),
-      (error: Boom.BoomError) => reply(error)
-    );
+    return await this.catalog.get(user).catch(handleError);
   }
 }

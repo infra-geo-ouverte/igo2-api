@@ -1,168 +1,111 @@
-import * as Rx from 'rxjs';
-import * as http from 'http';
+import axios from 'axios';
 import * as URL from 'url';
+import * as Boom from 'boom';
 
 import * as Configs from '../configurations';
+import { database } from '../database';
+import { ObjectUtils } from '../utils';
 
 const ServerConfigs = Configs.getServerConfig();
 
 
-export class Api {
+export class UserApi {
 
-  static getRoutes() {
-    return Rx.Observable.create(observer => {
-      const options = {
-        host: ServerConfigs.userApi.host,
-        port: ServerConfigs.userApi.port,
-        path: `/routes`,
-        method: 'GET'
-      };
+  static async getRoutes() {
 
-      const callback = (res) => {
-        res.setEncoding('utf8')  ;
-        res.on('data', (d) => {
-          const routes = JSON.parse(d);
-          observer.next(routes);
-          observer.complete();
-        });
-      };
-
-      const req = http.request(options, callback);
-      req.end();
-    });
-  }
-
-  static getRouteByUri(uri: string) {
-    return Rx.Observable.create(observer => {
-      if (!uri) {
-        observer.next(undefined);
-        observer.complete();
-        return;
-      }
-
-      Api.getRoutes().subscribe((routes) => {
-        if (!routes || !routes.data || !routes.data.length ) {
-          observer.next(undefined);
-          observer.complete();
-          return;
-        }
-
-        const routeFound = routes.data.find((route) => {
-          return route.paths
-            && !!route.paths.length
-            && route.paths.indexOf(uri) !== -1;
-        });
-
-        observer.next(routeFound);
-        observer.complete();
+    const res = await axios
+      .get(`${ServerConfigs.userApi}/routes`)
+      .catch(e => {
+        throw Boom.badImplementation(e);
       });
-    });
+
+    return res.data;
   }
 
-  static getServiceById(id) {
-    return Rx.Observable.create(observer => {
-      const options = {
-        host: ServerConfigs.userApi.host,
-        port: ServerConfigs.userApi.port,
-        path: `/services/${id}`,
-        method: 'GET'
-      };
+  static async getRouteByUri(uri: string) {
+    if (!uri) {
+      return;
+    }
 
-      const callback = (res) => {
-        res.setEncoding('utf8')  ;
-        res.on('data', (d) => {
-          const apis = JSON.parse(d);
-          observer.next(apis);
-          observer.complete();
-        });
-      };
+    const routes = await UserApi.getRoutes();
 
-      const req = http.request(options, callback);
-      req.end();
+    if (!routes || !routes.data || !routes.data.length) {
+      return;
+    }
+
+    const routeFound = routes.data.find((route) => {
+      return route.paths
+        && !!route.paths.length
+        && route.paths.indexOf(uri) !== -1;
     });
+
+    return routeFound;
   }
 
-  static getPlugins(id) {
-    return Rx.Observable.create(observer => {
-      const options = {
-        host: ServerConfigs.userApi.host,
-        port: ServerConfigs.userApi.port,
-        path: `/services/${id}/plugins`,
-        method: 'GET'
-      };
-
-      const callback = (res) => {
-        res.setEncoding('utf8')  ;
-        res.on('data', (d) => {
-          const apis = JSON.parse(d);
-          observer.next(apis);
-          observer.complete();
-        });
-      };
-
-      const req = http.request(options, callback);
-      req.end();
-    });
-  }
-
-
-  static verifyServicePermission(route, profils) {
-    return Rx.Observable.create(observer => {
-      if (!route || !route.service) {
-        observer.next(false);
-        observer.complete();
-        return;
-      }
-
-      Api.getPlugins(route.service.id).subscribe((plugins) => {
-        if (!plugins.data) {
-          observer.next(false);
-          observer.complete();
-          return;
-        }
-        const acl = plugins.data.find(
-          (plugin) => plugin.name === 'acl' && plugin.enabled
-        );
-        let allowed = acl ? false : true;
-        if (acl && acl.config.whitelist) {
-          for (const profil of profils) {
-	    // TODO blacklist
-            const i = acl.config.whitelist.indexOf(profil);
-            if (i !== -1) {
-              allowed = true;
-              break;
-            }
-          }
-        }
-        observer.next(allowed);
-        observer.complete();
+  static async getServiceById(id) {
+    const res = await axios
+      .get(`${ServerConfigs.userApi}/services/${id}`)
+      .catch(e => {
+        throw Boom.badImplementation(e);
       });
-    });
+
+    return res.data;
   }
 
-  static verifyPermissionByUrl(url, profils) {
-    return Rx.Observable.create(observer => {
-      url = URL.parse(url);
+  static async getPlugins(id) {
+    const res = await axios
+      .get(`${ServerConfigs.userApi}/services/${id}/plugins`)
+      .catch(e => {
+        throw Boom.badImplementation(e);
+      });
 
-      const localhost = ServerConfigs.localhost;
-      const localhosts = localhost ? localhost.hosts : [];
-      if ((!url.host || localhosts.indexOf(url.host) !== -1) &&
-          Api.isInBasePath(url.pathname)) {
+    return res.data;
+  }
 
-        const uri = url.pathname.substring(9);
-        Api.getRouteByUri(uri).subscribe((route) => {
-          Api.verifyServicePermission(route, profils).subscribe(
-            (isAllowed) => {
-              observer.next(isAllowed);
-              observer.complete();
-            }
-          );
-        });
-      } else {
-        observer.next(true);
-        observer.complete();
+
+  static async verifyServicePermission(route, profils) {
+    if (!route || !route.service) {
+      return false;
+    }
+
+    const plugins = await UserApi.getPlugins(route.service.id);
+    if (!plugins.data) {
+      return false;
+    }
+    const acl = plugins.data.find(
+      (plugin) => plugin.name === 'acl' && plugin.enabled
+    );
+    let allowed = acl ? false : true;
+    if (acl && acl.config.whitelist) {
+      for (const profil of profils) {
+        // TODO blacklist
+        const i = acl.config.whitelist.indexOf(profil);
+        if (i !== -1) {
+          allowed = true;
+          break;
+        }
       }
-    });
+    }
+    return allowed;
+  }
+
+  static async verifyPermissionByUrl(url, profils) {
+    if (!url) {
+      return true;
+    }
+    url = URL.parse(url);
+
+    const localhost = ServerConfigs.localhost;
+    const localhosts = localhost ? localhost.hosts : [];
+    if ((!url.host || localhosts.indexOf(url.host) !== -1) &&
+      UserApi.isInBasePath(url.pathname)) {
+
+      const uri = url.pathname.substring(9);
+      const route = await UserApi.getRouteByUri(uri);
+      return await UserApi.verifyServicePermission(route, profils);
+    } else {
+      return true;
+    }
   }
 
   static isInBasePath(pathname) {
@@ -177,6 +120,43 @@ export class Api {
 
     }
     return found;
+  }
+
+  static async getProfils(id: string): Promise<string[]> {
+    if (!id) {
+      return [];
+    }
+
+    const res = await axios
+      .get(`${ServerConfigs.userApi}/consumers/${id}/acls`)
+      .catch(e => {
+        if (e.response && e.response.status === 404) {
+          throw Boom.badRequest(`User '${id}' can not be found.`);
+        }
+        throw Boom.badImplementation(e);
+      });
+
+    const profils = [];
+    for (const p of res.data.data) {
+      profils.push(p.group);
+    }
+
+    return profils;
+  }
+
+  static async info(id: string): Promise<any> {
+    return await database.user
+      .findOne({
+        where: {
+          id: id
+        }
+      })
+      .then((user) => {
+        if (!user) {
+          throw Boom.notFound();
+        }
+        return ObjectUtils.removeNull(user.get());
+      });
   }
 
 }

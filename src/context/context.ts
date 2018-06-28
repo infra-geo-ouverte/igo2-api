@@ -1,9 +1,8 @@
-import * as Rx from 'rxjs';
 import * as Boom from 'boom';
 
 import { IDatabase, database } from '../database';
 import { ObjectUtils } from '../utils';
-import { User, Api } from '../user';
+import { UserApi } from '../user';
 
 import { IContext, ContextInstance, ContextDetailed } from './context.model';
 
@@ -13,81 +12,65 @@ export class Context {
 
   constructor() {}
 
-  public create(context: IContext): Rx.Observable<ContextInstance> {
-    return Rx.Observable.create(observer => {
-      this.database.context.create(context).then((createdContext) => {
-        observer.next(createdContext);
-        observer.complete();
-      }).catch((error) => {
+  public async create(context: IContext): Promise<ContextInstance> {
+    return await this.database.context.create(context).catch((error) => {
         if (error.name === 'SequelizeUniqueConstraintError') {
           const message = 'URI must be unique.';
-          observer.error(Boom.conflict(message));
+          throw Boom.conflict(message);
         } else {
-          observer.error(Boom.badImplementation(error));
+          throw Boom.badImplementation(error);
         }
       });
-    });
   }
 
-  public update(id: string, context: IContext): Rx.Observable<ContextInstance> {
-    return Rx.Observable.create(observer => {
-      this.database.context.update(context, {
+  public async update(id: string, context: IContext): Promise<{ id: string}> {
+    return await this.database.context.update(context, {
         where: {
           id: id
         }
       }).then((count: [number, ContextInstance[]]) => {
-        if (count[0]) {
-          observer.next({id: id});
-          observer.complete();
-        } else {
-          observer.error(Boom.notFound());
+        if (!count[0]) {
+          throw Boom.notFound();
         }
+        return {id: id};
       }).catch((error) => {
+        if (Boom.isBoom(error)) {
+          throw Boom;
+        }
         if (error.name === 'SequelizeUniqueConstraintError') {
           const message = 'URI must be unique.';
-          observer.error(Boom.conflict(message));
+          throw Boom.conflict(message);
         } else {
-          observer.error(Boom.badImplementation(error));
+          throw Boom.badImplementation(error);
         }
       });
-    });
   }
 
-  public delete(id: string): Rx.Observable<{}> {
-    return Rx.Observable.create(observer => {
-      this.database.context.destroy({
+  public async delete(id: string): Promise<void> {
+    return await this.database.context.destroy({
         where: {
           id: id
         }
       }).then((count: number) => {
-        if (count) {
-          observer.next({});
-          observer.complete();
-        } else {
-          observer.error(Boom.notFound());
+        if (!count) {
+          throw Boom.notFound();
         }
-      }).catch((error) => {
-        observer.error(Boom.badImplementation(error));
+        return;
       });
-    });
   }
 
-  public get(): Rx.Observable<ContextInstance[]> {
-    return Rx.Observable.create(observer => {
-      this.database.context.findAll().then((contexts: ContextInstance[]) => {
+  public async get(): Promise<ContextInstance[]> {
+    return await this.database.context.findAll()
+      .then((contexts: ContextInstance[]) => {
         const plainContexts = contexts.map(
           (context) => ObjectUtils.removeNull(context.get())
         );
-        observer.next(plainContexts);
-        observer.complete();
-      }).catch((error) => {
-        observer.error(Boom.badImplementation(error));
+        return plainContexts;
       });
-    });
   }
 
-  public getById(id: string, user: string, includeLayers = false,
-    includeTools = false): Rx.Observable<ContextDetailed> {
+  public async getById(id: string, user: string, includeLayers = false,
+    includeTools = false): Promise<ContextDetailed> {
 
     const include = [];
     if (includeLayers) { include.push(this.database.layer); }
@@ -99,32 +82,22 @@ export class Context {
       where = {uri: id};
     }
 
-    return Rx.Observable.create(observer => {
-      this.database.context.findOne({
-        include: include,
-        where: where
-      }).then((context: ContextDetailed) => {
-        if (context) {
-          if (includeLayers || includeTools) {
-            this.contextObjToPlainObj(context, user).subscribe((plainD) => {
-              observer.next(plainD);
-              observer.complete();
-            });
-          } else {
-            observer.next(ObjectUtils.removeNull(context.get()));
-            observer.complete();
-          }
-        } else {
-          observer.error(Boom.notFound());
-        }
-      }).catch((error) => {
-        observer.error(Boom.badImplementation(error));
-      });
+    const context = await this.database.context.findOne({
+      include: include,
+      where: where
     });
+
+    if (!context) {
+      throw Boom.notFound();
+    }
+    if (includeLayers || includeTools) {
+      return await this.contextObjToPlainObj(context, user);
+    } else {
+      return ObjectUtils.removeNull(context.get());
+    }
   }
 
-  private contextObjToPlainObj(context, user): Rx.Observable<ContextDetailed> {
-    return Rx.Observable.create(observer => {
+  private async contextObjToPlainObj(context, user): Promise<ContextDetailed> {
       let plain: any = context.get();
       plain.layers = [];
       plain.tools = [];
@@ -141,48 +114,43 @@ export class Context {
       }
 
       if (!context.layers || !context.layers.length) {
-        observer.next(ObjectUtils.removeNull(plain));
-        observer.complete();
-        return;
+        return ObjectUtils.removeNull(plain);
       }
 
-      User.getProfils(user).subscribe((profils) => {
-        profils.push(user);
-        const observables = [];
-        const plainLayers = [];
-        for (const layer of context.layers) {
-          const plainL = layer.get();
-          plainLayers.push(plainL);
-          observables.push(
-            Api.verifyPermissionByUrl(plainL.source.url, profils)
-          );
-        }
-
-        Rx.Observable.forkJoin(observables).subscribe((data) => {
-          let i = 0;
-          for (const plainLayer of plainLayers) {
-            if (observables[i]) {
-              Object.assign(plainLayer.view, plainLayer.layerContext.view);
-              Object.assign(plainLayer, plainLayer.options,
-                plainLayer.layerContext.options);
-              plainLayer.order = plainLayer.layerContext.order;
-              plainLayer.layerContext = null;
-              plain.layers.push(plainLayer);
-            }
-            i++;
-          }
-
-          plain = ObjectUtils.removeNull(plain);
-          plain.layers = plain.layers.sort(
-            (a, b) => a.order < b.order ? -1 : a.order > b.order ? 1 : 0
-          );
-
-          observer.next(ObjectUtils.removeNull(plain));
-          observer.complete();
-        });
-
+      const profils: string[] = await UserApi.getProfils(user).catch(() => {
+        return [];
       });
-    });
+      profils.push(user);
+      const promises = [];
+      const plainLayers = [];
+      for (const layer of context.layers) {
+        const plainL = layer.get();
+        plainLayers.push(plainL);
+        promises.push(
+          UserApi.verifyPermissionByUrl(plainL.source.url, profils)
+        );
+      }
+
+      const promisesResult = await Promise.all(promises);
+      let i = 0;
+      for (const plainLayer of plainLayers) {
+        if (promisesResult[i]) {
+          Object.assign(plainLayer.view, plainLayer.layerContext.view);
+          Object.assign(plainLayer, plainLayer.options,
+            plainLayer.layerContext.options);
+          plainLayer.order = plainLayer.layerContext.order;
+          plainLayer.layerContext = null;
+          plain.layers.push(plainLayer);
+        }
+        i++;
+      }
+
+      plain = ObjectUtils.removeNull(plain);
+      plain.layers = plain.layers.sort(
+        (a, b) => a.order < b.order ? -1 : a.order > b.order ? 1 : 0
+      );
+
+      return ObjectUtils.removeNull(plain);
   }
 
 }

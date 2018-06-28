@@ -1,9 +1,9 @@
 import * as Hapi from 'hapi';
-import * as Boom from 'boom';
+
+import { handleError } from '../utils';
 
 import {
   IContextPermission,
-  ContextPermissionInstance,
   ContextPermission
 } from './index';
 
@@ -15,44 +15,39 @@ export class ContextPermissionController {
     this.contextPermission = new ContextPermission();
   }
 
-  public create(request: Hapi.Request, reply: Hapi.IReply) {
-    const newContextPermission: IContextPermission = request.payload;
+  public async create(request: Hapi.Request, h: Hapi.ResponseToolkit) {
+    const newContextPermission = request.payload as IContextPermission;
     newContextPermission['contextId'] = request.params['contextId'];
 
-    this.contextPermission.create(newContextPermission).subscribe(
-      (cp: ContextPermissionInstance) => reply(cp).code(201),
-      (error: Boom.BoomError) => reply(error)
-    );
+    const res = await this.contextPermission.create(newContextPermission)
+      .catch(handleError);
+
+    return h.response(res).code(201);
   }
 
-  public update(request: Hapi.Request, reply: Hapi.IReply) {
+  public async update(request: Hapi.Request, h: Hapi.ResponseToolkit) {
     const id = request.params['id'];
-    const newContextPermission: IContextPermission = request.payload;
+    const newContextPermission = request.payload as IContextPermission;
 
-    this.contextPermission.update(id, newContextPermission).subscribe(
-      (cp: ContextPermissionInstance) => reply(cp),
-      (error: Boom.BoomError) => reply(error)
-    );
+    return await this.contextPermission.update(id, newContextPermission)
+      .catch(handleError);
   }
 
-  public delete(request: Hapi.Request, reply: Hapi.IReply) {
+  public async delete(request: Hapi.Request, h: Hapi.ResponseToolkit) {
     const id = request.params['id'];
 
-    this.contextPermission.delete(id).subscribe(
-      (cp: ContextPermissionInstance) => reply(cp).code(204),
-      (error: Boom.BoomError) => reply(error)
-    );
+    await this.contextPermission.delete(id).catch(handleError);
+
+    return h.response().code(204);
   }
 
-  public getByContextId(
-    request: Hapi.Request, reply: Hapi.IReply) {
+  public async getByContextId(
+    request: Hapi.Request, h: Hapi.ResponseToolkit) {
 
     const contextId = request.params['contextId'];
 
-    this.contextPermission.getByContextId(contextId).subscribe(
-      (cp: ContextPermissionInstance[]) => reply(cp),
-      (error: Boom.BoomError) => reply(error)
-    );
+    return await this.contextPermission.getByContextId(contextId)
+      .catch(handleError);
   }
 
 }

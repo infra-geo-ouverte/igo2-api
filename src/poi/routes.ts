@@ -13,8 +13,8 @@ export default function (server: Hapi.Server) {
     server.route({
         method: 'GET',
         path: '/pois/{id}',
-        config: {
-            handler: poiController.getById,
+        handler: poiController.getById,
+        options: {
             tags: ['api', 'pois'],
             description: 'Get pois by id.',
             validate: {
@@ -41,8 +41,8 @@ export default function (server: Hapi.Server) {
     server.route({
         method: 'GET',
         path: '/pois',
-        config: {
-            handler: poiController.get,
+        handler: poiController.get,
+        options: {
             tags: ['api', 'pois'],
             description: 'Get all pois.',
             validate: {
@@ -54,8 +54,8 @@ export default function (server: Hapi.Server) {
     server.route({
         method: 'DELETE',
         path: '/pois/{id}',
-        config: {
-            handler: poiController.delete,
+        handler: poiController.delete,
+        options: {
             tags: ['api', 'pois'],
             description: 'Delete poi by id.',
             validate: {
@@ -82,8 +82,8 @@ export default function (server: Hapi.Server) {
     server.route({
         method: 'PATCH',
         path: '/pois/{id}',
-        config: {
-            handler: poiController.update,
+        handler: poiController.update,
+        options: {
             tags: ['api', 'pois'],
             description: 'Update poi by id.',
             validate: {
@@ -111,8 +111,8 @@ export default function (server: Hapi.Server) {
     server.route({
         method: 'POST',
         path: '/pois',
-        config: {
-            handler: poiController.create,
+        handler: poiController.create,
+        options: {
             tags: ['api', 'pois'],
             description: 'Create a poi.',
             validate: {

@@ -11,11 +11,6 @@ const configs = new nconf.Provider({
   }
 });
 
-interface IUserApiConfiguration {
-  host: string;
-  port: number;
-}
-
 export interface ILdapConfiguration {
   url: string;
   baseSearch: string;
@@ -27,14 +22,16 @@ interface ILocalhostConfiguration {
 }
 
 export interface IServerConfiguration {
-    port: number;
-    plugins: Array<string>;
-    jwtExpiration: string;
-    userApi: IUserApiConfiguration;
-    ldap: ILdapConfiguration[];
-    googleKey?: string;
-    adminProfil?: string;
-    localhost?: ILocalhostConfiguration;
+  port: number;
+  plugins: Array<string>;
+  pluginsOptions: any;
+  routes: Array<string>;
+  jwtExpiration: string;
+  userApi: string;
+  ldap: ILdapConfiguration[];
+  googleKey?: string;
+  adminProfil?: string;
+  localhost?: ILocalhostConfiguration;
 }
 
 export interface IDatabaseConfiguration {
@@ -56,9 +53,10 @@ export interface IPostgresConfiguration extends IDatabaseConfiguration {
 export interface IDBStringConfiguration extends IDatabaseConfiguration {
   connectionString: string;
 }
-export type IDataConfiguration = ISqliteConfiguration |
-                                 IPostgresConfiguration |
-                                 IDBStringConfiguration;
+export type IDataConfiguration =
+  | ISqliteConfiguration
+  | IPostgresConfiguration
+  | IDBStringConfiguration;
 
 export interface IConsumer {
   xConsumerId: string;
@@ -68,8 +66,8 @@ export interface IConsumer {
 export interface ITestConfiguration {
   admin: IConsumer;
   anonyme: IConsumer;
-  user1: IConsumer;
-  user2: IConsumer;
+  standard: IConsumer;
+  standard2: IConsumer;
 }
 
 export function getDatabaseConfig(): IDataConfiguration {

@@ -8,19 +8,22 @@ const env = require('gulp-env');
 /**
  * Remove build directory.
  */
-gulp.task('clean', function () {
-  return gulp.src(outDir, { read: false })
-    .pipe(rimraf());
+gulp.task('clean', function() {
+  return gulp.src(outDir, { read: false }).pipe(rimraf());
 });
 
 /**
  * Lint all custom TypeScript files.
  */
 gulp.task('tslint', () => {
-  return gulp.src('src/**/*.ts')
-    .pipe(tslint({
-        formatter: "prose"
-    }))
+  return gulp
+    .src('src/**/*.ts')
+    .pipe(
+      tslint({
+        formatter: 'prose',
+        program: require('tslint').Linter.createProgram('./src/tsconfig.json')
+      })
+    )
     .pipe(tslint.report());
 });
 
@@ -39,21 +42,18 @@ function compileTS(args, cb) {
   });
 }
 
-gulp.task('compile', shell.task([
-  'npm run tsc',
-]));
+gulp.task('compile', shell.task(['npm run tsc']));
 
 /**
  * Watch for changes in TypeScript
  */
-gulp.task('watch', shell.task([
-  'npm run tsc-watch',
-]));
+gulp.task('watch', shell.task(['npm run tsc-watch']));
 /**
  * Copy config files
  */
-gulp.task('configs', (cb) => {
-  return gulp.src("src/configurations/*.json")
+gulp.task('configs', cb => {
+  return gulp
+    .src('src/configurations/*.json')
     .pipe(gulp.dest('./build/configurations'));
 });
 
@@ -67,15 +67,16 @@ gulp.task('build', ['tslint', 'compile', 'configs'], () => {
 /**
  * Run tests.
  */
-gulp.task('test', ['build'], (cb) => {
+gulp.task('test', ['build'], cb => {
   const envs = env.set({
     NODE_ENV: 'test'
   });
 
-  gulp.src(['build/test/**/*.js'])
+  gulp
+    .src(['build/test/**/*.js'])
     .pipe(envs)
     .pipe(mocha())
-    .once('error', (error) => {
+    .once('error', error => {
       console.log(error);
       process.exit(1);
     })

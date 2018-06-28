@@ -1,31 +1,32 @@
 import * as test from 'tape';
 import * as Server from '../server';
 import * as Configs from '../configurations';
+import { database } from '../database';
 
 const serverConfigs = Configs.getServerConfig();
 const testConfigs = Configs.getTestConfig();
 const anonyme = testConfigs.anonyme;
-const user1 = testConfigs.user1;
+const userStandard = testConfigs.standard;
 
-Server.init(serverConfigs).then((server) => {
 
-  test('POST /users/login', function(t) {
-    const options = {
-      method: 'POST',
-      url: '/users/login',
-      payload: {
-        username: 'test',
-        password: 'testIgo2Password',
-        typeConnection: 'test'
-      }
-    };
-    server.inject(options, function(response) {
-      t.equal(response.statusCode, 200);
-      server.stop(t.end);
-    });
+const runTests = async () => {
+  const server = await Server.init(serverConfigs);
+
+  const user = await database.user.findOne({
+    where: {
+      sourceId: 1
+    }
   });
 
-  test('POST /pois - headers missing', function(t) {
+  if (!user) {
+    await database.user.create({
+      sourceId: '1',
+      source: 'test'
+    });
+  }
+
+  test('POST /pois - headers missing', async t => {
+    let response;
     const options = {
       method: 'POST',
       url: '/pois',
@@ -36,21 +37,27 @@ Server.init(serverConfigs).then((server) => {
         y: 46.44
       }
     };
-    server.inject(options, function(response) {
+    try {
+      response = await server.inject(options);
       const result: any = response.result;
       t.equal(result.message, 'Must be authenticated');
       t.equal(response.statusCode, 401);
-      server.stop(t.end);
-    });
+      } catch (e) {
+      console.error(response.result);
+      t.fail(e);
+    } finally {
+      t.end();
+    }
   });
 
-  test('POST /pois - zoom missing', function(t) {
+  test('POST /pois - zoom missing', async t => {
+    let response;
     const options = {
       method: 'POST',
       url: '/pois',
       headers: {
         'x-consumer-username': 'test',
-        'x-consumer-id': user1.xConsumerId,
+        'x-consumer-id': userStandard.xConsumerId,
         'x-consumer-custom-id': '1'
       },
       payload: {
@@ -59,16 +66,22 @@ Server.init(serverConfigs).then((server) => {
         y: 46.44
       }
     };
-    server.inject(options, function(response) {
+    try {
+      response = await server.inject(options);
       const result: any = response.result;
-      const message = 'child "zoom" fails because ["zoom" is required]';
+      const message = 'Invalid request payload input';
       t.equal(result.message, message);
       t.equal(response.statusCode, 400);
-      server.stop(t.end);
-    });
+      } catch (e) {
+      console.error(response.result);
+      t.fail(e);
+    } finally {
+      t.end();
+    }
   });
 
-  test('POST /pois - anonyme', function(t) {
+  test('POST /pois - anonyme', async t => {
+    let response;
     const options = {
       method: 'POST',
       url: '/pois',
@@ -84,21 +97,27 @@ Server.init(serverConfigs).then((server) => {
         y: 46.44
       }
     };
-    server.inject(options, function(response) {
+    try {
+      response = await server.inject(options);
       const result: any = response.result;
       t.equal(result.message, 'Must be authenticated');
       t.equal(response.statusCode, 401);
-      server.stop(t.end);
-    });
+      } catch (e) {
+      console.error(response.result);
+      t.fail(e);
+    } finally {
+      t.end();
+    }
   });
 
-  test('POST /pois - user1', function(t) {
+  test('POST /pois - userStandard', async t => {
+    let response;
     const options = {
       method: 'POST',
       url: '/pois',
       headers: {
         'x-consumer-username': 'test',
-        'x-consumer-id': user1.xConsumerId,
+        'x-consumer-id': userStandard.xConsumerId,
         'x-consumer-custom-id': '1'
       },
       payload: {
@@ -108,24 +127,30 @@ Server.init(serverConfigs).then((server) => {
         y: 46.44
       }
     };
-    server.inject(options, function(response) {
+    try {
+      response = await server.inject(options);
       const result: any = response.result;
       t.equal(result.title, 'poi1');
       t.equal(result.zoom, 6);
       t.equal(result.x, -73.22);
       t.equal(result.y, 46.44);
       t.equal(response.statusCode, 201);
-      server.stop(t.end);
-    });
+      } catch (e) {
+      console.error(response.result);
+      t.fail(e);
+    } finally {
+      t.end();
+    }
   });
 
-  test('POST /pois - user1 bis', function(t) {
+  test('POST /pois - userStandard bis', async t => {
+    let response;
     const options = {
       method: 'POST',
       url: '/pois',
       headers: {
         'x-consumer-username': 'test',
-        'x-consumer-id': user1.xConsumerId,
+        'x-consumer-id': userStandard.xConsumerId,
         'x-consumer-custom-id': '1'
       },
       payload: {
@@ -135,20 +160,26 @@ Server.init(serverConfigs).then((server) => {
         y: 26.44
       }
     };
-    server.inject(options, function(response) {
+    try {
+      response = await server.inject(options);
       const result: any = response.result;
       t.equal(result.title, 'poi2');
       t.equal(result.zoom, 2);
       t.equal(result.x, -53.22);
       t.equal(result.y, 26.44);
       t.equal(response.statusCode, 201);
-      server.stop(t.end);
-    });
+      } catch (e) {
+      console.error(response.result);
+      t.fail(e);
+    } finally {
+      t.end();
+    }
   });
 
   // ----------------------------------------------------------------
 
-  test('GET /pois - anonyme', function(t) {
+  test('GET /pois - anonyme', async t => {
+    let response;
     const options = {
       method: 'GET',
       url: '/pois',
@@ -158,54 +189,72 @@ Server.init(serverConfigs).then((server) => {
         'x-anonymous-consumer': 'true'
       }
     };
-    server.inject(options, function(response) {
+    try {
+      response = await server.inject(options);
       const result: any = response.result;
       t.equal(result.message, 'Must be authenticated');
       t.equal(response.statusCode, 401);
-      server.stop(t.end);
-    });
+      } catch (e) {
+      console.error(response.result);
+      t.fail(e);
+    } finally {
+      t.end();
+    }
   });
 
-  test('GET /pois - user1', function(t) {
+  test('GET /pois - userStandard', async t => {
+    let response;
     const options = {
       method: 'GET',
       url: '/pois',
       headers: {
-        'x-consumer-username': user1.xConsumerUsername,
-        'x-consumer-id': user1.xConsumerId,
+        'x-consumer-username': userStandard.xConsumerUsername,
+        'x-consumer-id': userStandard.xConsumerId,
         'x-consumer-custom-id': '1'
       }
     };
-    server.inject(options, function(response) {
+    try {
+      response = await server.inject(options);
       const result: any = response.result;
       t.equal(result.length, 2);
       t.equal(result[0].title, 'poi1');
       t.equal(response.statusCode, 200);
-      server.stop(t.end);
-    });
+      } catch (e) {
+      console.error(response.result);
+      t.fail(e);
+    } finally {
+      t.end();
+    }
   });
 
-  test('GET /pois - user2', function(t) {
+  test('GET /pois - user2', async t => {
+    let response;
     const options = {
       method: 'GET',
       url: '/pois',
       headers: {
-        'x-consumer-username': user1.xConsumerUsername,
-        'x-consumer-id': user1.xConsumerId,
+        'x-consumer-username': userStandard.xConsumerUsername,
+        'x-consumer-id': userStandard.xConsumerId,
         'x-consumer-custom-id': '10'
       }
     };
-    server.inject(options, function(response) {
+    try {
+      response = await server.inject(options);
       const result: any = response.result;
       t.equal(result.length, 0);
       t.equal(response.statusCode, 200);
-      server.stop(t.end);
-    });
+      } catch (e) {
+      console.error(response.result);
+      t.fail(e);
+    } finally {
+      t.end();
+    }
   });
 
 // ----------------------------------------------------------------
 
-  test('PATCH /pois/{id} - anonyme', function(t) {
+  test('PATCH /pois/{id} - anonyme', async t => {
+    let response;
     const options = {
       method: 'PATCH',
       url: '/pois/2',
@@ -218,57 +267,75 @@ Server.init(serverConfigs).then((server) => {
         title: 'dummy99'
       }
     };
-    server.inject(options, function(response) {
+    try {
+      response = await server.inject(options);
       const result: any = response.result;
       t.equal(result.message, 'Must be authenticated');
       t.equal(response.statusCode, 401);
-      server.stop(t.end);
-    });
+      } catch (e) {
+      console.error(response.result);
+      t.fail(e);
+    } finally {
+      t.end();
+    }
   });
 
-  test('PATCH /pois/{id} - user1', function(t) {
+  test('PATCH /pois/{id} - userStandard', async t => {
+    let response;
     const options = {
       method: 'PATCH',
       url: '/pois/2',
       headers: {
-        'x-consumer-username': user1.xConsumerUsername,
-        'x-consumer-id': user1.xConsumerId,
+        'x-consumer-username': userStandard.xConsumerUsername,
+        'x-consumer-id': userStandard.xConsumerId,
         'x-consumer-custom-id': '1'
       },
       payload: {
         title: 'dummy99'
       }
     };
-    server.inject(options, function(response) {
+    try {
+      response = await server.inject(options);
       t.equal(response.statusCode, 200);
       const result: any = response.result;
       t.equal(result.id, '2');
-      server.stop(t.end);
-    });
+      } catch (e) {
+      console.error(response.result);
+      t.fail(e);
+    } finally {
+      t.end();
+    }
   });
 
-  test('PATCH /pois/{id} - another user', function(t) {
+  test('PATCH /pois/{id} - another user', async t => {
+    let response;
     const options = {
       method: 'PATCH',
       url: '/pois/2',
       headers: {
-        'x-consumer-username': user1.xConsumerUsername,
-        'x-consumer-id': user1.xConsumerId,
+        'x-consumer-username': userStandard.xConsumerUsername,
+        'x-consumer-id': userStandard.xConsumerId,
         'x-consumer-custom-id': '9'
       },
       payload: {
         title: 'dummy99'
       }
     };
-    server.inject(options, function(response) {
+    try {
+      response = await server.inject(options);
       t.equal(response.statusCode, 404);
-      server.stop(t.end);
-    });
+      } catch (e) {
+      console.error(response.result);
+      t.fail(e);
+    } finally {
+      t.end();
+    }
   });
 
   // ----------------------------------------------------------------
 
-  test('GET /pois/{id} - anonyme', function(t) {
+  test('GET /pois/{id} - anonyme', async t => {
+    let response;
     const options = {
       method: 'GET',
       url: '/pois/2',
@@ -278,51 +345,69 @@ Server.init(serverConfigs).then((server) => {
         'x-anonymous-consumer': 'true'
       }
     };
-    server.inject(options, function(response) {
+    try {
+      response = await server.inject(options);
       const result: any = response.result;
       t.equal(result.message, 'Must be authenticated');
       t.equal(response.statusCode, 401);
-      server.stop(t.end);
-    });
+      } catch (e) {
+      console.error(response.result);
+      t.fail(e);
+    } finally {
+      t.end();
+    }
   });
 
-  test('GET /pois/{id} - user1', function(t) {
+  test('GET /pois/{id} - userStandard', async t => {
+    let response;
     const options = {
       method: 'GET',
       url: '/pois/2',
       headers: {
-        'x-consumer-username': user1.xConsumerUsername,
-        'x-consumer-id': user1.xConsumerId,
+        'x-consumer-username': userStandard.xConsumerUsername,
+        'x-consumer-id': userStandard.xConsumerId,
         'x-consumer-custom-id': '1'
       }
     };
-    server.inject(options, function(response) {
+    try {
+      response = await server.inject(options);
       const result: any = response.result;
       t.equal(result.title, 'dummy99');
       t.equal(response.statusCode, 200);
-      server.stop(t.end);
-    });
+      } catch (e) {
+      console.error(response.result);
+      t.fail(e);
+    } finally {
+      t.end();
+    }
   });
 
-  test('GET /pois/{id} - another user', function(t) {
+  test('GET /pois/{id} - another user', async t => {
+    let response;
     const options = {
       method: 'GET',
       url: '/pois/1',
       headers: {
-        'x-consumer-username': user1.xConsumerUsername,
-        'x-consumer-id': user1.xConsumerId,
+        'x-consumer-username': userStandard.xConsumerUsername,
+        'x-consumer-id': userStandard.xConsumerId,
         'x-consumer-custom-id': '9'
       }
     };
-    server.inject(options, function(response) {
+    try {
+      response = await server.inject(options);
       t.equal(response.statusCode, 404);
-      server.stop(t.end);
-    });
+      } catch (e) {
+      console.error(response.result);
+      t.fail(e);
+    } finally {
+      t.end();
+    }
   });
 
   // ----------------------------------------------------------------
 
-  test('DELETE /pois/{id} - anonyme', function(t) {
+  test('DELETE /pois/{id} - anonyme', async t => {
+    let response;
     const options = {
       method: 'DELETE',
       url: '/pois/2',
@@ -332,63 +417,88 @@ Server.init(serverConfigs).then((server) => {
         'x-anonymous-consumer': 'true'
       }
     };
-    server.inject(options, function(response) {
+    try {
+      response = await server.inject(options);
       const result: any = response.result;
       t.equal(result.message, 'Must be authenticated');
       t.equal(response.statusCode, 401);
-      server.stop(t.end);
-    });
+      } catch (e) {
+      console.error(response.result);
+      t.fail(e);
+    } finally {
+      t.end();
+    }
   });
 
-  test('DELETE /pois/{id} - another user', function(t) {
+  test('DELETE /pois/{id} - another user', async t => {
+    let response;
     const options = {
       method: 'DELETE',
       url: '/pois/2',
       headers: {
-        'x-consumer-username': user1.xConsumerUsername,
-        'x-consumer-id': user1.xConsumerId,
+        'x-consumer-username': userStandard.xConsumerUsername,
+        'x-consumer-id': userStandard.xConsumerId,
         'x-consumer-custom-id': '9'
       }
     };
-    server.inject(options, function(response) {
+    try {
+      response = await server.inject(options);
       t.equal(response.statusCode, 404);
-      server.stop(t.end);
-    });
+      } catch (e) {
+      console.error(response.result);
+      t.fail(e);
+    } finally {
+      t.end();
+    }
   });
 
-  test('DELETE /pois/{id} - user1', function(t) {
+  test('DELETE /pois/{id} - userStandard', async t => {
+    let response;
     const options = {
       method: 'DELETE',
       url: '/pois/2',
       headers: {
-        'x-consumer-username': user1.xConsumerUsername,
-        'x-consumer-id': user1.xConsumerId,
+        'x-consumer-username': userStandard.xConsumerUsername,
+        'x-consumer-id': userStandard.xConsumerId,
         'x-consumer-custom-id': '1'
       }
     };
-    server.inject(options, function(response) {
+    try {
+      response = await server.inject(options);
       t.equal(response.statusCode, 204);
-      server.stop(t.end);
-    });
+      } catch (e) {
+      console.error(response.result);
+      t.fail(e);
+    } finally {
+      t.end();
+    }
   });
 
 
-  test('GET /pois - after delete', function(t) {
+  test('GET /pois - after delete', async t => {
+    let response;
     const options = {
       method: 'GET',
       url: '/pois',
       headers: {
-        'x-consumer-username': user1.xConsumerUsername,
-        'x-consumer-id': user1.xConsumerId,
+        'x-consumer-username': userStandard.xConsumerUsername,
+        'x-consumer-id': userStandard.xConsumerId,
         'x-consumer-custom-id': '1'
       }
     };
-    server.inject(options, function(response) {
+    try {
+      response = await server.inject(options);
       const result: any = response.result;
       t.equal(result.length, 1);
       t.equal(response.statusCode, 200);
-      server.stop(t.end);
-    });
+      } catch (e) {
+      console.error(response.result);
+      t.fail(e);
+    } finally {
+      t.end();
+    }
   });
 
-});
+};
+
+runTests();

@@ -1,22 +1,23 @@
-import * as Rx from 'rxjs';
 import * as Boom from 'boom';
 
 import { IDatabase, database } from '../database';
 import { ObjectUtils } from '../utils';
-import { User } from '../user';
+import { UserApi } from '../user';
 import { ContextInstance, Scope } from '../context';
 
-import { IContextPermission, ContextPermissionInstance,
-  TypePermission } from './index';
+import {
+  IContextPermission, ContextPermissionInstance,
+  TypePermission
+} from './index';
 
 export class ContextPermission {
   private database: IDatabase = database;
 
-  constructor() {}
+  constructor() { }
 
-  public create(
+  public async create(
     contextPermission: IContextPermission
-  ): Rx.Observable<ContextPermissionInstance> {
+  ): Promise<ContextPermissionInstance[]> {
 
     const bulkData: IContextPermission[] = [];
 
@@ -32,200 +33,151 @@ export class ContextPermission {
       }
     }
 
-    return Rx.Observable.create(observer => {
-      this.database.contextPermission.bulkCreate(bulkData, {
-          individualHooks: true
-      }).then((contextPermissionCreated) => {
-          observer.next(contextPermissionCreated);
-          observer.complete();
-        }).catch((error) => {
-          const uniqueFields = ['contextId', 'profil'];
-          if (error.name === 'SequelizeUniqueConstraintError' &&
-              error.fields.toString() === uniqueFields.toString()) {
-            const message = 'The pair contextId and profil must be unique.';
-            observer.error(Boom.conflict(message));
-          } else {
-            observer.error(Boom.badImplementation(error));
-          }
-        });
+    return await this.database.contextPermission.bulkCreate(bulkData, {
+      individualHooks: true
+    }).catch((error) => {
+      const uniqueFields = ['contextId', 'profil'];
+      if (error.name === 'SequelizeUniqueConstraintError' &&
+        error.fields.toString() === uniqueFields.toString()) {
+        const message = 'The pair contextId and profil must be unique.';
+        throw Boom.conflict(message);
+      } else {
+        throw Boom.badImplementation(error);
+      }
     });
   }
 
-  public update(
+  public async update(
     id: string,
     contextPermission: IContextPermission
-  ): Rx.Observable<ContextPermissionInstance> {
+  ): Promise<{ id: string }> {
 
-    return Rx.Observable.create(observer => {
-
-      this.database.contextPermission.update(contextPermission, {
-        where: {
-          id: id
-        }
-      }).then((count: [number, ContextPermissionInstance[]]) => {
-        if (count[0]) {
-          observer.next({id: id});
-          observer.complete();
-        } else {
-          observer.error(Boom.notFound());
-        }
-      }).catch((error) => {
-        const uniqueFields = ['contextId', 'profil'];
-        if (error.name === 'SequelizeUniqueConstraintError' &&
-            error.fields.toString() === uniqueFields.toString()) {
-          const message = 'The pair contextId and profil must be unique.';
-          observer.error(Boom.conflict(message));
-        } else {
-          observer.error(Boom.badImplementation(error));
-        }
-      });
+    return await this.database.contextPermission.update(contextPermission, {
+      where: {
+        id: id
+      }
+    }).then((count: [number, ContextPermissionInstance[]]) => {
+      if (!count[0]) {
+        throw Boom.notFound();
+      }
+      return { id: id };
+    }).catch((error) => {
+      if (Boom.isBoom(error)) {
+        throw error;
+      }
+      const uniqueFields = ['contextId', 'profil'];
+      if (error.name === 'SequelizeUniqueConstraintError' &&
+        error.fields.toString() === uniqueFields.toString()) {
+        const message = 'The pair contextId and profil must be unique.';
+        throw Boom.conflict(message);
+      }
+      throw Boom.badImplementation(error);
     });
   }
 
-  public delete(id: string): Rx.Observable<{}> {
-    return Rx.Observable.create(observer => {
-      this.database.contextPermission.destroy({
-        where: {
-          id: id
-        }
-      }).then((count: number) => {
-        if (count) {
-          observer.next({});
-          observer.complete();
-        } else {
-          observer.error(Boom.notFound());
-        }
-      }).catch((error) => {
-        observer.error(Boom.badImplementation(error));
-      });
+  public async delete(id: string): Promise<void> {
+    return await this.database.contextPermission.destroy({
+      where: {
+        id: id
+      }
+    }).then((count: number) => {
+      if (!count) {
+        throw Boom.notFound();
+      }
+      return;
     });
   }
 
-  public getByContextId(contextId): Rx.Observable<ContextPermissionInstance[]> {
-    return Rx.Observable.create(observer => {
-      this.database.contextPermission.findAll({
-        where: {
-          contextId: contextId
+  public async getByContextId(contextId): Promise<ContextPermissionInstance[]> {
+    return await this.database.contextPermission.findAll({
+      where: {
+        contextId: contextId
+      }
+    }).then((contextPermissions: ContextPermissionInstance[]) => {
+      const plainContextPermissions = contextPermissions.map(
+        (contextPermission) => {
+          return ObjectUtils.removeNull(contextPermission.get());
         }
-      }).then((contextPermissions: ContextPermissionInstance[]) => {
-          const plainContextPermissions = contextPermissions.map(
-            (contextPermission) => {
-              return ObjectUtils.removeNull(contextPermission.get());
-            }
-          );
-          observer.next(plainContextPermissions);
-          observer.complete();
-        }).catch((error) => {
-          observer.error(Boom.badImplementation(error));
-        });
-    });
-  }
-
-  public getPermission(context: ContextInstance,
-    user?: string): Rx.Observable<TypePermission> {
-
-    return Rx.Observable.create(observer => {
-
-      if (user && context.owner === user) {
-        observer.next(TypePermission.write);
-        observer.complete();
-        return;
-      }
-
-      if (!user) {
-        if (Scope[context.scope] as any === Scope.public) {
-          observer.next(TypePermission.read);
-        } else {
-          observer.next(TypePermission.null);
-        }
-        observer.complete();
-        return;
-      }
-
-      if (Scope[context.scope] as any === Scope.private) {
-        observer.next(TypePermission.null);
-        observer.complete();
-        return;
-      }
-
-      this.getPermissionFromProfils(context, user).subscribe(
-        (permission) => {
-          observer.next(permission);
-          observer.complete();
-        },
-        (error: Boom.BoomError) => observer.error(error)
       );
+      return plainContextPermissions;
+
     });
   }
 
-  public getPermissionByContextId(contextId: string,
-    user?: string): Rx.Observable<TypePermission> {
+  public async getPermission(context: ContextInstance,
+    user?: string): Promise<TypePermission> {
 
-    return Rx.Observable.create(observer => {
-      this.database.context.findOne({
+    if (user && context.owner === user) {
+      return TypePermission.write;
+    }
+
+    if (!user) {
+      if (Scope[context.scope] as any === Scope.public) {
+        return TypePermission.read;
+      } else {
+        return TypePermission.null;
+      }
+    }
+
+    if (Scope[context.scope] as any === Scope.private) {
+      return TypePermission.null;
+    }
+
+    return await this.getPermissionFromProfils(context, user);
+  }
+
+  public async getPermissionByContextId(contextId: string,
+    user?: string): Promise<TypePermission> {
+
+    const context = await this.database.context.findOne({
+      where: {
+        id: contextId
+      }
+    });
+
+    if (!context) {
+      return TypePermission.null;
+    }
+    return await this.getPermission(context, user);
+  }
+
+  private async getPermissionFromProfils(context: ContextInstance,
+    user?: string): Promise<TypePermission> {
+
+    const profils: string[] = await UserApi.getProfils(user).catch(() => {
+      return [];
+    });
+    if (user) {
+      profils.push(user);
+    }
+    const contextFound: any = await this.database.context.findAll({
+      include: [{
+        model: this.database.contextPermission,
         where: {
-          id: contextId
+          profil: profils
         }
-      }).then((context) => {
-        if (context) {
-          this.getPermission(context, user).subscribe(
-            (permission) => {
-              observer.next(permission);
-              observer.complete();
-            },
-            (error: Boom.BoomError) => observer.error(error)
-          );
-        } else {
-          observer.next(TypePermission.null);
-          observer.complete();
-        }
-      });
+      }],
+      where: {
+        id: context.id
+      }
     });
+
+    if (!contextFound.length) {
+      if (Scope[context.scope] as any === Scope.public) {
+        return TypePermission.read;
+      } else {
+        return TypePermission.null;
+      }
+    }
+
+    let permission: TypePermission = TypePermission.read;
+    for (const cp of contextFound[0].contextPermissions) {
+      const typePerm: any = TypePermission[cp.typePermission];
+      if (typePerm === TypePermission.write) {
+        permission = TypePermission.write;
+        break;
+      }
+    }
+    return permission;
   }
-
-  private getPermissionFromProfils(context: ContextInstance,
-    user?: string): Rx.Observable<TypePermission> {
-
-    return Rx.Observable.create(observer => {
-      User.getProfils(user).subscribe(
-        (profils) => {
-          if (user) {
-            profils.push(user);
-          }
-          this.database.context.findAll({
-            include: [{
-              model: this.database.contextPermission,
-              where: {
-                profil: profils
-              }
-            }],
-            where: {
-              id: context.id
-            }
-          }).then((contextFound: Array<any>) => {
-            if (!contextFound.length) {
-              if (Scope[context.scope] as any === Scope.public) {
-                observer.next(TypePermission.read);
-              } else {
-                observer.next(TypePermission.null);
-              }
-            } else {
-              let permission = TypePermission.read;
-              for (const cp of contextFound[0].contextPermissions) {
-                const typePerm: any = TypePermission[cp.typePermission];
-                if (typePerm === TypePermission.write) {
-                  permission = TypePermission.write;
-                  break;
-                }
-              }
-              observer.next(permission);
-            }
-            observer.complete();
-          });
-        },
-        (error: Boom.BoomError) => observer.error(error)
-      );
-    });
-  }
-
 }

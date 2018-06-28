@@ -1,8 +1,9 @@
 import * as Hapi from 'hapi';
-import * as Boom from 'boom';
+
+import { handleError } from '../utils';
 
 import { POI } from './poi';
-import { IPOI, POIInstance } from './poi.model';
+import { IPOI } from './poi.model';
 
 export class POIController {
 
@@ -12,52 +13,43 @@ export class POIController {
     this.poi = new POI();
   }
 
-  public create(request: Hapi.Request, reply: Hapi.IReply) {
-    const poiToCreate: IPOI = request.payload;
+  public async create(request: Hapi.Request, h: Hapi.ResponseToolkit) {
+    const poiToCreate: IPOI = request.payload as IPOI;
     poiToCreate.userId = request.headers['x-consumer-custom-id'];
-    this.poi.create(poiToCreate).subscribe(
-      (poi: POIInstance) => reply(poi).code(201),
-      (error: Boom.BoomError) => reply(error)
-    );
+
+    const res = await this.poi.create(poiToCreate)
+      .catch(handleError);
+    return h.response(res).code(201);
   }
 
-  public update(request: Hapi.Request, reply: Hapi.IReply) {
+  public async update(request: Hapi.Request, h: Hapi.ResponseToolkit) {
     const id = request.params['id'];
     const userId = request.headers['x-consumer-custom-id'];
-    const poiToUpdate: IPOI = request.payload;
+    const poiToUpdate: IPOI = request.payload as IPOI;
 
-    this.poi.update(id, userId, poiToUpdate).subscribe(
-      (poi: POIInstance) => reply(poi),
-      (error: Boom.BoomError) => reply(error)
-    );
+    return await this.poi.update(id, userId, poiToUpdate).catch(handleError);
+
   }
 
-  public delete(request: Hapi.Request, reply: Hapi.IReply) {
-    const id = request.params['id'];
-    const userId = request.headers['x-consumer-custom-id'];
-
-    this.poi.delete(id, userId).subscribe(
-      (poi: POIInstance) => reply(poi).code(204),
-      (error: Boom.BoomError) => reply(error)
-    );
-  }
-
-  public getById(request: Hapi.Request, reply: Hapi.IReply) {
+  public async delete(request: Hapi.Request, h: Hapi.ResponseToolkit) {
     const id = request.params['id'];
     const userId = request.headers['x-consumer-custom-id'];
 
-    this.poi.getById(id, userId).subscribe(
-      (poi: POIInstance) => reply(poi),
-      (error: Boom.BoomError) => reply(error)
-    );
+    await this.poi.delete(id, userId).catch(handleError);
+
+    return h.response().code(204);
   }
 
-  public get(request: Hapi.Request, reply: Hapi.IReply) {
+  public async getById(request: Hapi.Request, h: Hapi.ResponseToolkit) {
+    const id = request.params['id'];
     const userId = request.headers['x-consumer-custom-id'];
 
-    this.poi.get(userId).subscribe(
-      (pois: POIInstance[]) => reply(pois),
-      (error: Boom.BoomError) => reply(error)
-    );
+    return await this.poi.getById(id, userId).catch(handleError);
+  }
+
+  public async get(request: Hapi.Request, h: Hapi.ResponseToolkit) {
+    const userId = request.headers['x-consumer-custom-id'];
+
+    return await this.poi.get(userId).catch(handleError);
   }
 }

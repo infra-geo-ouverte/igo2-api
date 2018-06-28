@@ -1,8 +1,9 @@
 import * as Hapi from 'hapi';
-import * as Boom from 'boom';
+
+import { handleError } from '../utils';
 
 import { Layer } from './layer';
-import { ILayer, LayerInstance } from './layer.model';
+import { ILayer } from './layer.model';
 
 export class LayerController {
 
@@ -12,56 +13,42 @@ export class LayerController {
     this.layer = new Layer();
   }
 
-  public create(request: Hapi.Request, reply: Hapi.IReply) {
-    const layerToCreate: ILayer = request.payload;
+  public async create(request: Hapi.Request, h: Hapi.ResponseToolkit) {
+    const layerToCreate: ILayer = request.payload as ILayer;
 
-    this.layer.create(layerToCreate).subscribe(
-      (layer: LayerInstance) => reply(layer).code(201),
-      (error: Boom.BoomError) => reply(error)
-    );
+    const res = await this.layer.create(layerToCreate).catch(handleError);
+
+    return h.response(res).code(201);
   }
 
-  public update(request: Hapi.Request, reply: Hapi.IReply) {
+  public async update(request: Hapi.Request, h: Hapi.ResponseToolkit) {
     const id = request.params['id'];
-    const layerToUpdate: ILayer = request.payload;
+    const layerToUpdate: ILayer = request.payload as ILayer;
 
-    this.layer.update(id, layerToUpdate).subscribe(
-      (layer: LayerInstance) => reply(layer),
-      (error: Boom.BoomError) => reply(error)
-    );
+    return await this.layer.update(id, layerToUpdate).catch(handleError);
   }
 
-  public delete(request: Hapi.Request, reply: Hapi.IReply) {
+  public async delete(request: Hapi.Request, h: Hapi.ResponseToolkit) {
     const id = request.params['id'];
 
-    this.layer.delete(id).subscribe(
-      (layer: LayerInstance) => reply(layer).code(204),
-      (error: Boom.BoomError) => reply(error)
-    );
+    await this.layer.delete(id).catch(handleError);
+
+    return h.response().code(204);
   }
 
-  public getById(request: Hapi.Request, reply: Hapi.IReply) {
+  public async getById(request: Hapi.Request, h: Hapi.ResponseToolkit) {
     const id = request.params['id'];
     const user = request.headers['x-consumer-username'];
 
-    this.layer.getById(id, user).subscribe(
-      (layer: LayerInstance) => reply(layer),
-      (error: Boom.BoomError) => reply(error)
-    );
+    return await this.layer.getById(id, user).catch(handleError);
   }
 
-  public get(request: Hapi.Request, reply: Hapi.IReply) {
-    this.layer.get().subscribe(
-      (layers: LayerInstance[]) => reply(layers),
-      (error: Boom.BoomError) => reply(error)
-    );
+  public async get(request: Hapi.Request, h: Hapi.ResponseToolkit) {
+    return await this.layer.get().catch(handleError);
   }
 
-  public getBaseLayers(request: Hapi.Request, reply: Hapi.IReply) {
-    this.layer.getBaseLayers().subscribe(
-      (layers: LayerInstance[]) => reply(layers),
-      (error: Boom.BoomError) => reply(error)
-    );
+  public async getBaseLayers(request: Hapi.Request, h: Hapi.ResponseToolkit) {
+    return await this.layer.getBaseLayers().catch(handleError);
   }
 
 }

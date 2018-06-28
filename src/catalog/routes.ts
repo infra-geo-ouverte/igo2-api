@@ -13,8 +13,8 @@ export default function (server: Hapi.Server) {
     server.route({
         method: 'GET',
         path: '/catalogs/{id}',
-        config: {
-            handler: catalogController.getById,
+        handler: catalogController.getById,
+        options: {
             tags: ['api', 'catalogs'],
             description: 'Get catalogs by id.',
             validate: {
@@ -41,8 +41,8 @@ export default function (server: Hapi.Server) {
     server.route({
         method: 'GET',
         path: '/catalogs',
-        config: {
-            handler: catalogController.get,
+        handler: catalogController.get,
+        options: {
             tags: ['api', 'catalogs'],
             description: 'Get all catalogs.',
             validate: {
@@ -54,8 +54,8 @@ export default function (server: Hapi.Server) {
     server.route({
         method: 'DELETE',
         path: '/catalogs/{id}',
-        config: {
-            handler: catalogController.delete,
+        handler: catalogController.delete,
+        options: {
             tags: ['api', 'catalogs'],
             description: 'Delete catalog by id.',
             validate: {
@@ -82,8 +82,8 @@ export default function (server: Hapi.Server) {
     server.route({
         method: 'PATCH',
         path: '/catalogs/{id}',
-        config: {
-            handler: catalogController.update,
+        handler: catalogController.update,
+        options: {
             tags: ['api', 'catalogs'],
             description: 'Update catalog by id.',
             validate: {
@@ -111,8 +111,8 @@ export default function (server: Hapi.Server) {
     server.route({
         method: 'POST',
         path: '/catalogs',
-        config: {
-            handler: catalogController.create,
+        handler: catalogController.create,
+        options: {
             tags: ['api', 'catalogs'],
             description: 'Create a catalog.',
             validate: {

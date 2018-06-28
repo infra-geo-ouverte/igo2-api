@@ -8,7 +8,7 @@
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
     "noUnusedLocals": true,
-    "lib": ["es6", "dom"],
+    "lib": ["es7", "dom"],
     "typeRoots": [
       "../node_modules/@types"
     ]

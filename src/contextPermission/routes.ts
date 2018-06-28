@@ -14,8 +14,8 @@ export default function(server: Hapi.Server) {
   server.route({
     method: 'GET',
     path: '/contexts/{contextId}/permissions',
-    config: {
-      handler: contextPermissionController.getByContextId,
+    handler: contextPermissionController.getByContextId,
+    options: {
       tags: ['api', 'contextsPermissions', 'contexts', 'permissions'],
       description: 'Get permissions by contexts id.',
       validate: {
@@ -42,8 +42,8 @@ export default function(server: Hapi.Server) {
   server.route({
     method: 'DELETE',
     path: '/contexts/{contextId}/permissions/{id}',
-    config: {
-      handler: contextPermissionController.delete,
+    handler: contextPermissionController.delete,
+    options: {
       tags: ['api', 'contextsPermissions', 'contexts', 'permissions'],
       description: 'Delete contextPermission by id.',
       validate: {
@@ -71,8 +71,8 @@ export default function(server: Hapi.Server) {
   server.route({
     method: 'PATCH',
     path: '/contexts/{contextId}/permissions/{id}',
-    config: {
-      handler: contextPermissionController.update,
+    handler: contextPermissionController.update,
+    options: {
       tags: ['api', 'contextsPermissions', 'contexts', 'permissions'],
       description: 'Update contextPermission by id.',
       validate: {
@@ -101,8 +101,8 @@ export default function(server: Hapi.Server) {
   server.route({
     method: 'POST',
     path: '/contexts/{contextId}/permissions',
-    config: {
-      handler: contextPermissionController.create,
+    handler: contextPermissionController.create,
+    options: {
       tags: ['api', 'contextsPermissions', 'contexts', 'permissions'],
       description: 'Create a contextPermission.',
       validate: {

@@ -41,9 +41,9 @@ jspm_packages
 igo.db
 igo-test.db
 
-#ignore configs
+# Configs
 src/configurations/config.dev.json
 src/configurations/config.prod.json
 
-#pm2
+# pm2
 ecosystem.config.js

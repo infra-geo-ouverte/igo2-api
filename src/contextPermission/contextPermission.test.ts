@@ -4,254 +4,167 @@ import * as Configs from '../configurations';
 
 const serverConfigs = Configs.getServerConfig();
 const testConfigs = Configs.getTestConfig();
-const user1 = testConfigs.user1;
-const user2 = testConfigs.user2;
+const userStandard = testConfigs.standard;
+const user2 = testConfigs.standard2;
 
-Server.init(serverConfigs).then((server) => {
+const runTests = async () => {
+  const server = await Server.init(serverConfigs);
 
-  test('POST /contexts - before permissionContext - ', function(t) {
-    const options = {
-      method: 'POST',
-      url: '/contexts',
-      headers: {
-        'x-consumer-username': user1.xConsumerUsername,
-        'x-consumer-id': user1.xConsumerId
-      },
-      payload: {
-        uri: 'user1Private',
-        title: 'user1Private',
-        scope: 'private',
-        map: {}
-      }
-    };
-    server.inject(options, function(response) {
-      t.equal(response.statusCode, 201);
-      server.stop(t.end);
-    });
-  });
-
-  test('POST /contexts - before permissionContext - context 2', function(t) {
-    const options = {
-      method: 'POST',
-      url: '/contexts',
-      headers: {
-        'x-consumer-username': user2.xConsumerUsername,
-        'x-consumer-id': user2.xConsumerId
-      },
-      payload: {
-        uri: 'user2Private',
-        title: 'user2Private',
-        scope: 'private',
-        map: {}
-      }
-    };
-    server.inject(options, function(response) {
-      t.equal(response.statusCode, 201);
-      server.stop(t.end);
-    });
-  });
-
-  test('POST /contexts - before permissionContext - context 3', function(t) {
-    const options = {
-      method: 'POST',
-      url: '/contexts',
-      headers: {
-        'x-consumer-username': user2.xConsumerUsername,
-        'x-consumer-id': user2.xConsumerId
-      },
-      payload: {
-        uri: 'user2Public',
-        title: 'user2Public',
-        scope: 'public',
-        map: {}
-      }
-    };
-    server.inject(options, function(response) {
-      t.equal(response.statusCode, 201);
-      server.stop(t.end);
-    });
-  });
-
-  test('POST /contexts - before permissionContext - context 4', function(t) {
-    const options = {
-      method: 'POST',
-      url: '/contexts',
-      headers: {
-        'x-consumer-username': user2.xConsumerUsername,
-        'x-consumer-id': user2.xConsumerId
-      },
-      payload: {
-        uri: 'user2PublicWrite',
-        title: 'user2PublicWrite',
-        scope: 'public',
-        map: {}
-      }
-    };
-    server.inject(options, function(response) {
-      t.equal(response.statusCode, 201);
-      server.stop(t.end);
-    });
-  });
-
-  test('POST /contexts - before permissionContext - context 5', function(t) {
-    const options = {
-      method: 'POST',
-      url: '/contexts',
-      headers: {
-        'x-consumer-username': user2.xConsumerUsername,
-        'x-consumer-id': user2.xConsumerId
-      },
-      payload: {
-        uri: 'user2Protected',
-        title: 'user2Protected',
-        scope: 'protected',
-        map: {}
-      }
-    };
-    server.inject(options, function(response) {
-      t.equal(response.statusCode, 201);
-      server.stop(t.end);
-    });
-  });
-
-  test('POST /contexts - before permissionContext - context 6', function(t) {
-    const options = {
-      method: 'POST',
-      url: '/contexts',
-      headers: {
-        'x-consumer-username': user2.xConsumerUsername,
-        'x-consumer-id': user2.xConsumerId
-      },
-      payload: {
-        uri: 'user2ProtectedWrite',
-        title: 'user2ProtectedWrite',
-        scope: 'protected',
-        map: {}
-      }
-    };
-    server.inject(options, function(response) {
-      t.equal(response.statusCode, 201);
-      server.stop(t.end);
-    });
-  });
-
-  test('POST /contexts/{id}/permissions - before permContext', function(t) {
+  test('POST /contexts/{id}/permissions - before permContext', async t => {
+    let response;
     const options = {
       method: 'POST',
       url: '/contexts/4/permissions',
       headers: {
         'x-consumer-username': user2.xConsumerUsername,
-        'x-consumer-id': user2.xConsumerId
+        'x-consumer-id': user2.xConsumerId,
+        'x-consumer-groups': 'another'
       },
       payload: {
         typePermission: 'write',
-        profil: user1.xConsumerUsername
+        profil: userStandard.xConsumerUsername
       }
     };
-    server.inject(options, function(response) {
-      server.stop(t.end);
-    });
+    try {
+      response = await server.inject(options);
+    } catch (e) {
+      console.error(response.result);
+      t.fail(e);
+    } finally {
+      t.end();
+    }
   });
 
-  test('POST /contexts/{id}/permissions - before permContext', function(t) {
+  test('POST /contexts/{id}/permissions - before permContext', async t => {
+    let response;
     const options = {
       method: 'POST',
       url: '/contexts/6/permissions',
       headers: {
         'x-consumer-username': user2.xConsumerUsername,
-        'x-consumer-id': user2.xConsumerId
+        'x-consumer-id': user2.xConsumerId,
+        'x-consumer-groups': 'another'
       },
       payload: {
         typePermission: 'write',
-        profil: user1.xConsumerUsername
+        profil: userStandard.xConsumerUsername
       }
     };
-    server.inject(options, function(response) {
-      server.stop(t.end);
-    });
+    try {
+      response = await server.inject(options);
+    } catch (e) {
+      console.error(response.result);
+      t.fail(e);
+    } finally {
+      t.end();
+    }
   });
 
   // ===========================================================
 
-  test('POST /contexts/1/permissions - user1', function(t) {
+  test('POST /contexts/1/permissions - userStandard', async t => {
+    let response;
     const options = {
       method: 'POST',
       url: '/contexts/1/permissions',
       headers: {
-        'x-consumer-username': user1.xConsumerUsername,
-        'x-consumer-id': user1.xConsumerId
+        'x-consumer-username': userStandard.xConsumerUsername,
+        'x-consumer-id': userStandard.xConsumerId,
+        'x-consumer-groups': 'standard, another'
       },
       payload: {
         typePermission: 'read',
         profil: 'test'
       }
     };
-    server.inject(options, function(response) {
+    try {
+      response = await server.inject(options);
       const result: any = response.result[0];
       t.equal(result.profil, 'test');
       t.equal(result.typePermission, 'read');
       t.equal(Number(result.contextId), 1);
       t.equal(response.statusCode, 201);
-      server.stop(t.end);
-    });
+    } catch (e) {
+      console.error(response.result);
+      t.fail(e);
+    } finally {
+      t.end();
+    }
   });
 
-  test('POST /contexts/2/permissions - user1', function(t) {
+  test('POST /contexts/2/permissions - userStandard', async t => {
+    let response;
     const options = {
       method: 'POST',
       url: '/contexts/2/permissions',
       headers: {
-        'x-consumer-username': user1.xConsumerUsername,
-        'x-consumer-id': user1.xConsumerId
+        'x-consumer-username': userStandard.xConsumerUsername,
+        'x-consumer-id': userStandard.xConsumerId,
+        'x-consumer-groups': 'standard, another'
       },
       payload: {
         typePermission: 'read',
         profil: 'test'
       }
     };
-    server.inject(options, function(response) {
+    try {
+      response = await server.inject(options);
       const result: any = response.result;
       t.equal(result.message, 'Must have write permission for this context');
       t.equal(response.statusCode, 403);
-      server.stop(t.end);
-    });
+    } catch (e) {
+      console.error(response.result);
+      t.fail(e);
+    } finally {
+      t.end();
+    }
   });
 
-  test('POST /contexts/3/permissions - user1', function(t) {
+  test('POST /contexts/3/permissions - userStandard', async t => {
+    let response;
     const options = {
       method: 'POST',
       url: '/contexts/3/permissions',
       headers: {
-        'x-consumer-username': user1.xConsumerUsername,
-        'x-consumer-id': user1.xConsumerId
+        'x-consumer-username': userStandard.xConsumerUsername,
+        'x-consumer-id': userStandard.xConsumerId,
+        'x-consumer-groups': 'standard, another'
       },
       payload: {
         typePermission: 'read',
         profil: 'test'
       }
     };
-    server.inject(options, function(response) {
+    try {
+      response = await server.inject(options);
       const result: any = response.result;
       t.equal(result.message, 'Must have write permission for this context');
       t.equal(response.statusCode, 403);
-      server.stop(t.end);
-    });
+    } catch (e) {
+      console.error(response.result);
+      t.fail(e);
+    } finally {
+      t.end();
+    }
   });
 
-  test('POST /contexts/4/permissions - user1', function(t) {
+  test('POST /contexts/4/permissions - userStandard', async t => {
+    let response;
     const options = {
       method: 'POST',
       url: '/contexts/4/permissions',
       headers: {
-        'x-consumer-username': user1.xConsumerUsername,
-        'x-consumer-id': user1.xConsumerId
+        'x-consumer-username': userStandard.xConsumerUsername,
+        'x-consumer-id': userStandard.xConsumerId,
+        'x-consumer-groups': 'standard, another'
       },
       payload: {
         typePermission: 'read',
         profil: 'test, test2'
       }
     };
-    server.inject(options, function(response) {
+    try {
+      response = await server.inject(options);
       const result: any = response.result;
       t.equal(result[0].profil, 'test');
       t.equal(result[0].typePermission, 'read');
@@ -260,463 +173,627 @@ Server.init(serverConfigs).then((server) => {
       t.equal(result[1].typePermission, 'read');
       t.equal(Number(result[1].contextId), 4);
       t.equal(response.statusCode, 201);
-      server.stop(t.end);
-    });
+    } catch (e) {
+      console.error(response.result);
+      t.fail(e);
+    } finally {
+      t.end();
+    }
   });
 
-  test('POST /contexts/5/permissions - user1', function(t) {
+  test('POST /contexts/5/permissions - userStandard', async t => {
+    let response;
     const options = {
       method: 'POST',
       url: '/contexts/5/permissions',
       headers: {
-        'x-consumer-username': user1.xConsumerUsername,
-        'x-consumer-id': user1.xConsumerId
+        'x-consumer-username': userStandard.xConsumerUsername,
+        'x-consumer-id': userStandard.xConsumerId,
+        'x-consumer-groups': 'standard, another'
       },
       payload: {
         typePermission: 'read',
         profil: 'test'
       }
     };
-    server.inject(options, function(response) {
+    try {
+      response = await server.inject(options);
       const result: any = response.result;
       t.equal(result.message, 'Must have write permission for this context');
       t.equal(response.statusCode, 403);
-      server.stop(t.end);
-    });
+    } catch (e) {
+      console.error(response.result);
+      t.fail(e);
+    } finally {
+      t.end();
+    }
   });
 
-  test('POST /contexts/6/permissions - user1', function(t) {
+  test('POST /contexts/6/permissions - userStandard', async t => {
+    let response;
     const options = {
       method: 'POST',
       url: '/contexts/6/permissions',
       headers: {
-        'x-consumer-username': user1.xConsumerUsername,
-        'x-consumer-id': user1.xConsumerId
+        'x-consumer-username': userStandard.xConsumerUsername,
+        'x-consumer-id': userStandard.xConsumerId,
+        'x-consumer-groups': 'standard, another'
       },
       payload: {
         typePermission: 'write',
         profil: 'test'
       }
     };
-    server.inject(options, function(response) {
+    try {
+      response = await server.inject(options);
       const result: any = response.result[0];
       t.equal(result.profil, 'test');
       t.equal(result.typePermission, 'write');
       t.equal(Number(result.contextId), 6);
       t.equal(response.statusCode, 201);
-      server.stop(t.end);
-    });
+    } catch (e) {
+      console.error(response.result);
+      t.fail(e);
+    } finally {
+      t.end();
+    }
   });
 
-  test('POST /contexts/10/permissions - user1', function(t) {
+  test('POST /contexts/10/permissions - userStandard', async t => {
+    let response;
     const options = {
       method: 'POST',
       url: '/contexts/1/permissions',
       headers: {
-        'x-consumer-username': user1.xConsumerUsername,
-        'x-consumer-id': user1.xConsumerId
+        'x-consumer-username': userStandard.xConsumerUsername,
+        'x-consumer-id': userStandard.xConsumerId,
+        'x-consumer-groups': 'standard, another'
       },
       payload: {
         typePermission: 'read',
         profil: 'test'
       }
     };
-    server.inject(options, function(response) {
+    try {
+      response = await server.inject(options);
       const result: any = response.result;
       t.equal(result.message, 'The pair contextId and profil must be unique.');
       t.equal(response.statusCode, 409);
-      server.stop(t.end);
-    });
+    } catch (e) {
+      console.error(response.result);
+      t.fail(e);
+    } finally {
+      t.end();
+    }
   });
 
-  test('POST /contexts/6/permissions - user2', function(t) {
+  test('POST /contexts/6/permissions - user2', async t => {
+    let response;
     const options = {
       method: 'POST',
       url: '/contexts/6/permissions',
       headers: {
         'x-consumer-username': user2.xConsumerUsername,
-        'x-consumer-id': user2.xConsumerId
+        'x-consumer-id': user2.xConsumerId,
+        'x-consumer-groups': 'another'
       },
       payload: {
         typePermission: 'read',
         profil: 'test'
       }
     };
-    server.inject(options, function(response) {
+    try {
+      response = await server.inject(options);
       const result: any = response.result;
       t.equal(result.message, 'The pair contextId and profil must be unique.');
       t.equal(response.statusCode, 409);
-      server.stop(t.end);
-    });
+    } catch (e) {
+      console.error(response.result);
+      t.fail(e);
+    } finally {
+      t.end();
+    }
   });
 
-  test('POST /contexts/6/permissions - user2', function(t) {
+  test('POST /contexts/6/permissions - user2', async t => {
+    let response;
     const options = {
       method: 'POST',
       url: '/contexts/6/permissions',
       headers: {
         'x-consumer-username': user2.xConsumerUsername,
-        'x-consumer-id': user2.xConsumerId
+        'x-consumer-id': user2.xConsumerId,
+        'x-consumer-groups': 'another'
       },
       payload: {
         typePermission: 'read',
         profil: 'test'
       }
     };
-    server.inject(options, function(response) {
+    try {
+      response = await server.inject(options);
       const result: any = response.result;
       const message = 'The pair contextId and profil must be unique.';
       t.equal(result.message, message);
       t.equal(response.statusCode, 409);
-      server.stop(t.end);
-    });
+    } catch (e) {
+      console.error(response.result);
+      t.fail(e);
+    } finally {
+      t.end();
+    }
   });
 
-  test('POST /contexts/3/permissions - user2', function(t) {
+  test('POST /contexts/4/permissions - user2', async t => {
+    let response;
     const options = {
       method: 'POST',
-      url: '/contexts/3/permissions',
+      url: '/contexts/4/permissions',
       headers: {
         'x-consumer-username': user2.xConsumerUsername,
-        'x-consumer-id': user2.xConsumerId
+        'x-consumer-id': user2.xConsumerId,
+        'x-consumer-groups': 'another'
       },
       payload: {
         typePermission: 'read',
-        profil: 'test'
+        profil: 'test22'
       }
     };
-    server.inject(options, function(response) {
+    try {
+      response = await server.inject(options);
       const result: any = response.result[0];
-      t.equal(result.profil, 'test');
+      t.equal(result.profil, 'test22');
       t.equal(result.typePermission, 'read');
-      t.equal(Number(result.contextId), 3);
+      t.equal(Number(result.contextId), 4);
       t.equal(response.statusCode, 201);
-      server.stop(t.end);
-    });
+    } catch (e) {
+      console.error(response.result);
+      t.fail(e);
+    } finally {
+      t.end();
+    }
   });
 
-  test('POST /contexts/3/permissions - user2', function(t) {
+  test('POST /contexts/4/permissions - user2', async t => {
+    let response;
     const options = {
       method: 'POST',
-      url: '/contexts/3/permissions',
+      url: '/contexts/4/permissions',
       headers: {
         'x-consumer-username': user2.xConsumerUsername,
-        'x-consumer-id': user2.xConsumerId
+        'x-consumer-id': user2.xConsumerId,
+        'x-consumer-groups': 'another'
       },
       payload: {
         typePermission: 'test',
         profil: 'test2'
       }
     };
-    server.inject(options, function(response) {
+    try {
+      response = await server.inject(options);
       const result: any = response.result;
-      let message = 'child "typePermission" fails because ';
-      message += '["typePermission" must be one of [read, write]]';
-      t.equal(result.message, message);
+      t.equal(result.message, 'Invalid request payload input');
       t.equal(response.statusCode, 400);
-      server.stop(t.end);
-    });
+    } catch (e) {
+      console.error(response.result);
+      t.fail(e);
+    } finally {
+      t.end();
+    }
   });
 
 
   // ===============================================
 
-  test('PATCH /contexts/1/permissions/1 - id not allowed', function(t) {
+  test('PATCH /contexts/1/permissions/1 - id not allowed', async t => {
+    let response;
     const options = {
       method: 'PATCH',
       url: '/contexts/1/permissions/1',
       headers: {
-        'x-consumer-username': user1.xConsumerUsername,
-        'x-consumer-id': user1.xConsumerId
+        'x-consumer-username': userStandard.xConsumerUsername,
+        'x-consumer-id': userStandard.xConsumerId,
+        'x-consumer-groups': 'standard, another'
       },
       payload: {
         id: '1234'
       }
     };
-    server.inject(options, function(response) {
+    try {
+      response = await server.inject(options);
       const result: any = response.result;
-      t.equal(result.message, '"id" is not allowed');
+      t.equal(result.message, 'Invalid request payload input');
       t.equal(response.statusCode, 400);
-      server.stop(t.end);
-    });
+    } catch (e) {
+      console.error(response.result);
+      t.fail(e);
+    } finally {
+      t.end();
+    }
   });
 
-  test('PATCH /contexts/1/permissions/1 - user1', function(t) {
+  test('PATCH /contexts/1/permissions/1 - userStandard', async t => {
+    let response;
     const options = {
       method: 'PATCH',
       url: '/contexts/1/permissions/1',
       headers: {
-        'x-consumer-username': user1.xConsumerUsername,
-        'x-consumer-id': user1.xConsumerId
+        'x-consumer-username': userStandard.xConsumerUsername,
+        'x-consumer-id': userStandard.xConsumerId,
+        'x-consumer-groups': 'standard, another'
       },
       payload: {
         profil: 'anotherProfil',
         typePermission: 'write'
       }
     };
-    server.inject(options, function(response) {
+    try {
+      response = await server.inject(options);
       const result: any = response.result;
       t.equal(Number(result.id), 1);
       t.equal(response.statusCode, 200);
-      server.stop(t.end);
-    });
+    } catch (e) {
+      console.error(response.result);
+      t.fail(e);
+    } finally {
+      t.end();
+    }
   });
 
-  test('PATCH /contexts/2/permissions/1 - user1', function(t) {
+  test('PATCH /contexts/2/permissions/1 - userStandard', async t => {
+    let response;
     const options = {
       method: 'PATCH',
       url: '/contexts/2/permissions/1',
       headers: {
-        'x-consumer-username': user1.xConsumerUsername,
-        'x-consumer-id': user1.xConsumerId
+        'x-consumer-username': userStandard.xConsumerUsername,
+        'x-consumer-id': userStandard.xConsumerId,
+        'x-consumer-groups': 'standard, another'
       },
       payload: {
         typePermission: 'write'
       }
     };
-    server.inject(options, function(response) {
+    try {
+      response = await server.inject(options);
       const result: any = response.result;
       t.equal(result.message, 'Must have write permission for this context');
       t.equal(response.statusCode, 403);
-      server.stop(t.end);
-    });
+    } catch (e) {
+      console.error(response.result);
+      t.fail(e);
+    } finally {
+      t.end();
+    }
   });
 
-  test('PATCH /contexts/3/permissions/1 - user1', function(t) {
+  test('PATCH /contexts/3/permissions/1 - userStandard', async t => {
+    let response;
     const options = {
       method: 'PATCH',
       url: '/contexts/3/permissions/1',
       headers: {
-        'x-consumer-username': user1.xConsumerUsername,
-        'x-consumer-id': user1.xConsumerId
+        'x-consumer-username': userStandard.xConsumerUsername,
+        'x-consumer-id': userStandard.xConsumerId,
+        'x-consumer-groups': 'standard, another'
       },
       payload: {
         typePermission: 'write'
       }
     };
-    server.inject(options, function(response) {
+    try {
+      response = await server.inject(options);
       const result: any = response.result;
       t.equal(result.message, 'Must have write permission for this context');
       t.equal(response.statusCode, 403);
-      server.stop(t.end);
-    });
+    } catch (e) {
+      console.error(response.result);
+      t.fail(e);
+    } finally {
+      t.end();
+    }
   });
 
-  test('PATCH /contexts/4/permissions/2 - user1', function(t) {
+  test('PATCH /contexts/4/permissions/2 - userStandard', async t => {
+    let response;
     const options = {
       method: 'PATCH',
       url: '/contexts/4/permissions/2',
       headers: {
-        'x-consumer-username': user1.xConsumerUsername,
-        'x-consumer-id': user1.xConsumerId
+        'x-consumer-username': userStandard.xConsumerUsername,
+        'x-consumer-id': userStandard.xConsumerId,
+        'x-consumer-groups': 'standard, another'
       },
       payload: {
         typePermission: 'write'
       }
     };
-    server.inject(options, function(response) {
+    try {
+      response = await server.inject(options);
       t.equal(response.statusCode, 403);
-      server.stop(t.end);
-    });
+    } catch (e) {
+      console.error(response.result);
+      t.fail(e);
+    } finally {
+      t.end();
+    }
   });
 
-  test('PATCH /contexts/5/permissions/1 - user1', function(t) {
+  test('PATCH /contexts/5/permissions/1 - userStandard', async t => {
+    let response;
     const options = {
       method: 'PATCH',
       url: '/contexts/5/permissions/1',
       headers: {
-        'x-consumer-username': user1.xConsumerUsername,
-        'x-consumer-id': user1.xConsumerId
+        'x-consumer-username': userStandard.xConsumerUsername,
+        'x-consumer-id': userStandard.xConsumerId,
+        'x-consumer-groups': 'standard, another'
       },
       payload: {
         typePermission: 'write'
       }
     };
-    server.inject(options, function(response) {
+    try {
+      response = await server.inject(options);
       const result: any = response.result;
       t.equal(result.message, 'Must have write permission for this context');
       t.equal(response.statusCode, 403);
-      server.stop(t.end);
-    });
+    } catch (e) {
+      console.error(response.result);
+      t.fail(e);
+    } finally {
+      t.end();
+    }
   });
 
-  test('PATCH /contexts/6/permissions/1 - user1', function(t) {
+  test('PATCH /contexts/6/permissions/1 - userStandard', async t => {
+    let response;
     const options = {
       method: 'PATCH',
       url: '/contexts/6/permissions/1',
       headers: {
-        'x-consumer-username': user1.xConsumerUsername,
-        'x-consumer-id': user1.xConsumerId
+        'x-consumer-username': userStandard.xConsumerUsername,
+        'x-consumer-id': userStandard.xConsumerId,
+        'x-consumer-groups': 'standard, another'
       },
       payload: {
         typePermission: 'write'
       }
     };
-    server.inject(options, function(response) {
+    try {
+      response = await server.inject(options);
       const result: any = response.result;
       t.equal(Number(result.id), 1);
       t.equal(response.statusCode, 200);
-      server.stop(t.end);
-    });
+    } catch (e) {
+      console.error(response.result);
+      t.fail(e);
+    } finally {
+      t.end();
+    }
   });
 
-  test('PATCH /contexts/1/permissions/10 - user1', function(t) {
+  test('PATCH /contexts/1/permissions/10 - userStandard', async t => {
+    let response;
     const options = {
       method: 'PATCH',
       url: '/contexts/1/permissions/10',
       headers: {
-        'x-consumer-username': user1.xConsumerUsername,
-        'x-consumer-id': user1.xConsumerId
+        'x-consumer-username': userStandard.xConsumerUsername,
+        'x-consumer-id': userStandard.xConsumerId,
+        'x-consumer-groups': 'standard, another'
       },
       payload: {
         typePermission: 'write'
       }
     };
-    server.inject(options, function(response) {
+    try {
+      response = await server.inject(options);
       t.equal(response.statusCode, 404);
-      server.stop(t.end);
-    });
+    } catch (e) {
+      console.error(response.result);
+      t.fail(e);
+    } finally {
+      t.end();
+    }
   });
 
-// ===================================
+  // ===================================
 
-  test('GET /contexts/1/permissions - user1', function(t) {
+  test('GET /contexts/1/permissions - userStandard', async t => {
+    let response;
     const options = {
       method: 'GET',
       url: '/contexts/1/permissions',
       headers: {
-        'x-consumer-username': user1.xConsumerUsername,
-        'x-consumer-id': user1.xConsumerId
+        'x-consumer-username': userStandard.xConsumerUsername,
+        'x-consumer-id': userStandard.xConsumerId,
+        'x-consumer-groups': 'standard, another'
       }
     };
-    server.inject(options, function(response) {
+    try {
+      response = await server.inject(options);
       const result: any = response.result;
       t.equal(result.length, 1);
       t.equal(result[0].profil, 'test');
       t.equal(response.statusCode, 200);
-      server.stop(t.end);
-    });
+    } catch (e) {
+      console.error(response.result);
+      t.fail(e);
+    } finally {
+      t.end();
+    }
   });
 
-  test('GET /contexts/2/permissions - user1', function(t) {
+  test('GET /contexts/2/permissions - userStandard', async t => {
+    let response;
     const options = {
       method: 'GET',
       url: '/contexts/2/permissions',
       headers: {
-        'x-consumer-username': user1.xConsumerUsername,
-        'x-consumer-id': user1.xConsumerId
+        'x-consumer-username': userStandard.xConsumerUsername,
+        'x-consumer-id': userStandard.xConsumerId,
+        'x-consumer-groups': 'standard, another'
       }
     };
-    server.inject(options, function(response) {
+    try {
+      response = await server.inject(options);
       const result: any = response.result;
       t.equal(result.message, 'Must have write permission for this context');
       t.equal(response.statusCode, 403);
-      server.stop(t.end);
-    });
+    } catch (e) {
+      console.error(response.result);
+      t.fail(e);
+    } finally {
+      t.end();
+    }
   });
 
-  test('GET /contexts/3/permissions - user1', function(t) {
+  test('GET /contexts/3/permissions - userStandard', async t => {
+    let response;
     const options = {
       method: 'GET',
       url: '/contexts/3/permissions',
       headers: {
-        'x-consumer-username': user1.xConsumerUsername,
-        'x-consumer-id': user1.xConsumerId
+        'x-consumer-username': userStandard.xConsumerUsername,
+        'x-consumer-id': userStandard.xConsumerId,
+        'x-consumer-groups': 'standard, another'
       }
     };
-    server.inject(options, function(response) {
+    try {
+      response = await server.inject(options);
       const result: any = response.result;
       t.equal(result.message, 'Must have write permission for this context');
       t.equal(response.statusCode, 403);
-      server.stop(t.end);
-    });
+    } catch (e) {
+      console.error(response.result);
+      t.fail(e);
+    } finally {
+      t.end();
+    }
   });
 
-  test('GET /contexts/4/permissions - user1', function(t) {
+  test('GET /contexts/4/permissions - userStandard', async t => {
+    let response;
     const options = {
       method: 'GET',
       url: '/contexts/4/permissions',
       headers: {
-        'x-consumer-username': user1.xConsumerUsername,
-        'x-consumer-id': user1.xConsumerId
+        'x-consumer-username': userStandard.xConsumerUsername,
+        'x-consumer-id': userStandard.xConsumerId,
+        'x-consumer-groups': 'standard, another'
       }
     };
-    server.inject(options, function(response) {
+    try {
+      response = await server.inject(options);
       const result: any = response.result;
       t.equal(result.message, 'Must have write permission for this context');
       t.equal(response.statusCode, 403);
-      server.stop(t.end);
-    });
+    } catch (e) {
+      console.error(response.result);
+      t.fail(e);
+    } finally {
+      t.end();
+    }
   });
 
-  test('GET /contexts/5/permissions - user1', function(t) {
+  test('GET /contexts/5/permissions - userStandard', async t => {
+    let response;
     const options = {
       method: 'GET',
       url: '/contexts/5/permissions',
       headers: {
-        'x-consumer-username': user1.xConsumerUsername,
-        'x-consumer-id': user1.xConsumerId
+        'x-consumer-username': userStandard.xConsumerUsername,
+        'x-consumer-id': userStandard.xConsumerId,
+        'x-consumer-groups': 'standard, another'
       }
     };
-    server.inject(options, function(response) {
+    try {
+      response = await server.inject(options);
       const result: any = response.result;
       t.equal(result.message, 'Must have write permission for this context');
       t.equal(response.statusCode, 403);
-      server.stop(t.end);
-    });
+    } catch (e) {
+      console.error(response.result);
+      t.fail(e);
+    } finally {
+      t.end();
+    }
   });
 
-  test('GET /contexts/6/permissions - user1', function(t) {
+  test('GET /contexts/6/permissions - userStandard', async t => {
+    let response;
     const options = {
       method: 'GET',
       url: '/contexts/6/permissions',
       headers: {
-        'x-consumer-username': user1.xConsumerUsername,
-        'x-consumer-id': user1.xConsumerId
+        'x-consumer-username': userStandard.xConsumerUsername,
+        'x-consumer-id': userStandard.xConsumerId,
+        'x-consumer-groups': 'standard, another'
       }
     };
-    server.inject(options, function(response) {
+    try {
+      response = await server.inject(options);
       const result: any = response.result;
       t.equal(result.length, 2);
-      t.equal(result[0].profil, user1.xConsumerUsername);
+      t.equal(result[0].profil, userStandard.xConsumerUsername);
       t.equal(response.statusCode, 200);
-      server.stop(t.end);
-    });
+    } catch (e) {
+      console.error(response.result);
+      t.fail(e);
+    } finally {
+      t.end();
+    }
   });
 
   // ============================================
 
-  test('DELETE /contexts/1/permissions/3 - user1', function(t) {
+  test('DELETE /contexts/1/permissions/3 - userStandard', async t => {
+    let response;
     const options = {
       method: 'DELETE',
       url: '/contexts/1/permissions/3',
       headers: {
-        'x-consumer-username': user1.xConsumerUsername,
-        'x-consumer-id': user1.xConsumerId
+        'x-consumer-username': userStandard.xConsumerUsername,
+        'x-consumer-id': userStandard.xConsumerId,
+        'x-consumer-groups': 'standard, another'
       }
     };
-    server.inject(options, function(response) {
+    try {
+      response = await server.inject(options);
       t.equal(response.statusCode, 204);
-      server.stop(t.end);
-    });
+    } catch (e) {
+      console.error(response.result);
+      t.fail(e);
+    } finally {
+      t.end();
+    }
   });
 
-  test('GET /contexts/1/permissions - user1', function(t) {
+  test('GET /contexts/1/permissions - userStandard', async t => {
+    let response;
     const options = {
       method: 'GET',
       url: '/contexts/1/permissions',
       headers: {
-        'x-consumer-username': user1.xConsumerUsername,
-        'x-consumer-id': user1.xConsumerId
+        'x-consumer-username': userStandard.xConsumerUsername,
+        'x-consumer-id': userStandard.xConsumerId,
+        'x-consumer-groups': 'standard, another'
       }
     };
-    server.inject(options, function(response) {
+    try {
+      response = await server.inject(options);
       const result: any = response.result;
       t.equal(result.length, 0);
       t.equal(response.statusCode, 200);
-      server.stop(t.end);
-    });
+    } catch (e) {
+      console.error(response.result);
+      t.fail(e);
+    } finally {
+      t.end();
+    }
+
   });
 
-
-});
+};
+runTests();

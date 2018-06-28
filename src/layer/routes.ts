@@ -13,8 +13,8 @@ export default function (server: Hapi.Server) {
     server.route({
         method: 'GET',
         path: '/layers/{id}',
-        config: {
-            handler: layerController.getById,
+        handler: layerController.getById,
+        options: {
             tags: ['api', 'layers'],
             description: 'Get layers by id.',
             validate: {
@@ -41,8 +41,8 @@ export default function (server: Hapi.Server) {
     server.route({
         method: 'GET',
         path: '/layers',
-        config: {
-            handler: layerController.get,
+        handler: layerController.get,
+        options: {
             tags: ['api', 'layers'],
             description: 'Get all layers.',
             validate: {
@@ -54,8 +54,8 @@ export default function (server: Hapi.Server) {
     server.route({
         method: 'GET',
         path: '/baselayers',
-        config: {
-            handler: layerController.getBaseLayers,
+        handler: layerController.getBaseLayers,
+        options: {
             tags: ['api', 'layers'],
             description: 'Get base layers.',
             validate: {
@@ -67,8 +67,8 @@ export default function (server: Hapi.Server) {
     server.route({
         method: 'DELETE',
         path: '/layers/{id}',
-        config: {
-            handler: layerController.delete,
+        handler: layerController.delete,
+        options: {
             tags: ['api', 'layers'],
             description: 'Delete layer by id.',
             validate: {
@@ -95,8 +95,8 @@ export default function (server: Hapi.Server) {
     server.route({
         method: 'PATCH',
         path: '/layers/{id}',
-        config: {
-            handler: layerController.update,
+        handler: layerController.update,
+        options: {
             tags: ['api', 'layers'],
             description: 'Update layer by id.',
             validate: {
@@ -124,8 +124,8 @@ export default function (server: Hapi.Server) {
     server.route({
         method: 'POST',
         path: '/layers',
-        config: {
-            handler: layerController.create,
+        handler: layerController.create,
+        options: {
             tags: ['api', 'layers'],
             description: 'Create a layer.',
             validate: {

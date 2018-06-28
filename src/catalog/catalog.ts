@@ -1,9 +1,8 @@
-import * as Rx from 'rxjs';
 import * as Boom from 'boom';
 
 import { IDatabase, database } from '../database';
 import { ObjectUtils } from '../utils';
-import { User, Api } from '../user';
+import { UserApi } from '../user';
 
 import { ICatalog, CatalogInstance } from './catalog.model';
 
@@ -11,122 +10,88 @@ export class Catalog {
 
   private database: IDatabase = database;
 
-  constructor() {}
+  constructor() { }
 
-  public create(catalog: ICatalog): Rx.Observable<CatalogInstance> {
-    return Rx.Observable.create(observer => {
-      this.database.catalog.create(catalog).then((createdCatalog) => {
-        observer.next(createdCatalog);
-        observer.complete();
-      }).catch((error) => {
-        observer.error(Boom.badImplementation(error));
-      });
+  public async create(catalog: ICatalog): Promise<CatalogInstance> {
+    return await this.database.catalog.create(catalog);
+  }
+
+  public async update(id: string, catalog: ICatalog): Promise<{ id: string }> {
+
+    return await this.database.catalog.update(catalog, {
+      where: {
+        id: id
+      }
+    }).then((count: [number, CatalogInstance[]]) => {
+      if (!count[0]) {
+        throw Boom.notFound();
+      }
+
+      return { id: id };
     });
   }
 
-  public update(id: string, catalog: ICatalog): Rx.Observable<CatalogInstance> {
-
-    return Rx.Observable.create(observer => {
-      this.database.catalog.update(catalog, {
-        where: {
-          id: id
-        }
-      }).then((count: [number, CatalogInstance[]]) => {
-        if (count[0]) {
-          observer.next({id: id});
-          observer.complete();
-        } else {
-          observer.error(Boom.notFound());
-        }
-      }).catch((error) => {
-        observer.error(Boom.badImplementation(error));
-      });
+  public async delete(id: string): Promise<void> {
+    return await this.database.catalog.destroy({
+      where: {
+        id: id
+      }
+    }).then((count: number) => {
+      if (!count) {
+        throw Boom.notFound();
+      }
+      return;
     });
   }
 
-  public delete(id: string): Rx.Observable<{}> {
-    return Rx.Observable.create(observer => {
-      this.database.catalog.destroy({
-        where: {
-          id: id
-        }
-      }).then((count: number) => {
-        if (count) {
-          observer.next({});
-          observer.complete();
-        } else {
-          observer.error(Boom.notFound());
-        }
-      }).catch((error) => {
-        observer.error(Boom.badImplementation(error));
-      });
+  public async get(user: string): Promise<CatalogInstance[]> {
+    const catalogs = await this.database.catalog.findAll();
+
+    const plainCatalogs = catalogs.map(
+      (catalog) => ObjectUtils.removeNull(catalog.get())
+    );
+
+    if (!plainCatalogs.length) {
+      return plainCatalogs;
+    }
+
+    const catalogsAllowed = [];
+    const profils: string[] = await UserApi.getProfils(user).catch(() => {
+      return [];
     });
+    profils.push(user);
+
+    for (const c of plainCatalogs) {
+      const isAllowed = await UserApi.verifyPermissionByUrl(c.url, profils);
+      if (isAllowed) {
+        catalogsAllowed.push(c);
+      }
+    }
+
+    return catalogsAllowed
   }
 
-  public get(user: string): Rx.Observable<CatalogInstance[]> {
-    return Rx.Observable.create(observer => {
-      this.database.catalog.findAll().then((catalogs: CatalogInstance[]) => {
-        const plainCatalogs = catalogs.map(
-          (catalog) => ObjectUtils.removeNull(catalog.get())
-        );
-
-        let callsLeft = plainCatalogs.length;
-        if (!callsLeft) {
-          observer.next(plainCatalogs);
-          observer.complete();
-          return;
-        }
-
-        const catalogsAllowed = [];
-        User.getProfils(user).subscribe((profils) => {
-          profils.push(user);
-
-          for (const c of plainCatalogs) {
-            Api.verifyPermissionByUrl(c.url, profils).subscribe((isAllowed) => {
-              callsLeft--;
-              if (isAllowed) {
-                catalogsAllowed.push(c);
-              }
-              if (callsLeft === 0) {
-                observer.next(catalogsAllowed);
-                observer.complete();
-              }
-            });
-          }
-        });
-      }).catch((error) => {
-        observer.error(Boom.badImplementation(error));
-      });
+  public async getById(id: string, user: string): Promise<CatalogInstance> {
+    const catalog = await this.database.catalog.findOne({
+      where: {
+        id: id
+      }
     });
-  }
 
-  public getById(id: string, user: string): Rx.Observable<CatalogInstance> {
-    return Rx.Observable.create(observer => {
-      this.database.catalog.findOne({
-        where: {
-          id: id
-        }
-      }).then((catalog: CatalogInstance) => {
-        if (catalog) {
-          const catalogPlain = ObjectUtils.removeNull(catalog.get());
-          User.getProfils(user).subscribe((profils) => {
-            profils.push(user);
-            Api.verifyPermissionByUrl(catalogPlain.url, profils)
-              .subscribe((isAllowed) => {
-                if (isAllowed) {
-                  observer.next(catalogPlain);
-                  observer.complete();
-                } else {
-                  observer.error(Boom.forbidden());
-                }
-            });
-          });
-        } else {
-          observer.error(Boom.notFound());
-        }
-      }).catch((error) => {
-        observer.error(Boom.badImplementation(error));
-      });
+    if (!catalog) {
+      throw Boom.notFound();
+    }
+    const catalogPlain = ObjectUtils.removeNull(catalog.get());
+    const profils: string[] = await UserApi.getProfils(user).catch(() => {
+      return [];
     });
+    profils.push(user);
+    const isAllowed =
+      await UserApi.verifyPermissionByUrl(catalogPlain.url, profils);
+
+    if (!isAllowed) {
+      throw Boom.forbidden();
+    }
+    return catalogPlain;
   }
 }

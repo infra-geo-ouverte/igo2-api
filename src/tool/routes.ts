@@ -13,8 +13,8 @@ export default function (server: Hapi.Server) {
     server.route({
         method: 'GET',
         path: '/tools/{id}',
-        config: {
-            handler: toolController.getById,
+        handler: toolController.getById,
+        options: {
             tags: ['api', 'tools'],
             description: 'Get tools by id.',
             validate: {
@@ -41,8 +41,8 @@ export default function (server: Hapi.Server) {
     server.route({
         method: 'GET',
         path: '/tools',
-        config: {
-            handler: toolController.get,
+        handler: toolController.get,
+        options: {
             tags: ['api', 'tools'],
             description: 'Get all tools.',
             validate: {
@@ -54,8 +54,8 @@ export default function (server: Hapi.Server) {
     server.route({
         method: 'DELETE',
         path: '/tools/{id}',
-        config: {
-            handler: toolController.delete,
+        handler: toolController.delete,
+        options: {
             tags: ['api', 'tools'],
             description: 'Delete tool by id.',
             validate: {
@@ -82,8 +82,8 @@ export default function (server: Hapi.Server) {
     server.route({
         method: 'PATCH',
         path: '/tools/{id}',
-        config: {
-            handler: toolController.update,
+        handler: toolController.update,
+        options: {
             tags: ['api', 'tools'],
             description: 'Update tool by id.',
             validate: {
@@ -111,8 +111,8 @@ export default function (server: Hapi.Server) {
     server.route({
         method: 'POST',
         path: '/tools',
-        config: {
-            handler: toolController.create,
+        handler: toolController.create,
+        options: {
             tags: ['api', 'tools'],
             description: 'Create a tool.',
             validate: {

@@ -1,4 +1,3 @@
-import * as Rx from 'rxjs';
 import * as Boom from 'boom';
 
 import { IDatabase, database } from '../database';
@@ -10,96 +9,66 @@ export class POI {
 
   private database: IDatabase = database;
 
-  constructor() {}
+  constructor() { }
 
-  public create(poi: IPOI): Rx.Observable<POIInstance> {
-    return Rx.Observable.create(observer => {
-      this.database.poi.create(poi).then((createdPOI) => {
-        observer.next(createdPOI);
-        observer.complete();
-      }).catch((error) => {
-        observer.error(Boom.badImplementation(error));
-      });
+  public async create(poi: IPOI): Promise<POIInstance> {
+    return await this.database.poi.create(poi);
+  }
+
+  public async update(id: string, userId: string,
+    poi: IPOI): Promise<{ id: string }> {
+
+    return await this.database.poi.update(poi, {
+      where: {
+        id: id,
+        userId: userId
+      }
+    }).then((count: [number, POIInstance[]]) => {
+      if (!count[0]) {
+        throw Boom.notFound();
+      }
+      return { id: id };
     });
   }
 
-  public update(id: string, userId: string,
-    poi: IPOI): Rx.Observable<POIInstance> {
+  public async delete(id: string, userId: string): Promise<void> {
+    return await this.database.poi.destroy({
+      where: {
+        id: id,
+        userId: userId
+      }
+    }).then((count: number) => {
+      if (!count) {
+        throw Boom.notFound();
+      }
+      return;
+    })
+  }
 
-    return Rx.Observable.create(observer => {
-      this.database.poi.update(poi, {
-        where: {
-          id: id,
-          userId: userId
-        }
-      }).then((count: [number, POIInstance[]]) => {
-        if (count[0]) {
-          observer.next({id: id});
-          observer.complete();
-        } else {
-          observer.error(Boom.notFound());
-        }
-      }).catch((error) => {
-        observer.error(Boom.badImplementation(error));
-      });
+  public async get(userId: string): Promise<POIInstance[]> {
+    return await this.database.poi.findAll({
+      where: {
+        userId: userId
+      }
+    }).then((pois: POIInstance[]) => {
+      const plainPOIs = pois.map(
+        (poi) => ObjectUtils.removeNull(poi.get())
+      );
+      return plainPOIs;
     });
   }
 
-  public delete(id: string, userId: string): Rx.Observable<{}> {
-    return Rx.Observable.create(observer => {
-      this.database.poi.destroy({
-        where: {
-          id: id,
-          userId: userId
-        }
-      }).then((count: number) => {
-        if (count) {
-          observer.next({});
-          observer.complete();
-        } else {
-          observer.error(Boom.notFound());
-        }
-      }).catch((error) => {
-        observer.error(Boom.badImplementation(error));
-      });
-    });
-  }
-
-  public get(userId: string): Rx.Observable<POIInstance[]> {
-    return Rx.Observable.create(observer => {
-      this.database.poi.findAll({
-        where: {
-          userId: userId
-        }
-      }).then((pois: POIInstance[]) => {
-        const plainPOIs = pois.map(
-          (poi) => ObjectUtils.removeNull(poi.get())
-        );
-        observer.next(plainPOIs);
-        observer.complete();
-      }).catch((error) => {
-        observer.error(Boom.badImplementation(error));
-      });
-    });
-  }
-
-  public getById(id: string, userId: string): Rx.Observable<POIInstance> {
-    return Rx.Observable.create(observer => {
-      this.database.poi.findOne({
-        where: {
-          id: id,
-          userId: userId
-        }
-      }).then((poi: POIInstance) => {
-        if (poi) {
-          observer.next(ObjectUtils.removeNull(poi.get()));
-          observer.complete();
-        } else {
-          observer.error(Boom.notFound());
-        }
-      }).catch((error) => {
-        observer.error(Boom.badImplementation(error));
-      });
+  public async getById(id: string, userId: string): Promise<POIInstance> {
+    return await this.database.poi.findOne({
+      where: {
+        id: id,
+        userId: userId
+      }
+    }).then((poi: POIInstance) => {
+      if (!poi) {
+        throw Boom.notFound();
+      }
+      return ObjectUtils.removeNull(poi.get());
     });
   }
 }

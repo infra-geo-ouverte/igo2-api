@@ -13,8 +13,8 @@ export default function (server: Hapi.Server) {
   server.route({
       method: 'GET',
       path: '/contexts/{contextId}/tools',
-      config: {
-          handler: toolContextController.getByContextId,
+      handler: toolContextController.getByContextId,
+      options: {
           tags: ['api', 'toolContext', 'tools', 'contexts'],
           description: 'Get tools by context id.',
           validate: {
@@ -41,8 +41,8 @@ export default function (server: Hapi.Server) {
   server.route({
       method: 'GET',
       path: '/contexts/{contextId}/tools/{toolId}',
-      config: {
-          handler: toolContextController.getById,
+      handler: toolContextController.getById,
+      options: {
           tags: ['api', 'toolContext'],
           description: 'Get toolContext by id.',
           validate: {
@@ -70,8 +70,8 @@ export default function (server: Hapi.Server) {
   server.route({
       method: 'DELETE',
       path: '/contexts/{contextId}/tools/{toolId}',
-      config: {
-          handler: toolContextController.delete,
+      handler: toolContextController.delete,
+      options: {
           tags: ['api', 'toolContext'],
           description: 'Delete toolContext by id.',
           validate: {
@@ -99,8 +99,8 @@ export default function (server: Hapi.Server) {
   server.route({
       method: 'PATCH',
       path: '/contexts/{contextId}/tools/{toolId}',
-      config: {
-          handler: toolContextController.update,
+      handler: toolContextController.update,
+      options: {
           tags: ['api', 'toolContext'],
           description: 'Update toolContext by id.',
           validate: {
@@ -129,8 +129,8 @@ export default function (server: Hapi.Server) {
   server.route({
       method: 'POST',
       path: '/contexts/{contextId}/tools',
-      config: {
-          handler: toolContextController.create,
+      handler: toolContextController.create,
+      options: {
           tags: ['api', 'toolContext'],
           description: 'Create a toolContext.',
           validate: {

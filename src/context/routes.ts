@@ -14,8 +14,8 @@ export default function(server: Hapi.Server) {
   server.route({
     method: 'GET',
     path: '/contexts/default',
-    config: {
-      handler: contextController.getDefault,
+    handler: contextController.getDefault,
+    options: {
       tags: ['api', 'contexts'],
       description: 'Get default context.',
       validate: {
@@ -39,8 +39,8 @@ export default function(server: Hapi.Server) {
   server.route({
     method: 'GET',
     path: '/contexts/{contextId}',
-    config: {
-      handler: contextController.getById,
+    handler: contextController.getById,
+    options: {
       tags: ['api', 'contexts'],
       description: 'Get context by id.',
       validate: {
@@ -67,8 +67,8 @@ export default function(server: Hapi.Server) {
   server.route({
     method: 'GET',
     path: '/contexts/{contextId}/details',
-    config: {
-      handler: contextController.getDetailsById,
+    handler: contextController.getDetailsById,
+    options: {
       tags: ['api', 'tools', 'layers', 'contexts'],
       description: 'Get details of context by context id.',
       validate: {
@@ -94,8 +94,8 @@ export default function(server: Hapi.Server) {
   server.route({
     method: 'GET',
     path: '/contexts',
-    config: {
-      handler: contextController.get,
+    handler: contextController.get,
+    options: {
       auth: false,
       tags: ['api', 'contexts'],
       description: 'Get all contexts.',
@@ -108,8 +108,8 @@ export default function(server: Hapi.Server) {
   server.route({
     method: 'DELETE',
     path: '/contexts/{contextId}',
-    config: {
-      handler: contextController.delete,
+    handler: contextController.delete,
+    options: {
       tags: ['api', 'contexts'],
       description: 'Delete context by id.',
       validate: {
@@ -139,8 +139,8 @@ export default function(server: Hapi.Server) {
   server.route({
     method: 'PATCH',
     path: '/contexts/{contextId}',
-    config: {
-      handler: contextController.update,
+    handler: contextController.update,
+    options: {
       tags: ['api', 'contexts'],
       description: 'Update context by id.',
       validate: {
@@ -171,8 +171,8 @@ export default function(server: Hapi.Server) {
   server.route({
     method: 'POST',
     path: '/contexts',
-    config: {
-      handler: contextController.create,
+    handler: contextController.create,
+    options: {
       tags: ['api', 'contexts'],
       description: 'Create a context.',
       validate: {
@@ -197,8 +197,8 @@ export default function(server: Hapi.Server) {
   server.route({
     method: 'POST',
     path: '/contexts/{contextId}/clone',
-    config: {
-      handler: contextController.clone,
+    handler: contextController.clone,
+    options: {
       tags: ['api', 'contexts'],
       description: 'Clone a context.',
       validate: {

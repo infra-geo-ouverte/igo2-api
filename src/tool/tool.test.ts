@@ -1,5 +1,4 @@
 import * as test from 'tape';
-// import ToolCont from './tool.controller';
 import * as Server from '../server';
 import * as Configs from '../configurations';
 
@@ -7,17 +6,21 @@ const serverConfigs = Configs.getServerConfig();
 const testConfigs = Configs.getTestConfig();
 const admin = testConfigs.admin;
 const anonyme = testConfigs.anonyme;
-const user1 = testConfigs.user1;
+const userStandard = testConfigs.standard;
 
-Server.init(serverConfigs).then((server) => {
 
-  test('POST /tools - admin', function(t) {
+const runTests = async () => {
+  const server = await Server.init(serverConfigs);
+
+  test('POST /tools - admin', async t => {
+    let response;
     const options = {
       method: 'POST',
       url: '/tools',
       headers: {
         'x-consumer-username': admin.xConsumerUsername,
-        'x-consumer-id': admin.xConsumerId
+        'x-consumer-id': admin.xConsumerId,
+        'x-consumer-groups': 'admin, standard, another'
       },
       payload: {
         name: 'dummyName',
@@ -26,23 +29,30 @@ Server.init(serverConfigs).then((server) => {
         options: {}
       }
     };
-    server.inject(options, function(response) {
+    try {
+      response = await server.inject(options);
       const result: any = response.result;
       t.equal(result.name, 'dummyName');
       t.equal(result.title, 'dummyTitle');
       t.equal(result.inToolbar, true);
       t.equal(response.statusCode, 201);
-      server.stop(t.end);
-    });
+    } catch (e) {
+      console.error(response.result);
+      t.fail(e);
+    } finally {
+      t.end();
+    }
   });
 
-  test('POST /tools - admin 2', function(t) {
+  test('POST /tools - admin 2', async t => {
+    let response;
     const options = {
       method: 'POST',
       url: '/tools',
       headers: {
         'x-consumer-username': admin.xConsumerUsername,
-        'x-consumer-id': admin.xConsumerId
+        'x-consumer-id': admin.xConsumerId,
+        'x-consumer-groups': 'admin, standard, another'
       },
       payload: {
         name: 'dummyName2',
@@ -50,23 +60,31 @@ Server.init(serverConfigs).then((server) => {
         inToolbar: false
       }
     };
-    server.inject(options, function(response) {
+    try {
+      response = await server.inject(options);
       const result: any = response.result;
       t.equal(result.name, 'dummyName2');
       t.equal(result.title, 'dummyTitle2');
       t.equal(result.inToolbar, false);
       t.equal(response.statusCode, 201);
-      server.stop(t.end);
-    });
+    } catch (e) {
+      console.error(response.result);
+      t.fail(e);
+    } finally {
+      t.end();
+    }
+
   });
 
-  test('POST /tools - admin - name missing', function(t) {
+  test('POST /tools - admin - name missing', async t => {
+    let response;
     const options = {
       method: 'POST',
       url: '/tools',
       headers: {
         'x-consumer-username': admin.xConsumerUsername,
-        'x-consumer-id': admin.xConsumerId
+        'x-consumer-id': admin.xConsumerId,
+        'x-consumer-groups': 'admin, standard, another'
       },
       payload: {
         title: 'dummyTitle3',
@@ -74,22 +92,30 @@ Server.init(serverConfigs).then((server) => {
         options: {}
       }
     };
-    server.inject(options, function(response) {
+    try {
+      response = await server.inject(options);
       const result: any = response.result;
-      const message = 'child "name" fails because ["name" is required]';
+      const message = 'Invalid request payload input';
       t.equal(result.message, message);
       t.equal(response.statusCode, 400);
-      server.stop(t.end);
-    });
+    } catch (e) {
+      console.error(response.result);
+      t.fail(e);
+    } finally {
+      t.end();
+    }
+
   });
 
-  test('POST /tools - admin - another param', function(t) {
+  test('POST /tools - admin - another param', async t => {
+    let response;
     const options = {
       method: 'POST',
       url: '/tools',
       headers: {
         'x-consumer-username': admin.xConsumerUsername,
-        'x-consumer-id': admin.xConsumerId
+        'x-consumer-id': admin.xConsumerId,
+        'x-consumer-groups': 'admin, standard, another'
       },
       payload: {
         name: 'dummyTitle4',
@@ -98,15 +124,22 @@ Server.init(serverConfigs).then((server) => {
         anotherParam: false
       }
     };
-    server.inject(options, function(response) {
+    try {
+      response = await server.inject(options);
       const result: any = response.result;
-      t.equal(result.message, '"anotherParam" is not allowed');
+      t.equal(result.message, 'Invalid request payload input');
       t.equal(response.statusCode, 400);
-      server.stop(t.end);
-    });
+    } catch (e) {
+      console.error(response.result);
+      t.fail(e);
+    } finally {
+      t.end();
+    }
+
   });
 
-  test('POST /tools - anonyme', function(t) {
+  test('POST /tools - anonyme', async t => {
+    let response;
     const options = {
       method: 'POST',
       url: '/tools',
@@ -121,21 +154,29 @@ Server.init(serverConfigs).then((server) => {
         options: {}
       }
     };
-    server.inject(options, function(response) {
+    try {
+      response = await server.inject(options);
       t.equal(response.statusCode, 403);
       const result: any = response.result;
       t.equal(result.message, 'Must be administrator');
-      server.stop(t.end);
-    });
+    } catch (e) {
+      console.error(response.result);
+      t.fail(e);
+    } finally {
+      t.end();
+    }
+
   });
 
-  test('POST /tools - user1', function(t) {
+  test('POST /tools - userStandard', async t => {
+    let response;
     const options = {
       method: 'POST',
       url: '/tools',
       headers: {
-        'x-consumer-username': user1.xConsumerUsername,
-        'x-consumer-id': user1.xConsumerId
+        'x-consumer-username': userStandard.xConsumerUsername,
+        'x-consumer-id': userStandard.xConsumerId,
+        'x-consumer-groups': 'standard, another'
       },
       payload: {
         name: 'dummy',
@@ -144,21 +185,29 @@ Server.init(serverConfigs).then((server) => {
         options: {}
       }
     };
-    server.inject(options, function(response) {
+    try {
+      response = await server.inject(options);
       t.equal(response.statusCode, 403);
       const result: any = response.result;
       t.equal(result.message, 'Must be administrator');
-      server.stop(t.end);
-    });
+    } catch (e) {
+      console.error(response.result);
+      t.fail(e);
+    } finally {
+      t.end();
+    }
+
   });
 
-  test('POST /tools - Tool 3', function(t) {
+  test('POST /tools - Tool 3', async t => {
+    let response;
     const options = {
       method: 'POST',
       url: '/tools',
       headers: {
         'x-consumer-username': admin.xConsumerUsername,
-        'x-consumer-id': admin.xConsumerId
+        'x-consumer-id': admin.xConsumerId,
+        'x-consumer-groups': 'admin, standard, another'
       },
       payload: {
         name: 'Tool3',
@@ -167,19 +216,27 @@ Server.init(serverConfigs).then((server) => {
         options: {}
       }
     };
-    server.inject(options, function(response) {
+    try {
+      response = await server.inject(options);
       t.equal(response.statusCode, 201);
-      server.stop(t.end);
-    });
+    } catch (e) {
+      console.error(response.result);
+      t.fail(e);
+    } finally {
+      t.end();
+    }
+
   });
 
-  test('POST /tools - Tool 4', function(t) {
+  test('POST /tools - Tool 4', async t => {
+    let response;
     const options = {
       method: 'POST',
       url: '/tools',
       headers: {
         'x-consumer-username': admin.xConsumerUsername,
-        'x-consumer-id': admin.xConsumerId
+        'x-consumer-id': admin.xConsumerId,
+        'x-consumer-groups': 'admin, standard, another'
       },
       payload: {
         name: 'tool4',
@@ -187,33 +244,48 @@ Server.init(serverConfigs).then((server) => {
         inToolbar: false
       }
     };
-    server.inject(options, function(response) {
+    try {
+      response = await server.inject(options);
       t.equal(response.statusCode, 201);
-      server.stop(t.end);
-    });
+    } catch (e) {
+      console.error(response.result);
+      t.fail(e);
+    } finally {
+      t.end();
+    }
+
   });
 
   // ----------------------------------------------------------------
 
-  test('GET /tools - admin', function(t) {
+  test('GET /tools - admin', async t => {
+    let response;
     const options = {
       method: 'GET',
       url: '/tools',
       headers: {
         'x-consumer-username': admin.xConsumerUsername,
-        'x-consumer-id': admin.xConsumerId
+        'x-consumer-id': admin.xConsumerId,
+        'x-consumer-groups': 'admin, standard, another'
       }
     };
-    server.inject(options, function(response) {
+    try {
+      response = await server.inject(options);
       const result: any = response.result;
       t.equal(result.length, 4);
       t.equal(result[0].name, 'dummyName');
       t.equal(response.statusCode, 200);
-      server.stop(t.end);
-    });
+    } catch (e) {
+      console.error(response.result);
+      t.fail(e);
+    } finally {
+      t.end();
+    }
+
   });
 
-  test('GET /tools - anonyme', function(t) {
+  test('GET /tools - anonyme', async t => {
+    let response;
     const options = {
       method: 'GET',
       url: '/tools',
@@ -222,42 +294,58 @@ Server.init(serverConfigs).then((server) => {
         'x-consumer-id': anonyme.xConsumerId
       }
     };
-    server.inject(options, function(response) {
+    try {
+      response = await server.inject(options);
       const result: any = response.result;
       t.equal(result.length, 4);
       t.equal(result[0].name, 'dummyName');
       t.equal(response.statusCode, 200);
-      server.stop(t.end);
-    });
+    } catch (e) {
+      console.error(response.result);
+      t.fail(e);
+    } finally {
+      t.end();
+    }
+
   });
 
-  test('GET /tools - user1', function(t) {
+  test('GET /tools - userStandard', async t => {
+    let response;
     const options = {
       method: 'GET',
       url: '/tools',
       headers: {
-        'x-consumer-username': user1.xConsumerUsername,
-        'x-consumer-id': user1.xConsumerId
+        'x-consumer-username': userStandard.xConsumerUsername,
+        'x-consumer-id': userStandard.xConsumerId,
+        'x-consumer-groups': 'standard, another'
       }
     };
-    server.inject(options, function(response) {
+    try {
+      response = await server.inject(options);
       const result: any = response.result;
       t.equal(result.length, 4);
       t.equal(result[0].name, 'dummyName');
       t.equal(response.statusCode, 200);
-      server.stop(t.end);
-    });
+    } catch (e) {
+      console.error(response.result);
+      t.fail(e);
+    } finally {
+      t.end();
+    }
+
   });
 
   // ----------------------------------------------------------------
 
-  test('PATCH /tools/{id} - admin', function(t) {
+  test('PATCH /tools/{id} - admin', async t => {
+    let response;
     const options = {
       method: 'PATCH',
       url: '/tools/2',
       headers: {
         'x-consumer-username': admin.xConsumerUsername,
-        'x-consumer-id': admin.xConsumerId
+        'x-consumer-id': admin.xConsumerId,
+        'x-consumer-groups': 'admin, standard, another'
       },
       payload: {
         inToolbar: true,
@@ -266,17 +354,24 @@ Server.init(serverConfigs).then((server) => {
         }
       }
     };
-    server.inject(options, function(response) {
+    try {
+      response = await server.inject(options);
       // const result: any = response.result;
       // t.equal(result.name, 'dummyName2');
       // t.equal(result.inToolbar, true);
       // t.equal(result.options.optionParams, true);
       t.equal(response.statusCode, 200);
-      server.stop(t.end);
-    });
+    } catch (e) {
+      console.error(response.result);
+      t.fail(e);
+    } finally {
+      t.end();
+    }
+
   });
 
-  test('PATCH /tools/{id} - anonyme', function(t) {
+  test('PATCH /tools/{id} - anonyme', async t => {
+    let response;
     const options = {
       method: 'PATCH',
       url: '/tools/2',
@@ -288,70 +383,101 @@ Server.init(serverConfigs).then((server) => {
         title: 'dummy99'
       }
     };
-    server.inject(options, function(response) {
+    try {
+      response = await server.inject(options);
       t.equal(response.statusCode, 403);
       const result: any = response.result;
       t.equal(result.message, 'Must be administrator');
-      server.stop(t.end);
-    });
+    } catch (e) {
+      console.error(response.result);
+      t.fail(e);
+    } finally {
+      t.end();
+    }
+
   });
 
-  test('PATCH /tools/{id} - user1', function(t) {
+  test('PATCH /tools/{id} - userStandard', async t => {
+    let response;
     const options = {
       method: 'PATCH',
       url: '/tools/2',
       headers: {
-        'x-consumer-username': user1.xConsumerUsername,
-        'x-consumer-id': user1.xConsumerId
+        'x-consumer-username': userStandard.xConsumerUsername,
+        'x-consumer-id': userStandard.xConsumerId,
+        'x-consumer-groups': 'standard, another'
       },
       payload: {
         name: 'dummy99'
       }
     };
-    server.inject(options, function(response) {
+    try {
+      response = await server.inject(options);
       t.equal(response.statusCode, 403);
       const result: any = response.result;
       t.equal(result.message, 'Must be administrator');
-      server.stop(t.end);
-    });
+    } catch (e) {
+      console.error(response.result);
+      t.fail(e);
+    } finally {
+      t.end();
+    }
+
   });
 
   // ----------------------------------------------------------------
 
-  test('GET /tools/{id} - 404', function(t) {
+  test('GET /tools/{id} - 404', async t => {
+    let response;
     const options = {
       method: 'GET',
       url: '/tools/13',
       headers: {
         'x-consumer-username': admin.xConsumerUsername,
-        'x-consumer-id': admin.xConsumerId
+        'x-consumer-id': admin.xConsumerId,
+        'x-consumer-groups': 'admin, standard, another'
       }
     };
-    server.inject(options, function(response) {
+    try {
+      response = await server.inject(options);
       t.equal(response.statusCode, 404);
-      server.stop(t.end);
-    });
+    } catch (e) {
+      console.error(response.result);
+      t.fail(e);
+    } finally {
+      t.end();
+    }
+
   });
 
-  test('GET /tools/{id} - admin', function(t) {
+  test('GET /tools/{id} - admin', async t => {
+    let response;
     const options = {
       method: 'GET',
       url: '/tools/1',
       headers: {
         'x-consumer-username': admin.xConsumerUsername,
-        'x-consumer-id': admin.xConsumerId
+        'x-consumer-id': admin.xConsumerId,
+        'x-consumer-groups': 'admin, standard, another'
       }
     };
-    server.inject(options, function(response) {
+    try {
+      response = await server.inject(options);
       const result: any = response.result;
       t.equal(result.name, 'dummyName');
       t.equal(result.inToolbar, true);
       t.equal(response.statusCode, 200);
-      server.stop(t.end);
-    });
+    } catch (e) {
+      console.error(response.result);
+      t.fail(e);
+    } finally {
+      t.end();
+    }
+
   });
 
-  test('GET /tools/{id} - anonyme', function(t) {
+  test('GET /tools/{id} - anonyme', async t => {
+    let response;
     const options = {
       method: 'GET',
       url: '/tools/2',
@@ -360,37 +486,52 @@ Server.init(serverConfigs).then((server) => {
         'x-consumer-id': anonyme.xConsumerId
       }
     };
-    server.inject(options, function(response) {
+    try {
+      response = await server.inject(options);
       const result: any = response.result;
       t.equal(result.name, 'dummyName2');
       t.equal(result.inToolbar, true);
       t.equal(result.options.optionParams, true);
       t.equal(response.statusCode, 200);
-      server.stop(t.end);
-    });
+    } catch (e) {
+      console.error(response.result);
+      t.fail(e);
+    } finally {
+      t.end();
+    }
+
   });
 
-  test('GET /tools/{id} - user1', function(t) {
+  test('GET /tools/{id} - userStandard', async t => {
+    let response;
     const options = {
       method: 'GET',
       url: '/tools/1',
       headers: {
-        'x-consumer-username': user1.xConsumerUsername,
-        'x-consumer-id': user1.xConsumerId
+        'x-consumer-username': userStandard.xConsumerUsername,
+        'x-consumer-id': userStandard.xConsumerId,
+        'x-consumer-groups': 'standard, another'
       }
     };
-    server.inject(options, function(response) {
+    try {
+      response = await server.inject(options);
       const result: any = response.result;
       t.equal(result.name, 'dummyName');
       t.equal(response.statusCode, 200);
-      server.stop(t.end);
-    });
+    } catch (e) {
+      console.error(response.result);
+      t.fail(e);
+    } finally {
+      t.end();
+    }
+
   });
 
   // ----------------------------------------------------------------
 
 
-  test('DELETE /tools/{id} - anonyme', function(t) {
+  test('DELETE /tools/{id} - anonyme', async t => {
+    let response;
     const options = {
       method: 'DELETE',
       url: '/tools/2',
@@ -399,63 +540,95 @@ Server.init(serverConfigs).then((server) => {
         'x-consumer-id': anonyme.xConsumerId
       }
     };
-    server.inject(options, function(response) {
+    try {
+      response = await server.inject(options);
       t.equal(response.statusCode, 403);
       const result: any = response.result;
       t.equal(result.message, 'Must be administrator');
-      server.stop(t.end);
-    });
+    } catch (e) {
+      console.error(response.result);
+      t.fail(e);
+    } finally {
+      t.end();
+    }
+
   });
 
-  test('DELETE /tools/{id} - user1', function(t) {
+  test('DELETE /tools/{id} - userStandard', async t => {
+    let response;
     const options = {
       method: 'DELETE',
       url: '/tools/2',
       headers: {
-        'x-consumer-username': user1.xConsumerUsername,
-        'x-consumer-id': user1.xConsumerId
+        'x-consumer-username': userStandard.xConsumerUsername,
+        'x-consumer-id': userStandard.xConsumerId,
+        'x-consumer-groups': 'standard, another'
       }
     };
-    server.inject(options, function(response) {
+    try {
+      response = await server.inject(options);
       t.equal(response.statusCode, 403);
       const result: any = response.result;
       t.equal(result.message, 'Must be administrator');
-      server.stop(t.end);
-    });
+    } catch (e) {
+      console.error(response.result);
+      t.fail(e);
+    } finally {
+      t.end();
+    }
+
   });
 
-  test('DELETE /tools/{id} - admin', function(t) {
+  test('DELETE /tools/{id} - admin', async t => {
+    let response;
     const options = {
       method: 'DELETE',
       url: '/tools/3',
       headers: {
         'x-consumer-username': admin.xConsumerUsername,
-        'x-consumer-id': admin.xConsumerId
+        'x-consumer-id': admin.xConsumerId,
+        'x-consumer-groups': 'admin, standard, another'
       }
     };
-    server.inject(options, function(response) {
+    try {
+      response = await server.inject(options);
       t.equal(response.statusCode, 204);
-      server.stop(t.end);
-    });
+    } catch (e) {
+      console.error(response.result);
+      t.fail(e);
+    } finally {
+      t.end();
+    }
+
   });
 
 
-  test('GET /tools - after delete', function(t) {
+  test('GET /tools - after delete', async t => {
+    let response;
     const options = {
       method: 'GET',
       url: '/tools',
       headers: {
         'x-consumer-username': admin.xConsumerUsername,
-        'x-consumer-id': admin.xConsumerId
+        'x-consumer-id': admin.xConsumerId,
+        'x-consumer-groups': 'admin, standard, another'
       }
     };
-    server.inject(options, function(response) {
+    try {
+      response = await server.inject(options);
       const result: any = response.result;
       t.equal(result.length, 3);
       t.equal(result[0].name, 'dummyName');
       t.equal(response.statusCode, 200);
-      server.stop(t.end);
-    });
+    } catch (e) {
+      console.error(response.result);
+      t.fail(e);
+    } finally {
+      t.end();
+    }
+
   });
 
-});
+};
+
+runTests();

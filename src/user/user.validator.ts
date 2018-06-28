@@ -3,21 +3,19 @@ import * as Boom from 'boom';
 
 import * as Configs from '../configurations';
 
-import { User } from './user';
-
 export class UserValidator {
-
   static updateModel = Joi.object().keys({
-      email: Joi.string().email(),
-      defaultContextId: Joi.string()
+    email: Joi.string().email()
   });
 
-  static loginModel = Joi.object().keys({
+  static loginModel = Joi.object()
+    .keys({
       username: Joi.string().alphanum(),
       password: Joi.string().trim(),
       token: Joi.string(),
-      typeConnection: Joi.string().valid('ldap', 'facebook', 'google', 'test'),
-  }).xor('username', 'token');
+      typeConnection: Joi.string().valid('ldap', 'facebook', 'google', 'test')
+    })
+    .xor('username', 'token');
 
   static userValidator = Joi.object({
     'x-consumer-id': Joi.string().required(),
@@ -30,32 +28,23 @@ export class UserValidator {
     }).unknown()
   );
 
-  static authenticateValidator = (value, options, next) => {
-
+  static authenticateValidator = async (value, options) => {
     const valid = Joi.validate(value, UserValidator.notAnonymousValidator);
-
     if (valid.error) {
-      next(Boom.unauthorized('Must be authenticated'));
-    } else {
-      next(null, value, options, next);
+      throw Boom.unauthorized('Must be authenticated');
     }
-  }
+  };
 
-  static adminValidator = (value, options, next) => {
-
+  static adminValidator = async (value, options) => {
     const valid = Joi.validate(value, UserValidator.notAnonymousValidator);
-
     if (valid.error) {
-      next(Boom.unauthorized('Must be authenticated'));
-    } else {
-      const configs = Configs.getServerConfig();
-      User.getProfils(value['x-consumer-id']).subscribe((profils) => {
-        if (profils.includes(configs.adminProfil)) {
-          next(null, value);
-        } else {
-          next(Boom.forbidden('Must be administrator'));
-        }
-      });
+      throw Boom.unauthorized('Must be authenticated');
     }
-  }
+
+    const configs = Configs.getServerConfig();
+    const profils = value['x-consumer-groups'];
+    if (!profils || !profils.split(', ').includes(configs.adminProfil)) {
+      throw Boom.forbidden('Must be administrator');
+    }
+  };
 }

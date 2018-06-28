@@ -18,61 +18,49 @@ export class ContextPermissionValidator {
     typePermission: Joi.string().valid('read', 'write')
   });
 
-  static writePermission = (value, options, next) => {
+  static writePermission = async (value, options) => {
 
     const valid = Joi.validate(value, UserValidator.notAnonymousValidator);
 
     if (valid.error) {
-      next(Boom.unauthorized('Must be authenticated'));
-    } else {
-      const owner = value['x-consumer-username'];
-      const contextId = options.context.params['contextId'];
-      const contextPermission = new ContextPermission();
-      contextPermission.getPermissionByContextId(contextId, owner).subscribe(
-        (permission) => {
-          if (permission === TypePermission.write) {
-            next(null, value);
-          } else {
-            next(Boom.forbidden('Must have write permission for this context'));
-          }
-        },
-        (error: Boom.BoomError) => next(error)
-      );
+      throw Boom.unauthorized('Must be authenticated');
+    }
+
+    const owner = value['x-consumer-username'];
+    const contextId = options.context.params['contextId'];
+    const contextPermission = new ContextPermission();
+    const permission = await contextPermission
+      .getPermissionByContextId(contextId, owner);
+
+    if (permission !== TypePermission.write) {
+      throw Boom.forbidden('Must have write permission for this context');
     }
   }
 
-  static readPermission = (value, options, next) => {
-
+  static readPermission = async (value, options) => {
     const valid = Joi.validate(value, UserValidator.userValidator);
 
     if (valid.error) {
-      next(Boom.unauthorized('Must be authenticated'));
-    } else {
-      const owner = value['x-consumer-username'];
-      const contextId = options.context.params['contextId'];
-      const contextPermission = new ContextPermission();
-      contextPermission.getPermissionByContextId(contextId, owner).subscribe(
-        (permission) => {
-          if (permission) {
-            next(null, value);
-          } else {
-            next(Boom.forbidden('Must have read permission for this context'));
-          }
-        },
-        (error: Boom.BoomError) => next(error)
-      );
+      throw Boom.unauthorized('Must be authenticated');
+    }
+    const owner = value['x-consumer-username'];
+    const contextId = options.context.params['contextId'];
+    const contextPermission = new ContextPermission();
+    const permission = await contextPermission
+      .getPermissionByContextId(contextId, owner);
+
+    if (!permission) {
+      throw Boom.forbidden('Must have read permission for this context');
     }
   }
 
-  static authenticatedAndReadPermission = (value, options, next) => {
-
+  static authenticatedAndReadPermission = async (value, options) => {
     const valid = Joi.validate(value, UserValidator.notAnonymousValidator);
-
     if (valid.error) {
-      next(Boom.unauthorized('Must be authenticated'));
-    } else {
-      ContextPermissionValidator.readPermission(value, options, next);
+      throw Boom.unauthorized('Must be authenticated');
     }
+
+    await ContextPermissionValidator.readPermission(value, options);
   }
 
 }

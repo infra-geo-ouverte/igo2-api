@@ -1,4 +1,3 @@
-import * as Rx from 'rxjs';
 import * as Boom from 'boom';
 import * as URL from 'url';
 
@@ -6,7 +5,7 @@ import * as Configs from '../configurations';
 
 import { IDatabase, database } from '../database';
 import { ObjectUtils } from '../utils';
-import { User, Api } from '../user';
+import { UserApi } from '../user';
 
 import { ILayer, LayerInstance } from './layer.model';
 
@@ -16,135 +15,107 @@ export class Layer {
 
   private database: IDatabase = database;
 
-  constructor() {}
+  constructor() { }
 
-  public create(layer: ILayer): Rx.Observable<LayerInstance> {
+  public async create(layer: ILayer): Promise<LayerInstance> {
     const localhost = ServerConfigs.localhost;
     const hosts = localhost ? localhost.hosts : [];
-    const urlObj = URL.parse(layer.source.url || '');
+    const urlObj = URL.parse(
+      layer.source && layer.source.url ? layer.source.url : ''
+    );
     if (urlObj && hosts.indexOf(urlObj.hostname) !== -1) {
-      layer.source.url = urlObj.path;
+      Object.assign(layer.source, { url: urlObj.path });
     }
 
-    return Rx.Observable.create(observer => {
-      this.database.layer.create(layer).then((createdLayer) => {
-        observer.next(createdLayer);
-        observer.complete();
-      }).catch((error) => {
-        observer.error(Boom.badImplementation(error));
-      });
-    });
+    return await this.database.layer.create(layer);
   }
 
-  public update(id: string, layer: ILayer): Rx.Observable<LayerInstance> {
+  public async update(id: string, layer: ILayer): Promise<{ id: string }> {
     const localhost = ServerConfigs.localhost;
     const hosts = localhost ? localhost.hosts : [];
-    const urlObj = URL.parse(layer.source.url || '');
+    const urlObj = URL.parse(
+      layer.source && layer.source.url ? layer.source.url : ''
+    );
     if (urlObj && hosts.indexOf(urlObj.hostname) !== -1) {
-      layer.source.url = urlObj.path;
+      Object.assign(layer.source, { url: urlObj.path });
     }
 
-    return Rx.Observable.create(observer => {
-      this.database.layer.update(layer, {
-        where: {
-          id: id
-        }
-      }).then((count: [number, LayerInstance[]]) => {
-        if (count[0]) {
-          observer.next({id: id});
-          observer.complete();
-        } else {
-          observer.error(Boom.notFound());
-        }
-      }).catch((error) => {
-        observer.error(Boom.badImplementation(error));
-      });
+    return await this.database.layer.update(layer, {
+      where: {
+        id: id
+      }
+    }).then((count: [number, LayerInstance[]]) => {
+      if (!count[0]) {
+        throw Boom.notFound();
+      }
+      return { id: id };
     });
   }
 
-  public delete(id: string): Rx.Observable<{}> {
-    return Rx.Observable.create(observer => {
-      this.database.layer.destroy({
-        where: {
-          id: id
-        }
-      }).then((count: number) => {
-        if (count) {
-          observer.next({});
-          observer.complete();
-        } else {
-          observer.error(Boom.notFound());
-        }
-      }).catch((error) => {
-        observer.error(Boom.badImplementation(error));
-      });
+  public async delete(id: string): Promise<void> {
+    return await this.database.layer.destroy({
+      where: {
+        id: id
+      }
+    }).then((count: number) => {
+      if (!count) {
+        throw Boom.notFound();
+      }
+      return;
     });
   }
 
-  public get(): Rx.Observable<LayerInstance[]> {
-    return Rx.Observable.create(observer => {
-      this.database.layer.findAll().then((layers: LayerInstance[]) => {
+  public async get(): Promise<LayerInstance[]> {
+    return await this.database.layer.findAll()
+      .then((layers: LayerInstance[]) => {
         const plainLayers = layers.map(
           (layer) => ObjectUtils.removeNull(layer.get())
         );
-        observer.next(plainLayers);
-        observer.complete();
-      }).catch((error) => {
-        observer.error(Boom.badImplementation(error));
+
+        return plainLayers;
       });
+  }
+
+  public async getBaseLayers(): Promise<LayerInstance[]> {
+    return await this.database.layer.findAll({
+      where: {
+        baseLayer: true
+      }
+    }).then((layers: LayerInstance[]) => {
+      const plainLayers = layers.map(
+        (layer) => ObjectUtils.removeNull(layer.get())
+      );
+      // TODO verify permission
+      return plainLayers;
     });
   }
 
-  public getBaseLayers(): Rx.Observable<LayerInstance[]> {
-    return Rx.Observable.create(observer => {
-      this.database.layer.findAll({
-        where: {
-          baseLayer: true
-        }
-      }).then((layers: LayerInstance[]) => {
-        const plainLayers = layers.map(
-          (layer) => ObjectUtils.removeNull(layer.get())
-        );
-        // TODO verify permission
-        observer.next(plainLayers);
-        observer.complete();
-      }).catch((error) => {
-        observer.error(Boom.badImplementation(error));
-      });
+  public async getById(id: string, user: string): Promise<LayerInstance> {
+    const layer = await this.database.layer.findOne({
+      where: {
+        id: id
+      }
     });
+    if (!layer) {
+      throw Boom.notFound();
+    }
+    const layerPlain = ObjectUtils.removeNull(layer.get());
+
+    const profils: string[] = await UserApi.getProfils(user).catch(() => {
+      return [];
+    });
+    profils.push(user);
+
+    const isAllowed =
+      await UserApi.verifyPermissionByUrl(layerPlain.source.url, profils);
+
+    if (!isAllowed) {
+      throw Boom.forbidden();
+    }
+    return layerPlain;
   }
 
-  public getById(id: string, user: string): Rx.Observable<LayerInstance> {
-    return Rx.Observable.create(observer => {
-      this.database.layer.findOne({
-        where: {
-          id: id
-        }
-      }).then((layer: LayerInstance) => {
-        if (layer) {
-          const layerPlain = ObjectUtils.removeNull(layer.get());
-          User.getProfils(user).subscribe((profils) => {
-            profils.push(user);
-            Api.verifyPermissionByUrl(layerPlain.source.url, profils)
-              .subscribe((isAllowed) => {
-                if (isAllowed) {
-                  observer.next(layerPlain);
-                  observer.complete();
-                } else {
-                  observer.error(Boom.forbidden());
-                }
-            });
-          });
-        } else {
-          observer.error(Boom.notFound());
-        }
-      }).catch((error) => {
-        observer.error(Boom.badImplementation(error));
-      });
-    });
-  }
-
-  public getBySource(layer: ILayer): Rx.Observable<LayerInstance> {
+  public async getBySource(layer: ILayer): Promise<LayerInstance> {
     const localhost = ServerConfigs.localhost;
     const hosts = localhost ? localhost.hosts : [];
     const urlObj = URL.parse(layer.source.url || '');
@@ -154,7 +125,7 @@ export class Layer {
 
     const where: any = {
       $or: [
-        {id: layer.id},
+        { id: layer.id },
         {
           type: layer.type,
           source: JSON.stringify(layer.source)
@@ -162,19 +133,13 @@ export class Layer {
       ]
     };
 
-    return Rx.Observable.create(observer => {
-      this.database.layer.findOne({
-        where: where
-      }).then((layerFound: LayerInstance) => {
-        if (layerFound) {
-          observer.next(ObjectUtils.removeNull(layerFound.get()));
-          observer.complete();
-        } else {
-          observer.error(Boom.notFound());
-        }
-      }).catch((error) => {
-        observer.error(Boom.badImplementation(error));
-      });
+    return await this.database.layer.findOne({
+      where: where
+    }).then((layerFound: LayerInstance) => {
+      if (!layerFound) {
+        throw Boom.notFound();
+      }
+      return ObjectUtils.removeNull(layerFound.get());
     });
   }
 

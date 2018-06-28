@@ -14,8 +14,8 @@ export default function (server: Hapi.Server) {
   server.route({
       method: 'GET',
       path: '/contexts/{contextId}/layers',
-      config: {
-          handler: layerContextController.getByContextId,
+      handler: layerContextController.getByContextId,
+      options: {
           tags: ['api', 'layerContext', 'layers', 'contexts'],
           description: 'Get layers by context id.',
           validate: {
@@ -42,8 +42,8 @@ export default function (server: Hapi.Server) {
   server.route({
       method: 'GET',
       path: '/contexts/{contextId}/layers/{layerId}',
-      config: {
-          handler: layerContextController.getById,
+      handler: layerContextController.getById,
+      options: {
           tags: ['api', 'layerContext'],
           description: 'Get layerContext by id.',
           validate: {
@@ -71,8 +71,8 @@ export default function (server: Hapi.Server) {
   server.route({
       method: 'DELETE',
       path: '/contexts/{contextId}/layers/{layerId}',
-      config: {
-          handler: layerContextController.delete,
+      handler: layerContextController.delete,
+      options: {
           tags: ['api', 'layerContext'],
           description: 'Delete layerContext by id.',
           validate: {
@@ -100,8 +100,8 @@ export default function (server: Hapi.Server) {
   server.route({
       method: 'PATCH',
       path: '/contexts/{contextId}/layers/{layerId}',
-      config: {
-          handler: layerContextController.update,
+      handler: layerContextController.update,
+      options: {
           tags: ['api', 'layerContext'],
           description: 'Update layerContext by id.',
           validate: {
@@ -130,8 +130,8 @@ export default function (server: Hapi.Server) {
   server.route({
       method: 'POST',
       path: '/contexts/{contextId}/layers',
-      config: {
-          handler: layerContextController.create,
+      handler: layerContextController.create,
+      options: {
           tags: ['api', 'layerContext'],
           description: 'Create a layerContext.',
           validate: {
