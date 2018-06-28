@@ -10,53 +10,53 @@ export class Context {
 
   private database: IDatabase = database;
 
-  constructor() {}
+  constructor() { }
 
   public async create(context: IContext): Promise<ContextInstance> {
     return await this.database.context.create(context).catch((error) => {
-        if (error.name === 'SequelizeUniqueConstraintError') {
-          const message = 'URI must be unique.';
-          throw Boom.conflict(message);
-        } else {
-          throw Boom.badImplementation(error);
-        }
-      });
+      if (error.name === 'SequelizeUniqueConstraintError') {
+        const message = 'URI must be unique.';
+        throw Boom.conflict(message);
+      } else {
+        throw Boom.badImplementation(error);
+      }
+    });
   }
 
-  public async update(id: string, context: IContext): Promise<{ id: string}> {
+  public async update(id: string, context: IContext): Promise<{ id: string }> {
     return await this.database.context.update(context, {
-        where: {
-          id: id
-        }
-      }).then((count: [number, ContextInstance[]]) => {
-        if (!count[0]) {
-          throw Boom.notFound();
-        }
-        return {id: id};
-      }).catch((error) => {
-        if (Boom.isBoom(error)) {
-          throw Boom;
-        }
-        if (error.name === 'SequelizeUniqueConstraintError') {
-          const message = 'URI must be unique.';
-          throw Boom.conflict(message);
-        } else {
-          throw Boom.badImplementation(error);
-        }
-      });
+      where: {
+        id: id
+      }
+    }).then((count: [number, ContextInstance[]]) => {
+      if (!count[0]) {
+        throw Boom.notFound();
+      }
+      return { id: id };
+    }).catch((error) => {
+      if (Boom.isBoom(error)) {
+        throw Boom;
+      }
+      if (error.name === 'SequelizeUniqueConstraintError') {
+        const message = 'URI must be unique.';
+        throw Boom.conflict(message);
+      } else {
+        throw Boom.badImplementation(error);
+      }
+    });
   }
 
   public async delete(id: string): Promise<void> {
     return await this.database.context.destroy({
-        where: {
-          id: id
-        }
-      }).then((count: number) => {
-        if (!count) {
-          throw Boom.notFound();
-        }
-        return;
-      });
+      where: {
+        id: id
+      }
+    }).then((count: number) => {
+      if (!count) {
+        throw Boom.notFound();
+      }
+      return;
+    });
   }
 
   public async get(): Promise<ContextInstance[]> {
@@ -76,10 +76,10 @@ export class Context {
     if (includeLayers) { include.push(this.database.layer); }
     if (includeTools) { include.push(this.database.tool); }
 
-    let where: any = {id: id};
+    let where: any = { id: id };
 
     if (isNaN(<number><any>id)) {
-      where = {uri: id};
+      where = { uri: id };
     }
 
     const context = await this.database.context.findOne({
@@ -98,59 +98,59 @@ export class Context {
   }
 
   private async contextObjToPlainObj(context, user): Promise<ContextDetailed> {
-      let plain: any = context.get();
-      plain.layers = [];
-      plain.tools = [];
-      plain.toolbar = [];
+    let plain: any = context.get();
+    plain.layers = [];
+    plain.tools = [];
+    plain.toolbar = [];
 
-      for (const tool of context.tools) {
-        const plainTool = tool.get();
-        Object.assign(plainTool.options, plainTool.toolContext.options);
-        plainTool.toolContext = null;
-        plain.tools.push(plainTool);
-        if (plainTool.inToolbar) {
-          plain.toolbar.push(plainTool.name);
-        }
+    for (const tool of context.tools) {
+      const plainTool = tool.get();
+      Object.assign(plainTool.options, plainTool.toolContext.options);
+      plainTool.toolContext = null;
+      plain.tools.push(plainTool);
+      if (plainTool.inToolbar) {
+        plain.toolbar.push(plainTool.name);
       }
+    }
 
-      if (!context.layers || !context.layers.length) {
-        return ObjectUtils.removeNull(plain);
-      }
-
-      const profils: string[] = await UserApi.getProfils(user).catch(() => {
-        return [];
-      });
-      profils.push(user);
-      const promises = [];
-      const plainLayers = [];
-      for (const layer of context.layers) {
-        const plainL = layer.get();
-        plainLayers.push(plainL);
-        promises.push(
-          UserApi.verifyPermissionByUrl(plainL.source.url, profils)
-        );
-      }
-
-      const promisesResult = await Promise.all(promises);
-      let i = 0;
-      for (const plainLayer of plainLayers) {
-        if (promisesResult[i]) {
-          Object.assign(plainLayer.view, plainLayer.layerContext.view);
-          Object.assign(plainLayer, plainLayer.options,
-            plainLayer.layerContext.options);
-          plainLayer.order = plainLayer.layerContext.order;
-          plainLayer.layerContext = null;
-          plain.layers.push(plainLayer);
-        }
-        i++;
-      }
-
-      plain = ObjectUtils.removeNull(plain);
-      plain.layers = plain.layers.sort(
-        (a, b) => a.order < b.order ? -1 : a.order > b.order ? 1 : 0
-      );
-
+    if (!context.layers || !context.layers.length) {
       return ObjectUtils.removeNull(plain);
+    }
+
+    const profils: string[] = await UserApi.getProfils(user).catch(() => {
+      return [];
+    });
+    profils.push(user);
+    const promises = [];
+    const plainLayers = [];
+    for (const layer of context.layers) {
+      const plainL = layer.get();
+      plainLayers.push(plainL);
+      promises.push(
+        UserApi.verifyPermissionByUrl(plainL.source.url, profils)
+      );
+    }
+
+    const promisesResult = await Promise.all(promises);
+    let i = 0;
+    for (const plainLayer of plainLayers) {
+      if (promisesResult[i]) {
+        Object.assign(plainLayer.view, plainLayer.layerContext.view);
+        Object.assign(plainLayer, plainLayer.options,
+          plainLayer.layerContext.options);
+        plainLayer.order = plainLayer.layerContext.order;
+        plainLayer.layerContext = null;
+        plain.layers.push(plainLayer);
+      }
+      i++;
+    }
+
+    plain = ObjectUtils.removeNull(plain);
+    plain.layers = plain.layers.sort(
+      (a, b) => a.order < b.order ? -1 : a.order > b.order ? 1 : 0
+    );
+
+    return ObjectUtils.removeNull(plain);
   }
 
 }

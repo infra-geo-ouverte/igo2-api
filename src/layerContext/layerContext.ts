@@ -1,5 +1,4 @@
 import * as Boom from 'boom';
-import * as async from 'async';
 
 import { IDatabase, database } from '../database';
 import { ObjectUtils } from '../utils';
@@ -115,46 +114,70 @@ export class LayerContext {
   public async bulkCreate(
     contextId: string,
     layers: ILayer[],
+    ignoreErrors = true,
     createLayerIfNotExist = false) {
 
-    const createFct = (layerCommun, layer, next) => {
-      this.create({
-        contextId: contextId,
-        layerId: layerCommun.id,
-        order: layer.order,
-        options: {
-          visible: layer.visible,
-          title: layerCommun.title !== layer.title ? layer.title : undefined
-        }
-      }).then(() => next())
-        .catch((error) => next(error));
-    };
-
-    return async.forEach(layers,
-      (layer: ILayer, next) => {
-        const layerFound = this.layer.getBySource(layer).catch(
-          (error) => {
-            if (createLayerIfNotExist) {
-              const layerToCreate = layer;
-              this.layer.create(layerToCreate).then(
-                (layerCreated) => {
-                  createFct(layerCreated, layer, next);
-                }).catch((createError) => next(createError));
-            } else {
-              next(error);
-            }
-          }
-        );
-        createFct(layerFound, layer, next);
-      },
-      (error) => {
-        if (error) {
-          throw error;
-        } else {
-          return;
-        }
+    const handleError = (layer, error) => {
+      if (!ignoreErrors) {
+        throw error;
       }
-    );
+      return {
+        layer: layer,
+        error: error
+      };
+    }
+
+    const promises = [];
+    for (const layer of layers) {
+      promises.push(
+        new Promise(async (resolve, reject) => {
+          let layerFound: any = await this.layer.getBySource(layer).catch(
+            (error) => {
+              if (createLayerIfNotExist) {
+                return;
+              }
+              return handleError(layer, error);
+            }
+          );
+
+          if (!layerFound) {
+            layerFound = await this.layer.create(layer)
+              .catch((error) => {
+                handleError(layer, error);
+              });
+          }
+
+          if (!layerFound || layerFound.error) {
+            resolve(layerFound);
+            return;
+          }
+
+          const rep = await this.create({
+            contextId: contextId,
+            layerId: layerFound.id,
+            order: layer.order,
+            options: {
+              visible: layer.visible,
+              title: layerFound.title !== layer.title ? layer.title : undefined
+            }
+          }).then((l) => {
+            return { layerId: l.layerId };
+          }).catch((error) => {
+            if (!ignoreErrors) {
+              throw error;
+            }
+            return {
+              layerId: layerFound.id,
+              error: error
+            };
+          });
+
+          resolve(rep);
+        })
+      );
+    }
+
+    return await Promise.all(promises);
   }
 
 }

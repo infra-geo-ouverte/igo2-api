@@ -41,6 +41,7 @@ export interface ILayer {
   sourceFields?: SourceField[];
   wfsSource?: SourceLayer;
   order?: number;
+  visible?: boolean;
 };
 
 export interface LayerInstance extends Sequelize.Instance<ILayer> {

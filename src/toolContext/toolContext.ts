@@ -1,5 +1,4 @@
 import * as Boom from 'boom';
-import * as async from 'async';
 
 import { IDatabase, database } from '../database';
 import { ObjectUtils } from '../utils';
@@ -108,30 +107,36 @@ export class ToolContext {
     });
   }
 
-  public async bulkCreate(contextId: string, tools: IToolContext[]) {
-    let count = 0;
-    async.forEach(tools,
-      (tool: IToolContext, next) => {
-        if (tool.id) {
+  public async bulkCreate(
+    contextId: string,
+    tools: IToolContext[],
+    ignoreErrors = true
+  ) {
+
+    const promises = [];
+
+    for (const tool of tools) {
+      if (tool.id) {
+        promises.push(
           this.create({
             contextId: contextId,
             toolId: tool.id
+          }).then((rep) => {
+            return { toolId: rep.toolId };
+          }).catch((error) => {
+            if (!ignoreErrors) {
+              throw error;
+            }
+            return {
+              toolId: tool.id,
+              error: error
+            };
           })
-            .then(() => { count++; next(); })
-            .catch((error) => { next(error) });
-        } else {
-          next();
-        }
-      },
-      (error) => {
-        if (error) {
-          throw error;
-        } else {
-          return count;
-
-        }
+        );
       }
-    );
+    }
+
+    return await Promise.all(promises);
   }
 
 }

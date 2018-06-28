@@ -39,8 +39,7 @@ export default function define(sequelize: Sequelize.Sequelize, DataTypes) {
         },
         'typePermission': {
           'type': DataTypes.ENUM('read', 'write'),
-          'allowNull': false,
-          'field': 'typePermission'
+          'allowNull': false
         },
         'profil': {
           'type': DataTypes.STRING,

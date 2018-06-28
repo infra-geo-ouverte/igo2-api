@@ -33,12 +33,12 @@ export class ContextController {
 
     const context = await this.context.create(newContext).catch(handleError);
     if (newContext.tools) {
-      await this.toolContext.bulkCreate(context.id, newContext.tools)
-        .catch();
+      await this.toolContext.bulkCreate(context.id, newContext.tools);
     }
     if (newContext.layers) {
-      await this.layerContext.bulkCreate(context.id, newContext.layers, true)
-        .catch();
+      await this.layerContext.bulkCreate(
+        context.id, newContext.layers, true, true
+      );
     }
 
     return h.response(context).code(201);
@@ -82,7 +82,9 @@ export class ContextController {
     }
     if (newContext.layers) {
       await this.layerContext.deleteByContextId(context.id).catch(handleError);
-      await this.layerContext.bulkCreate(context.id, newContext.layers, true);
+      await this.layerContext.bulkCreate(
+        context.id, newContext.layers, true, true
+      );
     }
     return context;
   }

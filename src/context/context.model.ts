@@ -36,7 +36,7 @@ export interface ContextInstance extends Sequelize.Instance<IContext> {
   scope: Scope;
   title: string;
   icon: string;
-  map: string;
+  map: Map;
   owner: string;
   permission?: TypePermission | string;
 }

@@ -1,9 +1,14 @@
 import * as Sequelize from 'sequelize';
 
+export interface ICatalogOptions {
+  regFilters: string[];
+}
+
 export interface ICatalog {
   id?: string;
   title: string;
   url: string;
+  options?: ICatalogOptions;
 };
 
 export interface CatalogInstance extends Sequelize.Instance<ICatalog> {
@@ -13,6 +18,7 @@ export interface CatalogInstance extends Sequelize.Instance<ICatalog> {
 
   title: string;
   url: string;
+  options: ICatalogOptions;
 }
 
 export interface CatalogModel
@@ -34,6 +40,16 @@ export default function define(sequelize: Sequelize.Sequelize, DataTypes) {
     'url': {
       'type': DataTypes.STRING(128),
       'allowNull': false
+    },
+    'options': {
+      'type': DataTypes.TEXT,
+      'get': function() {
+        const options = this.getDataValue('options');
+        return options ? JSON.parse(options) : {};
+      },
+      'set': function(val) {
+        this.setDataValue('options', JSON.stringify(val));
+      }
     }
   }, {
     'tableName': 'catalog',
