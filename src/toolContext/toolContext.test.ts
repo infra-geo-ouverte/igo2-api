@@ -4,9 +4,9 @@ import * as Configs from '../configurations';
 
 const serverConfigs = Configs.getServerConfig();
 const testConfigs = Configs.getTestConfig();
-const admin = testConfigs.admin;
-const userStandard = testConfigs.standard;
-const user2 = testConfigs.standard2;
+const adminHeaders: any = testConfigs.adminHeaders;
+const standardHeaders: any = testConfigs.standardHeaders;
+const user2Headers: any = testConfigs.user2Headers;
 
 const runTests = async () => {
   const server = await Server.init(serverConfigs);
@@ -16,14 +16,10 @@ const runTests = async () => {
     const options = {
       method: 'POST',
       url: '/contexts',
-      headers: {
-        'x-consumer-username': userStandard.xConsumerUsername,
-        'x-consumer-id': userStandard.xConsumerId,
-        'x-consumer-groups': 'standard, another'
-      },
+      headers: standardHeaders,
       payload: {
-        uri: 'userStandardPrivate',
-        title: 'userStandardPrivate',
+        uri: 'standardPrivate',
+        title: 'standardPrivate',
         scope: 'private',
         map: {}
       }
@@ -48,11 +44,7 @@ const runTests = async () => {
     const options = {
       method: 'POST',
       url: '/contexts',
-      headers: {
-        'x-consumer-username': user2.xConsumerUsername,
-        'x-consumer-id': user2.xConsumerId,
-        'x-consumer-groups': 'another'
-      },
+      headers: user2Headers,
       payload: {
         uri: 'user2Private',
         title: 'user2Private',
@@ -80,11 +72,7 @@ const runTests = async () => {
     const options = {
       method: 'POST',
       url: '/contexts',
-      headers: {
-        'x-consumer-username': user2.xConsumerUsername,
-        'x-consumer-id': user2.xConsumerId,
-        'x-consumer-groups': 'another'
-      },
+      headers: user2Headers,
       payload: {
         uri: 'user2public',
         title: 'user2public',
@@ -112,11 +100,7 @@ const runTests = async () => {
     const options = {
       method: 'POST',
       url: '/contexts',
-      headers: {
-        'x-consumer-username': user2.xConsumerUsername,
-        'x-consumer-id': user2.xConsumerId,
-        'x-consumer-groups': 'another'
-      },
+      headers: user2Headers,
       payload: {
         uri: 'user2publicWrite',
         title: 'user2publicWrite',
@@ -144,11 +128,7 @@ const runTests = async () => {
     const options = {
       method: 'POST',
       url: '/contexts',
-      headers: {
-        'x-consumer-username': user2.xConsumerUsername,
-        'x-consumer-id': user2.xConsumerId,
-        'x-consumer-groups': 'another'
-      },
+      headers: user2Headers,
       payload: {
         uri: 'user2Protected',
         title: 'user2Protected',
@@ -176,11 +156,7 @@ const runTests = async () => {
     const options = {
       method: 'POST',
       url: '/contexts',
-      headers: {
-        'x-consumer-username': user2.xConsumerUsername,
-        'x-consumer-id': user2.xConsumerId,
-        'x-consumer-groups': 'another'
-      },
+      headers: user2Headers,
       payload: {
         uri: 'user2ProtectedWrite',
         title: 'user2ProtectedWrite',
@@ -208,14 +184,10 @@ const runTests = async () => {
     const options = {
       method: 'POST',
       url: '/contexts/4/permissions',
-      headers: {
-        'x-consumer-username': user2.xConsumerUsername,
-        'x-consumer-id': user2.xConsumerId,
-        'x-consumer-groups': 'another'
-      },
+      headers: user2Headers,
       payload: {
         typePermission: 'write',
-        profil: userStandard.xConsumerUsername
+        profil: standardHeaders['x-consumer-username']
       }
     };
     try {
@@ -233,14 +205,10 @@ const runTests = async () => {
     const options = {
       method: 'POST',
       url: '/contexts/6/permissions',
-      headers: {
-        'x-consumer-username': user2.xConsumerUsername,
-        'x-consumer-id': user2.xConsumerId,
-        'x-consumer-groups': 'another'
-      },
+      headers: user2Headers,
       payload: {
         typePermission: 'write',
-        profil: userStandard.xConsumerUsername
+        profil: standardHeaders['x-consumer-username']
       }
     };
     try {
@@ -258,11 +226,7 @@ const runTests = async () => {
     const options = {
       method: 'POST',
       url: '/tools',
-      headers: {
-        'x-consumer-username': admin.xConsumerUsername,
-        'x-consumer-id': admin.xConsumerId,
-        'x-consumer-groups': 'admin, standard, another'
-      },
+      headers: adminHeaders,
       payload: {
         name: 'dummyName',
         title: 'dummyTitle',
@@ -286,11 +250,7 @@ const runTests = async () => {
     const options = {
       method: 'POST',
       url: '/tools',
-      headers: {
-        'x-consumer-username': admin.xConsumerUsername,
-        'x-consumer-id': admin.xConsumerId,
-        'x-consumer-groups': 'admin, standard, another'
-      },
+      headers: adminHeaders,
       payload: {
         name: 'dummyName2',
         title: 'dummyTitle2',
@@ -310,16 +270,12 @@ const runTests = async () => {
 
   // ===========================================================
 
-  test('POST /contexts/1/tools - userStandard', async t => {
+  test('POST /contexts/1/tools - standard', async t => {
     let response;
     const options = {
       method: 'POST',
       url: '/contexts/1/tools',
-      headers: {
-        'x-consumer-username': userStandard.xConsumerUsername,
-        'x-consumer-id': userStandard.xConsumerId,
-        'x-consumer-groups': 'standard, another'
-      },
+      headers: standardHeaders,
       payload: {
         toolId: 1,
         options: {
@@ -342,16 +298,12 @@ const runTests = async () => {
     }
   });
 
-  test('POST /contexts/2/tools - userStandard', async t => {
+  test('POST /contexts/2/tools - standard', async t => {
     let response;
     const options = {
       method: 'POST',
       url: '/contexts/2/tools',
-      headers: {
-        'x-consumer-username': userStandard.xConsumerUsername,
-        'x-consumer-id': userStandard.xConsumerId,
-        'x-consumer-groups': 'standard, another'
-      },
+      headers: standardHeaders,
       payload: {
         toolId: 1
       }
@@ -370,16 +322,12 @@ const runTests = async () => {
     }
   });
 
-  test('POST /contexts/3/tools - userStandard', async t => {
+  test('POST /contexts/3/tools - standard', async t => {
     let response;
     const options = {
       method: 'POST',
       url: '/contexts/3/tools',
-      headers: {
-        'x-consumer-username': userStandard.xConsumerUsername,
-        'x-consumer-id': userStandard.xConsumerId,
-        'x-consumer-groups': 'standard, another'
-      },
+      headers: standardHeaders,
       payload: {
         toolId: 1
       }
@@ -398,16 +346,12 @@ const runTests = async () => {
     }
   });
 
-  test('POST /contexts/4/tools - userStandard', async t => {
+  test('POST /contexts/4/tools - standard', async t => {
     let response;
     const options = {
       method: 'POST',
       url: '/contexts/4/tools',
-      headers: {
-        'x-consumer-username': userStandard.xConsumerUsername,
-        'x-consumer-id': userStandard.xConsumerId,
-        'x-consumer-groups': 'standard, another'
-      },
+      headers: standardHeaders,
       payload: {
         toolId: 1
       }
@@ -427,16 +371,12 @@ const runTests = async () => {
     }
   });
 
-  test('POST /contexts/5/tools - userStandard', async t => {
+  test('POST /contexts/5/tools - standard', async t => {
     let response;
     const options = {
       method: 'POST',
       url: '/contexts/5/tools',
-      headers: {
-        'x-consumer-username': userStandard.xConsumerUsername,
-        'x-consumer-id': userStandard.xConsumerId,
-        'x-consumer-groups': 'standard, another'
-      },
+      headers: standardHeaders,
       payload: {
         toolId: 1
       }
@@ -455,16 +395,12 @@ const runTests = async () => {
     }
   });
 
-  test('POST /contexts/6/tools - userStandard', async t => {
+  test('POST /contexts/6/tools - standard', async t => {
     let response;
     const options = {
       method: 'POST',
       url: '/contexts/6/tools',
-      headers: {
-        'x-consumer-username': userStandard.xConsumerUsername,
-        'x-consumer-id': userStandard.xConsumerId,
-        'x-consumer-groups': 'standard, another'
-      },
+      headers: standardHeaders,
       payload: {
         toolId: 1
       }
@@ -484,16 +420,12 @@ const runTests = async () => {
     }
   });
 
-  test('POST /contexts/10/tools - userStandard', async t => {
+  test('POST /contexts/10/tools - standard', async t => {
     let response;
     const options = {
       method: 'POST',
       url: '/contexts/1/tools',
-      headers: {
-        'x-consumer-username': userStandard.xConsumerUsername,
-        'x-consumer-id': userStandard.xConsumerId,
-        'x-consumer-groups': 'standard, another'
-      },
+      headers: standardHeaders,
       payload: {
         toolId: 10,
         options: {
@@ -520,11 +452,7 @@ const runTests = async () => {
     const options = {
       method: 'POST',
       url: '/contexts/6/tools',
-      headers: {
-        'x-consumer-username': user2.xConsumerUsername,
-        'x-consumer-id': user2.xConsumerId,
-        'x-consumer-groups': 'another'
-      },
+      headers: user2Headers,
       payload: {
         toolId: 2
       }
@@ -549,11 +477,7 @@ const runTests = async () => {
     const options = {
       method: 'POST',
       url: '/contexts/6/tools',
-      headers: {
-        'x-consumer-username': user2.xConsumerUsername,
-        'x-consumer-id': user2.xConsumerId,
-        'x-consumer-groups': 'another'
-      },
+      headers: user2Headers,
       payload: {
         toolId: 2
       }
@@ -577,11 +501,7 @@ const runTests = async () => {
     const options = {
       method: 'POST',
       url: '/contexts/3/tools',
-      headers: {
-        'x-consumer-username': user2.xConsumerUsername,
-        'x-consumer-id': user2.xConsumerId,
-        'x-consumer-groups': 'another'
-      },
+      headers: user2Headers,
       payload: {
         toolId: 2
       }
@@ -608,11 +528,7 @@ const runTests = async () => {
     const options = {
       method: 'PATCH',
       url: '/contexts/1/tools/1',
-      headers: {
-        'x-consumer-username': userStandard.xConsumerUsername,
-        'x-consumer-id': userStandard.xConsumerId,
-        'x-consumer-groups': 'standard, another'
-      },
+      headers: standardHeaders,
       payload: {
         toolId: 1,
         options: {
@@ -634,16 +550,12 @@ const runTests = async () => {
     }
   });
 
-  test('PATCH /contexts/1/tools/1 - userStandard', async t => {
+  test('PATCH /contexts/1/tools/1 - standard', async t => {
     let response;
     const options = {
       method: 'PATCH',
       url: '/contexts/1/tools/1',
-      headers: {
-        'x-consumer-username': userStandard.xConsumerUsername,
-        'x-consumer-id': userStandard.xConsumerId,
-        'x-consumer-groups': 'standard, another'
-      },
+      headers: standardHeaders,
       payload: {
         options: {
           minZoom: 3
@@ -665,16 +577,12 @@ const runTests = async () => {
     }
   });
 
-  test('PATCH /contexts/2/tools/1 - userStandard', async t => {
+  test('PATCH /contexts/2/tools/1 - standard', async t => {
     let response;
     const options = {
       method: 'PATCH',
       url: '/contexts/2/tools/1',
-      headers: {
-        'x-consumer-username': userStandard.xConsumerUsername,
-        'x-consumer-id': userStandard.xConsumerId,
-        'x-consumer-groups': 'standard, another'
-      },
+      headers: standardHeaders,
       payload: {
         options: {
           minZoom: 4
@@ -695,16 +603,12 @@ const runTests = async () => {
     }
   });
 
-  test('PATCH /contexts/3/tools/1 - userStandard', async t => {
+  test('PATCH /contexts/3/tools/1 - standard', async t => {
     let response;
     const options = {
       method: 'PATCH',
       url: '/contexts/3/tools/1',
-      headers: {
-        'x-consumer-username': userStandard.xConsumerUsername,
-        'x-consumer-id': userStandard.xConsumerId,
-        'x-consumer-groups': 'standard, another'
-      },
+      headers: standardHeaders,
       payload: {
         options: {
           minZoom: 8
@@ -725,16 +629,12 @@ const runTests = async () => {
     }
   });
 
-  test('PATCH /contexts/4/tools/1 - userStandard', async t => {
+  test('PATCH /contexts/4/tools/1 - standard', async t => {
     let response;
     const options = {
       method: 'PATCH',
       url: '/contexts/4/tools/1',
-      headers: {
-        'x-consumer-username': userStandard.xConsumerUsername,
-        'x-consumer-id': userStandard.xConsumerId,
-        'x-consumer-groups': 'standard, another'
-      },
+      headers: standardHeaders,
       payload: {
         options: {
           minZoom: 6
@@ -756,16 +656,12 @@ const runTests = async () => {
     }
   });
 
-  test('PATCH /contexts/5/tools/1 - userStandard', async t => {
+  test('PATCH /contexts/5/tools/1 - standard', async t => {
     let response;
     const options = {
       method: 'PATCH',
       url: '/contexts/5/tools/1',
-      headers: {
-        'x-consumer-username': userStandard.xConsumerUsername,
-        'x-consumer-id': userStandard.xConsumerId,
-        'x-consumer-groups': 'standard, another'
-      },
+      headers: standardHeaders,
       payload: {
         options: {
           minZoom: 9
@@ -786,16 +682,12 @@ const runTests = async () => {
     }
   });
 
-  test('PATCH /contexts/6/tools/1 - userStandard', async t => {
+  test('PATCH /contexts/6/tools/1 - standard', async t => {
     let response;
     const options = {
       method: 'PATCH',
       url: '/contexts/6/tools/1',
-      headers: {
-        'x-consumer-username': userStandard.xConsumerUsername,
-        'x-consumer-id': userStandard.xConsumerId,
-        'x-consumer-groups': 'standard, another'
-      },
+      headers: standardHeaders,
       payload: {
         options: {
           minZoom: 11
@@ -817,16 +709,12 @@ const runTests = async () => {
     }
   });
 
-  test('PATCH /contexts/1/tools/10 - userStandard', async t => {
+  test('PATCH /contexts/1/tools/10 - standard', async t => {
     let response;
     const options = {
       method: 'PATCH',
       url: '/contexts/1/tools/10',
-      headers: {
-        'x-consumer-username': userStandard.xConsumerUsername,
-        'x-consumer-id': userStandard.xConsumerId,
-        'x-consumer-groups': 'standard, another'
-      },
+      headers: standardHeaders,
       payload: {
         options: {
           minZoom: 5
@@ -847,16 +735,12 @@ const runTests = async () => {
 
   // ===================================
 
-  test('GET /contexts/1/tools - userStandard', async t => {
+  test('GET /contexts/1/tools - standard', async t => {
     let response;
     const options = {
       method: 'GET',
       url: '/contexts/1/tools',
-      headers: {
-        'x-consumer-username': userStandard.xConsumerUsername,
-        'x-consumer-id': userStandard.xConsumerId,
-        'x-consumer-groups': 'standard, another'
-      }
+      headers: standardHeaders
     };
     try {
       response = await server.inject(options);
@@ -873,16 +757,12 @@ const runTests = async () => {
     }
   });
 
-  test('GET /contexts/2/tools - userStandard', async t => {
+  test('GET /contexts/2/tools - standard', async t => {
     let response;
     const options = {
       method: 'GET',
       url: '/contexts/2/tools',
-      headers: {
-        'x-consumer-username': userStandard.xConsumerUsername,
-        'x-consumer-id': userStandard.xConsumerId,
-        'x-consumer-groups': 'standard, another'
-      }
+      headers: standardHeaders
     };
     try {
       response = await server.inject(options);
@@ -898,16 +778,12 @@ const runTests = async () => {
     }
   });
 
-  test('GET /contexts/3/tools - userStandard', async t => {
+  test('GET /contexts/3/tools - standard', async t => {
     let response;
     const options = {
       method: 'GET',
       url: '/contexts/3/tools',
-      headers: {
-        'x-consumer-username': userStandard.xConsumerUsername,
-        'x-consumer-id': userStandard.xConsumerId,
-        'x-consumer-groups': 'standard, another'
-      }
+      headers: standardHeaders
     };
     try {
       response = await server.inject(options);
@@ -923,16 +799,12 @@ const runTests = async () => {
     }
   });
 
-  test('GET /contexts/4/tools - userStandard', async t => {
+  test('GET /contexts/4/tools - standard', async t => {
     let response;
     const options = {
       method: 'GET',
       url: '/contexts/4/tools',
-      headers: {
-        'x-consumer-username': userStandard.xConsumerUsername,
-        'x-consumer-id': userStandard.xConsumerId,
-        'x-consumer-groups': 'standard, another'
-      }
+      headers: standardHeaders
     };
     try {
       response = await server.inject(options);
@@ -949,16 +821,12 @@ const runTests = async () => {
     }
   });
 
-  test('GET /contexts/5/tools - userStandard', async t => {
+  test('GET /contexts/5/tools - standard', async t => {
     let response;
     const options = {
       method: 'GET',
       url: '/contexts/5/tools',
-      headers: {
-        'x-consumer-username': userStandard.xConsumerUsername,
-        'x-consumer-id': userStandard.xConsumerId,
-        'x-consumer-groups': 'standard, another'
-      }
+      headers: standardHeaders
     };
     try {
       response = await server.inject(options);
@@ -974,16 +842,12 @@ const runTests = async () => {
     }
   });
 
-  test('GET /contexts/6/tools - userStandard', async t => {
+  test('GET /contexts/6/tools - standard', async t => {
     let response;
     const options = {
       method: 'GET',
       url: '/contexts/6/tools',
-      headers: {
-        'x-consumer-username': userStandard.xConsumerUsername,
-        'x-consumer-id': userStandard.xConsumerId,
-        'x-consumer-groups': 'standard, another'
-      }
+      headers: standardHeaders
     };
     try {
       response = await server.inject(options);
@@ -1002,16 +866,12 @@ const runTests = async () => {
 
   // ============================================
 
-  test('GET /contexts/6/tools/2 - userStandard', async t => {
+  test('GET /contexts/6/tools/2 - standard', async t => {
     let response;
     const options = {
       method: 'GET',
       url: '/contexts/6/tools/2',
-      headers: {
-        'x-consumer-username': userStandard.xConsumerUsername,
-        'x-consumer-id': userStandard.xConsumerId,
-        'x-consumer-groups': 'standard, another'
-      }
+      headers: standardHeaders
     };
     try {
       response = await server.inject(options);
@@ -1028,16 +888,12 @@ const runTests = async () => {
     }
   });
 
-  test('DELETE /contexts/6/tools/2 - userStandard', async t => {
+  test('DELETE /contexts/6/tools/2 - standard', async t => {
     let response;
     const options = {
       method: 'DELETE',
       url: '/contexts/6/tools/2',
-      headers: {
-        'x-consumer-username': userStandard.xConsumerUsername,
-        'x-consumer-id': userStandard.xConsumerId,
-        'x-consumer-groups': 'standard, another'
-      }
+      headers: standardHeaders
     };
     try {
       response = await server.inject(options);
@@ -1050,16 +906,12 @@ const runTests = async () => {
     }
   });
 
-  test('GET /contexts/6/tools/2 - userStandard', async t => {
+  test('GET /contexts/6/tools/2 - standard', async t => {
     let response;
     const options = {
       method: 'GET',
       url: '/contexts/6/tools/2',
-      headers: {
-        'x-consumer-username': userStandard.xConsumerUsername,
-        'x-consumer-id': userStandard.xConsumerId,
-        'x-consumer-groups': 'standard, another'
-      }
+      headers: standardHeaders
     };
     try {
       response = await server.inject(options);
@@ -1079,11 +931,7 @@ const runTests = async () => {
     const options = {
       method: 'GET',
       url: '/contexts/1/details',
-      headers: {
-        'x-consumer-username': userStandard.xConsumerUsername,
-        'x-consumer-id': userStandard.xConsumerId,
-        'x-consumer-groups': 'standard, another'
-      }
+      headers: standardHeaders
     };
     try {
       response = await server.inject(options);
@@ -1107,11 +955,7 @@ const runTests = async () => {
     const options = {
       method: 'GET',
       url: '/contexts/2/details',
-      headers: {
-        'x-consumer-username': user2.xConsumerUsername,
-        'x-consumer-id': user2.xConsumerId,
-        'x-consumer-groups': 'another'
-      }
+      headers: user2Headers
     };
     try {
       response = await server.inject(options);
@@ -1133,11 +977,7 @@ const runTests = async () => {
     const options = {
       method: 'POST',
       url: '/contexts',
-      headers: {
-        'x-consumer-username': userStandard.xConsumerUsername,
-        'x-consumer-id': userStandard.xConsumerId,
-        'x-consumer-groups': 'standard, another'
-      },
+      headers: standardHeaders,
       payload: {
         uri: 'withTool',
         title: 'withTool',
@@ -1173,11 +1013,7 @@ const runTests = async () => {
     const options = {
       method: 'GET',
       url: `/contexts/${idContextWithTool}/details`,
-      headers: {
-        'x-consumer-username': userStandard.xConsumerUsername,
-        'x-consumer-id': userStandard.xConsumerId,
-        'x-consumer-groups': 'standard, another'
-      }
+      headers: standardHeaders
     };
     try {
       response = await server.inject(options);

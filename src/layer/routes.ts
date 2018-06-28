@@ -21,7 +21,7 @@ export default function (server: Hapi.Server) {
                 params: {
                     id: Joi.string().required()
                 },
-                headers: UserValidator.authenticateValidator
+                headers: UserValidator.userValidator
             },
             plugins: {
                 'hapi-swagger': {
@@ -130,7 +130,7 @@ export default function (server: Hapi.Server) {
             description: 'Create a layer.',
             validate: {
                 payload: LayerValidator.createModel,
-                headers: UserValidator.authenticateValidator
+                headers: UserValidator.userValidator
             },
             plugins: {
                 'hapi-swagger': {

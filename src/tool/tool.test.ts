@@ -4,9 +4,9 @@ import * as Configs from '../configurations';
 
 const serverConfigs = Configs.getServerConfig();
 const testConfigs = Configs.getTestConfig();
-const admin = testConfigs.admin;
-const anonyme = testConfigs.anonyme;
-const userStandard = testConfigs.standard;
+const anonymeHeaders: any = testConfigs.anonymeHeaders;
+const adminHeaders: any = testConfigs.adminHeaders;
+const standardHeaders: any = testConfigs.standardHeaders;
 
 
 const runTests = async () => {
@@ -17,11 +17,7 @@ const runTests = async () => {
     const options = {
       method: 'POST',
       url: '/tools',
-      headers: {
-        'x-consumer-username': admin.xConsumerUsername,
-        'x-consumer-id': admin.xConsumerId,
-        'x-consumer-groups': 'admin, standard, another'
-      },
+      headers: adminHeaders,
       payload: {
         name: 'dummyName',
         title: 'dummyTitle',
@@ -49,11 +45,7 @@ const runTests = async () => {
     const options = {
       method: 'POST',
       url: '/tools',
-      headers: {
-        'x-consumer-username': admin.xConsumerUsername,
-        'x-consumer-id': admin.xConsumerId,
-        'x-consumer-groups': 'admin, standard, another'
-      },
+      headers: adminHeaders,
       payload: {
         name: 'dummyName2',
         title: 'dummyTitle2',
@@ -81,11 +73,7 @@ const runTests = async () => {
     const options = {
       method: 'POST',
       url: '/tools',
-      headers: {
-        'x-consumer-username': admin.xConsumerUsername,
-        'x-consumer-id': admin.xConsumerId,
-        'x-consumer-groups': 'admin, standard, another'
-      },
+      headers: adminHeaders,
       payload: {
         title: 'dummyTitle3',
         inToolbar: false,
@@ -112,11 +100,7 @@ const runTests = async () => {
     const options = {
       method: 'POST',
       url: '/tools',
-      headers: {
-        'x-consumer-username': admin.xConsumerUsername,
-        'x-consumer-id': admin.xConsumerId,
-        'x-consumer-groups': 'admin, standard, another'
-      },
+      headers: adminHeaders,
       payload: {
         name: 'dummyTitle4',
         title: 'dummyTitle4',
@@ -143,10 +127,7 @@ const runTests = async () => {
     const options = {
       method: 'POST',
       url: '/tools',
-      headers: {
-        'x-consumer-username': anonyme.xConsumerUsername,
-        'x-consumer-id': anonyme.xConsumerId
-      },
+      headers: anonymeHeaders,
       payload: {
         name: 'dummy',
         title: 'dummy',
@@ -156,9 +137,9 @@ const runTests = async () => {
     };
     try {
       response = await server.inject(options);
-      t.equal(response.statusCode, 403);
+      t.equal(response.statusCode, 401);
       const result: any = response.result;
-      t.equal(result.message, 'Must be administrator');
+      t.equal(result.message, 'Must be authenticated');
     } catch (e) {
       console.error(response.result);
       t.fail(e);
@@ -168,16 +149,12 @@ const runTests = async () => {
 
   });
 
-  test('POST /tools - userStandard', async t => {
+  test('POST /tools - standard', async t => {
     let response;
     const options = {
       method: 'POST',
       url: '/tools',
-      headers: {
-        'x-consumer-username': userStandard.xConsumerUsername,
-        'x-consumer-id': userStandard.xConsumerId,
-        'x-consumer-groups': 'standard, another'
-      },
+      headers: standardHeaders,
       payload: {
         name: 'dummy',
         title: 'dummy',
@@ -204,11 +181,7 @@ const runTests = async () => {
     const options = {
       method: 'POST',
       url: '/tools',
-      headers: {
-        'x-consumer-username': admin.xConsumerUsername,
-        'x-consumer-id': admin.xConsumerId,
-        'x-consumer-groups': 'admin, standard, another'
-      },
+      headers: adminHeaders,
       payload: {
         name: 'Tool3',
         title: 'TitleTool3',
@@ -233,11 +206,7 @@ const runTests = async () => {
     const options = {
       method: 'POST',
       url: '/tools',
-      headers: {
-        'x-consumer-username': admin.xConsumerUsername,
-        'x-consumer-id': admin.xConsumerId,
-        'x-consumer-groups': 'admin, standard, another'
-      },
+      headers: adminHeaders,
       payload: {
         name: 'tool4',
         title: 'TitleTool4',
@@ -263,11 +232,7 @@ const runTests = async () => {
     const options = {
       method: 'GET',
       url: '/tools',
-      headers: {
-        'x-consumer-username': admin.xConsumerUsername,
-        'x-consumer-id': admin.xConsumerId,
-        'x-consumer-groups': 'admin, standard, another'
-      }
+      headers: adminHeaders
     };
     try {
       response = await server.inject(options);
@@ -289,17 +254,11 @@ const runTests = async () => {
     const options = {
       method: 'GET',
       url: '/tools',
-      headers: {
-        'x-consumer-username': anonyme.xConsumerUsername,
-        'x-consumer-id': anonyme.xConsumerId
-      }
+      headers: anonymeHeaders
     };
     try {
       response = await server.inject(options);
-      const result: any = response.result;
-      t.equal(result.length, 4);
-      t.equal(result[0].name, 'dummyName');
-      t.equal(response.statusCode, 200);
+      t.equal(response.statusCode, 401);
     } catch (e) {
       console.error(response.result);
       t.fail(e);
@@ -309,16 +268,12 @@ const runTests = async () => {
 
   });
 
-  test('GET /tools - userStandard', async t => {
+  test('GET /tools - standard', async t => {
     let response;
     const options = {
       method: 'GET',
       url: '/tools',
-      headers: {
-        'x-consumer-username': userStandard.xConsumerUsername,
-        'x-consumer-id': userStandard.xConsumerId,
-        'x-consumer-groups': 'standard, another'
-      }
+      headers: standardHeaders
     };
     try {
       response = await server.inject(options);
@@ -342,11 +297,7 @@ const runTests = async () => {
     const options = {
       method: 'PATCH',
       url: '/tools/2',
-      headers: {
-        'x-consumer-username': admin.xConsumerUsername,
-        'x-consumer-id': admin.xConsumerId,
-        'x-consumer-groups': 'admin, standard, another'
-      },
+      headers: adminHeaders,
       payload: {
         inToolbar: true,
         options: {
@@ -375,19 +326,16 @@ const runTests = async () => {
     const options = {
       method: 'PATCH',
       url: '/tools/2',
-      headers: {
-        'x-consumer-username': anonyme.xConsumerUsername,
-        'x-consumer-id': anonyme.xConsumerId
-      },
+      headers: anonymeHeaders,
       payload: {
         title: 'dummy99'
       }
     };
     try {
       response = await server.inject(options);
-      t.equal(response.statusCode, 403);
+      t.equal(response.statusCode, 401);
       const result: any = response.result;
-      t.equal(result.message, 'Must be administrator');
+      t.equal(result.message, 'Must be authenticated');
     } catch (e) {
       console.error(response.result);
       t.fail(e);
@@ -397,16 +345,12 @@ const runTests = async () => {
 
   });
 
-  test('PATCH /tools/{id} - userStandard', async t => {
+  test('PATCH /tools/{id} - standard', async t => {
     let response;
     const options = {
       method: 'PATCH',
       url: '/tools/2',
-      headers: {
-        'x-consumer-username': userStandard.xConsumerUsername,
-        'x-consumer-id': userStandard.xConsumerId,
-        'x-consumer-groups': 'standard, another'
-      },
+      headers: standardHeaders,
       payload: {
         name: 'dummy99'
       }
@@ -432,11 +376,7 @@ const runTests = async () => {
     const options = {
       method: 'GET',
       url: '/tools/13',
-      headers: {
-        'x-consumer-username': admin.xConsumerUsername,
-        'x-consumer-id': admin.xConsumerId,
-        'x-consumer-groups': 'admin, standard, another'
-      }
+      headers: adminHeaders
     };
     try {
       response = await server.inject(options);
@@ -455,11 +395,7 @@ const runTests = async () => {
     const options = {
       method: 'GET',
       url: '/tools/1',
-      headers: {
-        'x-consumer-username': admin.xConsumerUsername,
-        'x-consumer-id': admin.xConsumerId,
-        'x-consumer-groups': 'admin, standard, another'
-      }
+      headers: adminHeaders
     };
     try {
       response = await server.inject(options);
@@ -481,18 +417,11 @@ const runTests = async () => {
     const options = {
       method: 'GET',
       url: '/tools/2',
-      headers: {
-        'x-consumer-username': anonyme.xConsumerUsername,
-        'x-consumer-id': anonyme.xConsumerId
-      }
+      headers: anonymeHeaders
     };
     try {
       response = await server.inject(options);
-      const result: any = response.result;
-      t.equal(result.name, 'dummyName2');
-      t.equal(result.inToolbar, true);
-      t.equal(result.options.optionParams, true);
-      t.equal(response.statusCode, 200);
+      t.equal(response.statusCode, 401);
     } catch (e) {
       console.error(response.result);
       t.fail(e);
@@ -502,16 +431,12 @@ const runTests = async () => {
 
   });
 
-  test('GET /tools/{id} - userStandard', async t => {
+  test('GET /tools/{id} - standard', async t => {
     let response;
     const options = {
       method: 'GET',
       url: '/tools/1',
-      headers: {
-        'x-consumer-username': userStandard.xConsumerUsername,
-        'x-consumer-id': userStandard.xConsumerId,
-        'x-consumer-groups': 'standard, another'
-      }
+      headers: standardHeaders
     };
     try {
       response = await server.inject(options);
@@ -535,16 +460,13 @@ const runTests = async () => {
     const options = {
       method: 'DELETE',
       url: '/tools/2',
-      headers: {
-        'x-consumer-username': anonyme.xConsumerUsername,
-        'x-consumer-id': anonyme.xConsumerId
-      }
+      headers: anonymeHeaders
     };
     try {
       response = await server.inject(options);
-      t.equal(response.statusCode, 403);
+      t.equal(response.statusCode, 401);
       const result: any = response.result;
-      t.equal(result.message, 'Must be administrator');
+      t.equal(result.message, 'Must be authenticated');
     } catch (e) {
       console.error(response.result);
       t.fail(e);
@@ -554,16 +476,12 @@ const runTests = async () => {
 
   });
 
-  test('DELETE /tools/{id} - userStandard', async t => {
+  test('DELETE /tools/{id} - standard', async t => {
     let response;
     const options = {
       method: 'DELETE',
       url: '/tools/2',
-      headers: {
-        'x-consumer-username': userStandard.xConsumerUsername,
-        'x-consumer-id': userStandard.xConsumerId,
-        'x-consumer-groups': 'standard, another'
-      }
+      headers: standardHeaders
     };
     try {
       response = await server.inject(options);
@@ -584,11 +502,7 @@ const runTests = async () => {
     const options = {
       method: 'DELETE',
       url: '/tools/3',
-      headers: {
-        'x-consumer-username': admin.xConsumerUsername,
-        'x-consumer-id': admin.xConsumerId,
-        'x-consumer-groups': 'admin, standard, another'
-      }
+      headers: adminHeaders
     };
     try {
       response = await server.inject(options);
@@ -608,11 +522,7 @@ const runTests = async () => {
     const options = {
       method: 'GET',
       url: '/tools',
-      headers: {
-        'x-consumer-username': admin.xConsumerUsername,
-        'x-consumer-id': admin.xConsumerId,
-        'x-consumer-groups': 'admin, standard, another'
-      }
+      headers: adminHeaders
     };
     try {
       response = await server.inject(options);

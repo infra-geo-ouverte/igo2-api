@@ -4,9 +4,9 @@ import * as Configs from '../configurations';
 
 const serverConfigs = Configs.getServerConfig();
 const testConfigs = Configs.getTestConfig();
-const admin = testConfigs.admin;
-const anonyme = testConfigs.anonyme;
-const userStandard = testConfigs.standard;
+const anonymeHeaders: any = testConfigs.anonymeHeaders;
+const adminHeaders: any = testConfigs.adminHeaders;
+const standardHeaders: any = testConfigs.standardHeaders;
 
 const runTests = async () => {
   const server = await Server.init(serverConfigs);
@@ -16,11 +16,7 @@ const runTests = async () => {
     const options = {
       method: 'POST',
       url: '/layers',
-      headers: {
-        'x-consumer-username': admin.xConsumerUsername,
-        'x-consumer-id': admin.xConsumerId,
-        'x-consumer-groups': 'admin, standard, another'
-      },
+      headers: adminHeaders,
       payload: {
         title: 'dummyTitle',
         type: 'osm',
@@ -47,11 +43,7 @@ const runTests = async () => {
     const options = {
       method: 'POST',
       url: '/layers',
-      headers: {
-        'x-consumer-username': admin.xConsumerUsername,
-        'x-consumer-id': admin.xConsumerId,
-        'x-consumer-groups': 'admin, standard, another'
-      },
+      headers: adminHeaders,
       payload: {
         title: 'dummyTitle2',
         type: 'osm'
@@ -76,11 +68,7 @@ const runTests = async () => {
     const options = {
       method: 'POST',
       url: '/layers',
-      headers: {
-        'x-consumer-username': admin.xConsumerUsername,
-        'x-consumer-id': admin.xConsumerId,
-        'x-consumer-groups': 'admin, standard, another'
-      },
+      headers: adminHeaders,
       payload: {
         title: 'dummy',
         view: {},
@@ -106,11 +94,7 @@ const runTests = async () => {
     const options = {
       method: 'POST',
       url: '/layers',
-      headers: {
-        'x-consumer-username': admin.xConsumerUsername,
-        'x-consumer-id': admin.xConsumerId,
-        'x-consumer-groups': 'admin, standard, another'
-      },
+      headers: adminHeaders,
       payload: {
         title: 'dummy',
         type: 'osm',
@@ -137,10 +121,7 @@ const runTests = async () => {
     const options = {
       method: 'POST',
       url: '/layers',
-      headers: {
-        'x-consumer-username': anonyme.xConsumerUsername,
-        'x-consumer-id': anonyme.xConsumerId
-      },
+      headers: anonymeHeaders,
       payload: {
         title: 'dummyAnonyme',
         type: 'wfs',
@@ -162,18 +143,14 @@ const runTests = async () => {
     }
   });
 
-  test('POST /layers - userStandard', async t => {
+  test('POST /layers - standard', async t => {
     let response;
     const options = {
       method: 'POST',
       url: '/layers',
-      headers: {
-        'x-consumer-username': userStandard.xConsumerUsername,
-        'x-consumer-id': userStandard.xConsumerId,
-        'x-consumer-groups': 'standard, another'
-      },
+      headers: standardHeaders,
       payload: {
-        title: 'dummyuserStandard',
+        title: 'dummystandard',
         type: 'osm',
         view: {},
         source: {}
@@ -182,7 +159,7 @@ const runTests = async () => {
     try {
       response = await server.inject(options);
       const result: any = response.result;
-      t.equal(result.title, 'dummyuserStandard');
+      t.equal(result.title, 'dummystandard');
       t.equal(result.type, 'osm');
       t.equal(response.statusCode, 201);
     } catch (e) {
@@ -200,11 +177,7 @@ const runTests = async () => {
     const options = {
       method: 'GET',
       url: '/layers',
-      headers: {
-        'x-consumer-username': admin.xConsumerUsername,
-        'x-consumer-id': admin.xConsumerId,
-        'x-consumer-groups': 'admin, standard, another'
-      }
+      headers: adminHeaders
     };
     try {
       response = await server.inject(options);
@@ -225,14 +198,11 @@ const runTests = async () => {
     const options = {
       method: 'GET',
       url: '/layers',
-      headers: {
-        'x-consumer-username': anonyme.xConsumerUsername,
-        'x-consumer-id': anonyme.xConsumerId
-      }
+      headers: anonymeHeaders
     };
     try {
       response = await server.inject(options);
-      t.equal(response.statusCode, 403);
+      t.equal(response.statusCode, 401);
     } catch (e) {
       console.error(response.result);
       t.fail(e);
@@ -241,16 +211,12 @@ const runTests = async () => {
     }
   });
 
-  test('GET /layers - userStandard', async t => {
+  test('GET /layers - standard', async t => {
     let response;
     const options = {
       method: 'GET',
       url: '/layers',
-      headers: {
-        'x-consumer-username': userStandard.xConsumerUsername,
-        'x-consumer-id': userStandard.xConsumerId,
-        'x-consumer-groups': 'standard, another'
-      }
+      headers: standardHeaders
     };
     try {
       response = await server.inject(options);
@@ -270,11 +236,7 @@ const runTests = async () => {
     const options = {
       method: 'PATCH',
       url: '/layers/2',
-      headers: {
-        'x-consumer-username': admin.xConsumerUsername,
-        'x-consumer-id': admin.xConsumerId,
-        'x-consumer-groups': 'admin, standard, another'
-      },
+      headers: adminHeaders,
       payload: {
         type: 'wms'
       }
@@ -295,19 +257,16 @@ const runTests = async () => {
     const options = {
       method: 'PATCH',
       url: '/layers/2',
-      headers: {
-        'x-consumer-username': anonyme.xConsumerUsername,
-        'x-consumer-id': anonyme.xConsumerId
-      },
+      headers: anonymeHeaders,
       payload: {
         title: 'dummy99'
       }
     };
     try {
       response = await server.inject(options);
-      t.equal(response.statusCode, 403);
+      t.equal(response.statusCode, 401);
       const result: any = response.result;
-      t.equal(result.message, 'Must be administrator');
+      t.equal(result.message, 'Must be authenticated');
     } catch (e) {
       console.error(response.result);
       t.fail(e);
@@ -316,16 +275,12 @@ const runTests = async () => {
     }
   });
 
-  test('PATCH /layers/{id} - userStandard', async t => {
+  test('PATCH /layers/{id} - standard', async t => {
     let response;
     const options = {
       method: 'PATCH',
       url: '/layers/2',
-      headers: {
-        'x-consumer-username': userStandard.xConsumerUsername,
-        'x-consumer-id': userStandard.xConsumerId,
-        'x-consumer-groups': 'standard, another'
-      },
+      headers: standardHeaders,
       payload: {
         title: 'dummy99'
       }
@@ -350,11 +305,7 @@ const runTests = async () => {
     const options = {
       method: 'GET',
       url: '/layers/10',
-      headers: {
-        'x-consumer-username': admin.xConsumerUsername,
-        'x-consumer-id': admin.xConsumerId,
-        'x-consumer-groups': 'admin, standard, another'
-      }
+      headers: adminHeaders
     };
     try {
       response = await server.inject(options);
@@ -372,11 +323,7 @@ const runTests = async () => {
     const options = {
       method: 'GET',
       url: '/layers/1',
-      headers: {
-        'x-consumer-username': admin.xConsumerUsername,
-        'x-consumer-id': admin.xConsumerId,
-        'x-consumer-groups': 'admin, standard, another'
-      }
+      headers: adminHeaders
     };
     try {
       response = await server.inject(options);
@@ -397,10 +344,7 @@ const runTests = async () => {
     const options = {
       method: 'GET',
       url: '/layers/2',
-      headers: {
-        'x-consumer-username': anonyme.xConsumerUsername,
-        'x-consumer-id': anonyme.xConsumerId
-      }
+      headers: anonymeHeaders
     };
     try {
       response = await server.inject(options);
@@ -416,16 +360,12 @@ const runTests = async () => {
     }
   });
 
-  test('GET /layers/{id} - userStandard', async t => {
+  test('GET /layers/{id} - standard', async t => {
     let response;
     const options = {
       method: 'GET',
       url: '/layers/1',
-      headers: {
-        'x-consumer-username': userStandard.xConsumerUsername,
-        'x-consumer-id': userStandard.xConsumerId,
-        'x-consumer-groups': 'standard, another'
-      }
+      headers: standardHeaders
     };
     try {
       response = await server.inject(options);
@@ -448,16 +388,13 @@ const runTests = async () => {
     const options = {
       method: 'DELETE',
       url: '/layers/3',
-      headers: {
-        'x-consumer-username': anonyme.xConsumerUsername,
-        'x-consumer-id': anonyme.xConsumerId
-      }
+      headers: anonymeHeaders
     };
     try {
       response = await server.inject(options);
-      t.equal(response.statusCode, 403);
+      t.equal(response.statusCode, 401);
       const result: any = response.result;
-      t.equal(result.message, 'Must be administrator');
+      t.equal(result.message, 'Must be authenticated');
     } catch (e) {
       console.error(response.result);
       t.fail(e);
@@ -466,16 +403,12 @@ const runTests = async () => {
     }
   });
 
-  test('DELETE /layers/{id} - userStandard', async t => {
+  test('DELETE /layers/{id} - standard', async t => {
     let response;
     const options = {
       method: 'DELETE',
       url: '/layers/3',
-      headers: {
-        'x-consumer-username': userStandard.xConsumerUsername,
-        'x-consumer-id': userStandard.xConsumerId,
-        'x-consumer-groups': 'standard, another'
-      }
+      headers: standardHeaders
     };
     try {
       response = await server.inject(options);
@@ -495,11 +428,7 @@ const runTests = async () => {
     const options = {
       method: 'DELETE',
       url: '/layers/3',
-      headers: {
-        'x-consumer-username': admin.xConsumerUsername,
-        'x-consumer-id': admin.xConsumerId,
-        'x-consumer-groups': 'admin, standard, another'
-      }
+      headers: adminHeaders
     };
     try {
       response = await server.inject(options);
@@ -518,11 +447,7 @@ const runTests = async () => {
     const options = {
       method: 'GET',
       url: '/layers',
-      headers: {
-        'x-consumer-username': admin.xConsumerUsername,
-        'x-consumer-id': admin.xConsumerId,
-        'x-consumer-groups': 'admin, standard, another'
-      }
+      headers: adminHeaders
     };
     try {
       response = await server.inject(options);

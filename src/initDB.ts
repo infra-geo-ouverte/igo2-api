@@ -3,7 +3,7 @@ import * as Configs from './configurations';
 
 const serverConfigs = Configs.getServerConfig();
 const testConfigs = Configs.getTestConfig();
-const admin = testConfigs.admin;
+const adminHeaders: any = testConfigs.adminHeaders;
 
 const initDB = async () => {
   const server = await Server.init(serverConfigs);
@@ -21,10 +21,7 @@ const initDB = async () => {
     server.inject({
       method: 'POST',
       url: '/tools',
-      headers: {
-        'x-consumer-username': admin.xConsumerUsername,
-        'x-consumer-id': admin.xConsumerId
-      },
+      headers: adminHeaders,
       payload: {
         name: 'ogcFilter',
         inToolbar: true
@@ -34,10 +31,7 @@ const initDB = async () => {
     server.inject({
       method: 'POST',
       url: '/tools',
-      headers: {
-        'x-consumer-username': admin.xConsumerUsername,
-        'x-consumer-id': admin.xConsumerId
-      },
+      headers: adminHeaders,
       payload: {
         name: 'searchResults',
         inToolbar: true
@@ -47,10 +41,7 @@ const initDB = async () => {
     server.inject({
       method: 'POST',
       url: '/tools',
-      headers: {
-        'x-consumer-username': admin.xConsumerUsername,
-        'x-consumer-id': admin.xConsumerId
-      },
+      headers: adminHeaders,
       payload: {
         name: 'contextManager',
         inToolbar: true
@@ -60,10 +51,7 @@ const initDB = async () => {
     server.inject({
       method: 'POST',
       url: '/tools',
-      headers: {
-        'x-consumer-username': admin.xConsumerUsername,
-        'x-consumer-id': admin.xConsumerId
-      },
+      headers: adminHeaders,
       payload: {
         name: 'contextEditor'
       }
@@ -72,10 +60,7 @@ const initDB = async () => {
     server.inject({
       method: 'POST',
       url: '/tools',
-      headers: {
-        'x-consumer-username': admin.xConsumerUsername,
-        'x-consumer-id': admin.xConsumerId
-      },
+      headers: adminHeaders,
       payload: {
         name: 'permissionsContextManager',
         inToolbar: false
@@ -85,10 +70,7 @@ const initDB = async () => {
     server.inject({
       method: 'POST',
       url: '/tools',
-      headers: {
-        'x-consumer-username': admin.xConsumerUsername,
-        'x-consumer-id': admin.xConsumerId
-      },
+      headers: adminHeaders,
       payload: {
         name: 'toolsContextManager',
         inToolbar: false
@@ -98,10 +80,7 @@ const initDB = async () => {
     server.inject({
       method: 'POST',
       url: '/tools',
-      headers: {
-        'x-consumer-username': admin.xConsumerUsername,
-        'x-consumer-id': admin.xConsumerId
-      },
+      headers: adminHeaders,
       payload: {
         name: 'mapDetails',
         inToolbar: true
@@ -111,10 +90,7 @@ const initDB = async () => {
     server.inject({
       method: 'POST',
       url: '/tools',
-      headers: {
-        'x-consumer-username': admin.xConsumerUsername,
-        'x-consumer-id': admin.xConsumerId
-      },
+      headers: adminHeaders,
       payload: {
         name: 'timeAnalysis',
         inToolbar: true
@@ -124,10 +100,7 @@ const initDB = async () => {
     server.inject({
       method: 'POST',
       url: '/tools',
-      headers: {
-        'x-consumer-username': admin.xConsumerUsername,
-        'x-consumer-id': admin.xConsumerId
-      },
+      headers: adminHeaders,
       payload: {
         name: 'print',
         inToolbar: true
@@ -137,10 +110,7 @@ const initDB = async () => {
     server.inject({
       method: 'POST',
       url: '/tools',
-      headers: {
-        'x-consumer-username': admin.xConsumerUsername,
-        'x-consumer-id': admin.xConsumerId
-      },
+      headers: adminHeaders,
       payload: {
         name: 'catalog',
         inToolbar: true
@@ -150,10 +120,7 @@ const initDB = async () => {
     server.inject({
       method: 'POST',
       url: '/tools',
-      headers: {
-        'x-consumer-username': admin.xConsumerUsername,
-        'x-consumer-id': admin.xConsumerId
-      },
+      headers: adminHeaders,
       payload: {
         name: 'catalogLayers',
         inToolbar: false
@@ -163,10 +130,7 @@ const initDB = async () => {
     server.inject({
       method: 'POST',
       url: '/tools',
-      headers: {
-        'x-consumer-username': admin.xConsumerUsername,
-        'x-consumer-id': admin.xConsumerId
-      },
+      headers: adminHeaders,
       payload: {
         name: 'shareMap',
         inToolbar: true
@@ -176,10 +140,7 @@ const initDB = async () => {
     server.inject({
       method: 'POST',
       url: '/layers',
-      headers: {
-        'x-consumer-username': admin.xConsumerUsername,
-        'x-consumer-id': admin.xConsumerId
-      },
+      headers: adminHeaders,
       payload: {
         title: 'Relief',
         type: 'xyz',
@@ -194,10 +155,7 @@ const initDB = async () => {
     server.inject({
       method: 'POST',
       url: '/layers',
-      headers: {
-        'x-consumer-username': admin.xConsumerUsername,
-        'x-consumer-id': admin.xConsumerId
-      },
+      headers: adminHeaders,
       payload: {
         title: 'Satellite',
         type: 'xyz',
@@ -212,10 +170,7 @@ const initDB = async () => {
     server.inject({
       method: 'POST',
       url: '/contexts',
-      headers: {
-        'x-consumer-username': admin.xConsumerUsername,
-        'x-consumer-id': admin.xConsumerId
-      },
+      headers: adminHeaders,
       payload: {
         uri: 'default',
         title: 'Default',

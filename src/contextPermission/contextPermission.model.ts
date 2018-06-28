@@ -39,7 +39,8 @@ export default function define(sequelize: Sequelize.Sequelize, DataTypes) {
         },
         'typePermission': {
           'type': DataTypes.ENUM('read', 'write'),
-          'allowNull': false
+          'allowNull': false,
+          'field': 'typePermission'
         },
         'profil': {
           'type': DataTypes.STRING,
@@ -58,7 +59,7 @@ export default function define(sequelize: Sequelize.Sequelize, DataTypes) {
         }, {
           'fields': ['profil']
         }],
-        'tableName': 'contextPermission',
+        'tableName': 'context_permission',
         'timestamps': true
       }
     );

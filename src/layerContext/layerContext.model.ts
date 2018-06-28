@@ -84,7 +84,7 @@ export default function define(sequelize: Sequelize.Sequelize, DataTypes) {
         }, {
           'fields': ['layerId']
       }],
-      'tableName': 'layerContext',
+      'tableName': 'layer_context',
       'timestamps': true
     }
   );

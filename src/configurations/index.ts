@@ -58,16 +58,19 @@ export type IDataConfiguration =
   | IPostgresConfiguration
   | IDBStringConfiguration;
 
-export interface IConsumer {
-  xConsumerId: string;
-  xConsumerUsername: string;
+export interface IConsumerHeaders {
+  'x-consumer-id': string;
+  'x-consumer-username': string;
+  'x-consumer-custom-id': string;
+  'x-consumer-groups': string;
+  'x-anonymous-consumer'?: string;
 }
 
 export interface ITestConfiguration {
-  admin: IConsumer;
-  anonyme: IConsumer;
-  standard: IConsumer;
-  standard2: IConsumer;
+  adminHeaders: IConsumerHeaders;
+  anonymeHeaders: IConsumerHeaders;
+  standardHeaders: IConsumerHeaders;
+  user2Headers: IConsumerHeaders;
 }
 
 export function getDatabaseConfig(): IDataConfiguration {

@@ -5,8 +5,9 @@ import { database } from '../database';
 
 const serverConfigs = Configs.getServerConfig();
 const testConfigs = Configs.getTestConfig();
-const anonyme = testConfigs.anonyme;
-const userStandard = testConfigs.standard;
+const anonymeHeaders: any = testConfigs.anonymeHeaders;
+const standardHeaders: any = testConfigs.standardHeaders;
+const user2Headers: any = testConfigs.user2Headers;
 
 
 const runTests = async () => {
@@ -14,13 +15,13 @@ const runTests = async () => {
 
   const user = await database.user.findOne({
     where: {
-      sourceId: 1
+      sourceId: standardHeaders['x-consumer-custom-id']
     }
   });
 
   if (!user) {
     await database.user.create({
-      sourceId: '1',
+      sourceId: standardHeaders['x-consumer-custom-id'],
       source: 'test'
     });
   }
@@ -55,11 +56,7 @@ const runTests = async () => {
     const options = {
       method: 'POST',
       url: '/pois',
-      headers: {
-        'x-consumer-username': 'test',
-        'x-consumer-id': userStandard.xConsumerId,
-        'x-consumer-custom-id': '1'
-      },
+      headers: standardHeaders,
       payload: {
         title: 'poi1',
         x: -73.22,
@@ -85,11 +82,7 @@ const runTests = async () => {
     const options = {
       method: 'POST',
       url: '/pois',
-      headers: {
-        'x-consumer-username': anonyme.xConsumerUsername,
-        'x-consumer-id': anonyme.xConsumerId,
-        'x-anonymous-consumer': 'true'
-      },
+      headers: anonymeHeaders,
       payload: {
         title: 'poi1',
         zoom:  6,
@@ -110,16 +103,12 @@ const runTests = async () => {
     }
   });
 
-  test('POST /pois - userStandard', async t => {
+  test('POST /pois - standard', async t => {
     let response;
     const options = {
       method: 'POST',
       url: '/pois',
-      headers: {
-        'x-consumer-username': 'test',
-        'x-consumer-id': userStandard.xConsumerId,
-        'x-consumer-custom-id': '1'
-      },
+      headers: standardHeaders,
       payload: {
         title: 'poi1',
         zoom:  6,
@@ -143,16 +132,12 @@ const runTests = async () => {
     }
   });
 
-  test('POST /pois - userStandard bis', async t => {
+  test('POST /pois - standard bis', async t => {
     let response;
     const options = {
       method: 'POST',
       url: '/pois',
-      headers: {
-        'x-consumer-username': 'test',
-        'x-consumer-id': userStandard.xConsumerId,
-        'x-consumer-custom-id': '1'
-      },
+      headers: standardHeaders,
       payload: {
         title: 'poi2',
         zoom:  2,
@@ -183,11 +168,7 @@ const runTests = async () => {
     const options = {
       method: 'GET',
       url: '/pois',
-      headers: {
-        'x-consumer-username': anonyme.xConsumerUsername,
-        'x-consumer-id': anonyme.xConsumerId,
-        'x-anonymous-consumer': 'true'
-      }
+      headers: anonymeHeaders,
     };
     try {
       response = await server.inject(options);
@@ -202,16 +183,12 @@ const runTests = async () => {
     }
   });
 
-  test('GET /pois - userStandard', async t => {
+  test('GET /pois - standard', async t => {
     let response;
     const options = {
       method: 'GET',
       url: '/pois',
-      headers: {
-        'x-consumer-username': userStandard.xConsumerUsername,
-        'x-consumer-id': userStandard.xConsumerId,
-        'x-consumer-custom-id': '1'
-      }
+      headers: standardHeaders,
     };
     try {
       response = await server.inject(options);
@@ -232,11 +209,7 @@ const runTests = async () => {
     const options = {
       method: 'GET',
       url: '/pois',
-      headers: {
-        'x-consumer-username': userStandard.xConsumerUsername,
-        'x-consumer-id': userStandard.xConsumerId,
-        'x-consumer-custom-id': '10'
-      }
+      headers: user2Headers,
     };
     try {
       response = await server.inject(options);
@@ -258,11 +231,7 @@ const runTests = async () => {
     const options = {
       method: 'PATCH',
       url: '/pois/2',
-      headers: {
-        'x-consumer-username': anonyme.xConsumerUsername,
-        'x-consumer-id': anonyme.xConsumerId,
-        'x-anonymous-consumer': 'true'
-      },
+      headers: anonymeHeaders,
       payload: {
         title: 'dummy99'
       }
@@ -280,16 +249,12 @@ const runTests = async () => {
     }
   });
 
-  test('PATCH /pois/{id} - userStandard', async t => {
+  test('PATCH /pois/{id} - standard', async t => {
     let response;
     const options = {
       method: 'PATCH',
       url: '/pois/2',
-      headers: {
-        'x-consumer-username': userStandard.xConsumerUsername,
-        'x-consumer-id': userStandard.xConsumerId,
-        'x-consumer-custom-id': '1'
-      },
+      headers: standardHeaders,
       payload: {
         title: 'dummy99'
       }
@@ -312,11 +277,7 @@ const runTests = async () => {
     const options = {
       method: 'PATCH',
       url: '/pois/2',
-      headers: {
-        'x-consumer-username': userStandard.xConsumerUsername,
-        'x-consumer-id': userStandard.xConsumerId,
-        'x-consumer-custom-id': '9'
-      },
+      headers: user2Headers,
       payload: {
         title: 'dummy99'
       }
@@ -339,11 +300,7 @@ const runTests = async () => {
     const options = {
       method: 'GET',
       url: '/pois/2',
-      headers: {
-        'x-consumer-username': anonyme.xConsumerUsername,
-        'x-consumer-id': anonyme.xConsumerId,
-        'x-anonymous-consumer': 'true'
-      }
+      headers: anonymeHeaders,
     };
     try {
       response = await server.inject(options);
@@ -358,16 +315,12 @@ const runTests = async () => {
     }
   });
 
-  test('GET /pois/{id} - userStandard', async t => {
+  test('GET /pois/{id} - standard', async t => {
     let response;
     const options = {
       method: 'GET',
       url: '/pois/2',
-      headers: {
-        'x-consumer-username': userStandard.xConsumerUsername,
-        'x-consumer-id': userStandard.xConsumerId,
-        'x-consumer-custom-id': '1'
-      }
+      headers: standardHeaders,
     };
     try {
       response = await server.inject(options);
@@ -387,11 +340,7 @@ const runTests = async () => {
     const options = {
       method: 'GET',
       url: '/pois/1',
-      headers: {
-        'x-consumer-username': userStandard.xConsumerUsername,
-        'x-consumer-id': userStandard.xConsumerId,
-        'x-consumer-custom-id': '9'
-      }
+      headers: user2Headers,
     };
     try {
       response = await server.inject(options);
@@ -411,11 +360,7 @@ const runTests = async () => {
     const options = {
       method: 'DELETE',
       url: '/pois/2',
-      headers: {
-        'x-consumer-username': anonyme.xConsumerUsername,
-        'x-consumer-id': anonyme.xConsumerId,
-        'x-anonymous-consumer': 'true'
-      }
+      headers: anonymeHeaders,
     };
     try {
       response = await server.inject(options);
@@ -435,11 +380,7 @@ const runTests = async () => {
     const options = {
       method: 'DELETE',
       url: '/pois/2',
-      headers: {
-        'x-consumer-username': userStandard.xConsumerUsername,
-        'x-consumer-id': userStandard.xConsumerId,
-        'x-consumer-custom-id': '9'
-      }
+      headers: user2Headers,
     };
     try {
       response = await server.inject(options);
@@ -452,16 +393,12 @@ const runTests = async () => {
     }
   });
 
-  test('DELETE /pois/{id} - userStandard', async t => {
+  test('DELETE /pois/{id} - standard', async t => {
     let response;
     const options = {
       method: 'DELETE',
       url: '/pois/2',
-      headers: {
-        'x-consumer-username': userStandard.xConsumerUsername,
-        'x-consumer-id': userStandard.xConsumerId,
-        'x-consumer-custom-id': '1'
-      }
+      headers: standardHeaders,
     };
     try {
       response = await server.inject(options);
@@ -480,11 +417,7 @@ const runTests = async () => {
     const options = {
       method: 'GET',
       url: '/pois',
-      headers: {
-        'x-consumer-username': userStandard.xConsumerUsername,
-        'x-consumer-id': userStandard.xConsumerId,
-        'x-consumer-custom-id': '1'
-      }
+      headers: standardHeaders,
     };
     try {
       response = await server.inject(options);

@@ -18,21 +18,30 @@
       "contextPermission", "layerContext", "toolContext"]
   },
   "test": {
-    "admin": {
-      "xConsumerId": "3bcb9fc6-b701-4dfd-b8d3-eb6c16879ecf",
-      "xConsumerUsername": "admin"
+    "anonymeHeaders": {
+      "x-consumer-id": "1234-anonyme-abcd",
+      "x-consumer-username": "anonyme",
+      "x-consumer-custom-id": "4",
+      "x-consumer-groups": "",
+      "x-anonymous-consumer": "true"
     },
-    "anonyme": {
-      "xConsumerId": "f29742d4-1a35-4ac8-a608-b5639986d36b",
-      "xConsumerUsername": "anonyme"
+    "adminHeaders": {
+      "x-consumer-id": "1234-admin-abcd",
+      "x-consumer-username": "king",
+      "x-consumer-custom-id": "2",
+      "x-consumer-groups": "admin, privilege, another"
     },
-    "standard": {
-      "xConsumerId": "f011924a-0c9b-46f9-ba08-a8f01fa62905",
-      "xConsumerUsername": "standard"
+    "standardHeaders": {
+      "x-consumer-id": "1234-standard-abcd",
+      "x-consumer-username": "standard",
+      "x-consumer-custom-id": "1",
+      "x-consumer-groups": "privilege, another"
     },
-    "standard2": {
-      "xConsumerId": "aaasgfas-asfsasf-gagag-gag43324t4",
-      "xConsumerUsername": "standard2"
+    "user2Headers": {
+      "x-consumer-id": "1234-user2-abcd",
+      "x-consumer-username": "user2",
+      "x-consumer-custom-id": "3",
+      "x-consumer-groups": "another"
     }
   }
 }

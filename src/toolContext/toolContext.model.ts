@@ -56,7 +56,7 @@ export default function define(sequelize: Sequelize.Sequelize, DataTypes) {
       }, {
         'fields': ['toolId']
       }],
-      'tableName': 'toolContext',
+      'tableName': 'tool_context',
       'timestamps': true
     }
   );

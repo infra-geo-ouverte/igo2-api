@@ -49,7 +49,8 @@ export default function define(sequelize: Sequelize.Sequelize, DataTypes) {
       'type': DataTypes.STRING(128)
     },
     'inToolbar': {
-      'type': DataTypes.BOOLEAN
+      'type': DataTypes.BOOLEAN,
+      'field': 'in_toolbar'
     },
     'options': {
       'type': DataTypes.TEXT,

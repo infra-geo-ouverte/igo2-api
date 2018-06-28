@@ -37,20 +37,30 @@ const dbString: IDBStringConf = <IDBStringConf>dbConfigs;
 const dbConf: IDBConf = <IDBConf>dbConfigs;
 
 if (dbString.connectionString) {
-  sequelize = new Sequelize(dbString.connectionString);
+  sequelize = new Sequelize(dbString.connectionString, {
+    define: {
+      underscored: true
+    }
+  });
 } else if (dbConf.dialect === 'postgres') {
   const dbPG: IPostgresConf = <IPostgresConf>dbConfigs;
   sequelize = new Sequelize(dbPG.database, dbPG.username, dbPG.password, {
     host: dbPG.host,
     port: dbPG.port,
-    dialect: dbPG.dialect
+    dialect: dbPG.dialect,
+    define: {
+      underscored: true
+    }
   });
 } else {
   const dbSqlite: ISqliteConf = <ISqliteConf>dbConfigs;
   sequelize = new Sequelize('database', 'username', 'password', {
     host: dbSqlite.host,
     dialect: dbSqlite.dialect,
-    storage: dbSqlite.storage
+    storage: dbSqlite.storage,
+    define: {
+      underscored: true
+    }
   });
 }
 
