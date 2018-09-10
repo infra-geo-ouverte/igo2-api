@@ -1,4 +1,4 @@
-import * as test from 'tape';
+let test = require('tape');
 import * as Server from '../server';
 import * as Configs from '../configurations';
 
@@ -7,7 +7,6 @@ const testConfigs = Configs.getTestConfig();
 const anonymeHeaders: any = testConfigs.anonymeHeaders;
 const adminHeaders: any = testConfigs.adminHeaders;
 const standardHeaders: any = testConfigs.standardHeaders;
-
 
 const runTests = async () => {
   const server = await Server.init(serverConfigs);
@@ -65,7 +64,6 @@ const runTests = async () => {
     } finally {
       t.end();
     }
-
   });
 
   test('POST /tools - admin - name missing', async t => {
@@ -92,7 +90,6 @@ const runTests = async () => {
     } finally {
       t.end();
     }
-
   });
 
   test('POST /tools - admin - another param', async t => {
@@ -119,7 +116,6 @@ const runTests = async () => {
     } finally {
       t.end();
     }
-
   });
 
   test('POST /tools - anonyme', async t => {
@@ -146,7 +142,6 @@ const runTests = async () => {
     } finally {
       t.end();
     }
-
   });
 
   test('POST /tools - standard', async t => {
@@ -173,7 +168,6 @@ const runTests = async () => {
     } finally {
       t.end();
     }
-
   });
 
   test('POST /tools - Tool 3', async t => {
@@ -198,7 +192,6 @@ const runTests = async () => {
     } finally {
       t.end();
     }
-
   });
 
   test('POST /tools - Tool 4', async t => {
@@ -222,7 +215,6 @@ const runTests = async () => {
     } finally {
       t.end();
     }
-
   });
 
   // ----------------------------------------------------------------
@@ -246,7 +238,6 @@ const runTests = async () => {
     } finally {
       t.end();
     }
-
   });
 
   test('GET /tools - anonyme', async t => {
@@ -265,7 +256,6 @@ const runTests = async () => {
     } finally {
       t.end();
     }
-
   });
 
   test('GET /tools - standard', async t => {
@@ -287,7 +277,6 @@ const runTests = async () => {
     } finally {
       t.end();
     }
-
   });
 
   // ----------------------------------------------------------------
@@ -318,7 +307,6 @@ const runTests = async () => {
     } finally {
       t.end();
     }
-
   });
 
   test('PATCH /tools/{id} - anonyme', async t => {
@@ -342,7 +330,6 @@ const runTests = async () => {
     } finally {
       t.end();
     }
-
   });
 
   test('PATCH /tools/{id} - standard', async t => {
@@ -366,7 +353,6 @@ const runTests = async () => {
     } finally {
       t.end();
     }
-
   });
 
   // ----------------------------------------------------------------
@@ -387,7 +373,6 @@ const runTests = async () => {
     } finally {
       t.end();
     }
-
   });
 
   test('GET /tools/{id} - admin', async t => {
@@ -409,7 +394,6 @@ const runTests = async () => {
     } finally {
       t.end();
     }
-
   });
 
   test('GET /tools/{id} - anonyme', async t => {
@@ -428,7 +412,6 @@ const runTests = async () => {
     } finally {
       t.end();
     }
-
   });
 
   test('GET /tools/{id} - standard', async t => {
@@ -449,11 +432,9 @@ const runTests = async () => {
     } finally {
       t.end();
     }
-
   });
 
   // ----------------------------------------------------------------
-
 
   test('DELETE /tools/{id} - anonyme', async t => {
     let response;
@@ -473,7 +454,6 @@ const runTests = async () => {
     } finally {
       t.end();
     }
-
   });
 
   test('DELETE /tools/{id} - standard', async t => {
@@ -494,7 +474,6 @@ const runTests = async () => {
     } finally {
       t.end();
     }
-
   });
 
   test('DELETE /tools/{id} - admin', async t => {
@@ -513,9 +492,7 @@ const runTests = async () => {
     } finally {
       t.end();
     }
-
   });
-
 
   test('GET /tools - after delete', async t => {
     let response;
@@ -536,9 +513,7 @@ const runTests = async () => {
     } finally {
       t.end();
     }
-
   });
-
 };
 
 runTests();

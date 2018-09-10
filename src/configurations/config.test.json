@@ -9,13 +9,17 @@
     "adminProfil": "admin",
     "jwtExpiration": "1h",
     "userApi": "http://localhost:8001",
-    "plugins": [
-      "logger",
-      "sanitizer",
-      "swagger"
-    ],
-    "routes": ["layer", "tool", "poi", "catalog", "context",
-      "contextPermission", "layerContext", "toolContext"]
+    "plugins": ["logger", "sanitizer", "swagger"],
+    "routes": [
+      "layer",
+      "tool",
+      "poi",
+      "catalog",
+      "context",
+      "contextPermission",
+      "layerContext",
+      "toolContext"
+    ]
   },
   "test": {
     "anonymeHeaders": {

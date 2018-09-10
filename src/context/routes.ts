@@ -7,7 +7,6 @@ import { ContextPermissionValidator } from '../contextPermission';
 import { UserValidator } from '../user/user.validator';
 
 export default function(server: Hapi.Server) {
-
   const contextController = new ContextController();
   server.bind(contextController);
 
@@ -122,7 +121,7 @@ export default function(server: Hapi.Server) {
         'hapi-swagger': {
           responses: {
             '204': {
-              description: 'Deleted Context.',
+              description: 'Deleted Context.'
             },
             '401': {
               description: 'Must be authenticated'
@@ -154,7 +153,7 @@ export default function(server: Hapi.Server) {
         'hapi-swagger': {
           responses: {
             '200': {
-              description: 'Deleted Context.',
+              description: 'Deleted Context.'
             },
             '401': {
               description: 'Must be authenticated'

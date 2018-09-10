@@ -4,6 +4,5 @@ export function S4() {
 }
 
 export function uuid() {
-  return `${S4()}${S4()}-${S4()}-${S4()}-${S4()}-${S4()}${S4()}${S4()}`
-          .toLowerCase();
+  return `${S4()}${S4()}-${S4()}-${S4()}-${S4()}-${S4()}${S4()}${S4()}`.toLowerCase();
 }

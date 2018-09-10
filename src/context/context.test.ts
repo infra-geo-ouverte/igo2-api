@@ -1,4 +1,4 @@
-import * as test from 'tape';
+let test = require('tape');
 import * as Server from '../server';
 import * as Configs from '../configurations';
 
@@ -263,7 +263,6 @@ const runTests = async () => {
     }
   });
 
-
   test('POST /contexts/2/clone - context 2 ', async t => {
     let response;
     const options = {
@@ -283,7 +282,6 @@ const runTests = async () => {
       t.end();
     }
   });
-
 
   test('POST /contexts/3/clone - context 3 ', async t => {
     let response;
@@ -580,7 +578,6 @@ const runTests = async () => {
     }
   });
 
-
   test('DELETE /contexts/8 - context 8 ', async t => {
     let response;
     const options = {
@@ -750,7 +747,6 @@ const runTests = async () => {
     }
   });
 
-
   test('GET /contexts/4/details - anonyme 4 ', async t => {
     let response;
     const options = {
@@ -773,7 +769,6 @@ const runTests = async () => {
     }
   });
 
-
   test('GET /contexts/6/details - anonyme 6 ', async t => {
     let response;
     const options = {
@@ -793,7 +788,6 @@ const runTests = async () => {
       t.end();
     }
   });
-
 
   test('GET /contexts/4/details - admin 4 ', async t => {
     let response;
@@ -816,7 +810,6 @@ const runTests = async () => {
       t.end();
     }
   });
-
 
   test('GET /contexts/6/details - admin 6 ', async t => {
     let response;
@@ -933,7 +926,6 @@ const runTests = async () => {
     }
   });
 
-
   test('POST /contexts - anonyme', async t => {
     let response;
     const options = {
@@ -957,7 +949,6 @@ const runTests = async () => {
       t.end();
     }
   });
-
 };
 
 runTests();

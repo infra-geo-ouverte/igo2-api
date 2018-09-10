@@ -9,21 +9,19 @@ import { LayerModel } from './layer/layer.model';
 import { ToolModel } from './tool/tool.model';
 import { ToolContextModel } from './toolContext/toolContext.model';
 import { LayerContextModel } from './layerContext/layerContext.model';
-import {
-  ContextPermissionModel
-} from './contextPermission/contextPermission.model';
+import { ContextPermissionModel } from './contextPermission/contextPermission.model';
 
 export interface IDatabase {
-    sequelize: Sequelize.Sequelize;
-    context: ContextModel;
-    user: UserModel;
-    poi: POIModel;
-    catalog: CatalogModel;
-    layer: LayerModel;
-    tool: ToolModel;
-    layerContext: LayerContextModel;
-    toolContext: ToolContextModel;
-    contextPermission: ContextPermissionModel;
+  sequelize: Sequelize.Sequelize;
+  context: ContextModel;
+  user: UserModel;
+  poi: POIModel;
+  catalog: CatalogModel;
+  layer: LayerModel;
+  tool: ToolModel;
+  layerContext: LayerContextModel;
+  toolContext: ToolContextModel;
+  contextPermission: ContextPermissionModel;
 }
 
 const dbConfigs = Configs.getDatabaseConfig();
@@ -61,9 +59,10 @@ db['poi'] = sequelize['import']('./poi/poi.model');
 db['catalog'] = sequelize['import']('./catalog/catalog.model');
 db['layer'] = sequelize['import']('./layer/layer.model');
 db['tool'] = sequelize['import']('./tool/tool.model');
-db['contextPermission'] =
-  sequelize['import']('./contextPermission/contextPermission.model');
-db['layerContext'] = sequelize['import']('./layerContext/layerContext.model')
+db['contextPermission'] = sequelize['import'](
+  './contextPermission/contextPermission.model'
+);
+db['layerContext'] = sequelize['import']('./layerContext/layerContext.model');
 db['toolContext'] = sequelize['import']('./toolContext/toolContext.model');
 
 db['sequelize'] = sequelize;

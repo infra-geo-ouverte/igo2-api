@@ -11,9 +11,7 @@ import { LayerContext } from '../layerContext';
 
 import { IContext, Context, Scope } from './index';
 
-
 export class ContextController {
-
   private database: IDatabase = database;
   private context: Context;
   private contextPermission: ContextPermission;
@@ -37,7 +35,10 @@ export class ContextController {
     }
     if (newContext.layers) {
       await this.layerContext.bulkCreate(
-        context.id, newContext.layers, true, true
+        context.id,
+        newContext.layers,
+        true,
+        true
       );
     }
 
@@ -52,7 +53,8 @@ export class ContextController {
       properties = JSON.parse(request.payload);
     }
 
-    const context = await this.context.getById(id, owner, true, true)
+    const context = await this.context
+      .getById(id, owner, true, true)
       .catch(handleError);
 
     Object.assign(context, properties);
@@ -69,11 +71,12 @@ export class ContextController {
     return await this.create(request, h);
   }
 
-  public async update(request: Hapi.Request, h: Hapi.ResponseToolkit) {
+  public async update(request: Hapi.Request, _h: Hapi.ResponseToolkit) {
     const id = request.params['contextId'];
     const newContext: any = request.payload;
 
-    const context = await this.context.update(id, newContext as IContext)
+    const context = await this.context
+      .update(id, newContext as IContext)
       .catch(handleError);
 
     if (newContext.tools) {
@@ -83,7 +86,10 @@ export class ContextController {
     if (newContext.layers) {
       await this.layerContext.deleteByContextId(context.id).catch(handleError);
       await this.layerContext.bulkCreate(
-        context.id, newContext.layers, true, true
+        context.id,
+        newContext.layers,
+        true,
+        true
       );
     }
     return context;
@@ -95,13 +101,15 @@ export class ContextController {
     return h.response().code(204);
   }
 
-  public async getById(request: Hapi.Request, h: Hapi.ResponseToolkit) {
+  public async getById(request: Hapi.Request, _h: Hapi.ResponseToolkit) {
     const owner = request.headers['x-consumer-username'];
     const id = request.params['contextId'];
 
     const context = await this.context.getById(id, owner).catch(handleError);
-    const permission = await this.contextPermission
-      .getPermission(context, owner);
+    const permission = await this.contextPermission.getPermission(
+      context,
+      owner
+    );
 
     if (!permission) {
       throw Boom.unauthorized();
@@ -110,98 +118,101 @@ export class ContextController {
     return context;
   }
 
-  public async get(request: Hapi.Request, h: Hapi.ResponseToolkit) {
+  public async get(request: Hapi.Request, _h: Hapi.ResponseToolkit) {
     const owner = request.headers['x-consumer-username'];
     const isAnonyme = request.headers['x-anonymous-consumer'];
     const id = request.headers['x-consumer-id'];
 
-    const profils: string[] = await UserApi.getProfils(id).catch(
-      () => []
-    );
+    const profils: string[] = await UserApi.getProfils(id).catch(() => []);
     if (owner) {
       profils.push(owner);
     }
 
     const promises = [];
     if (owner && !isAnonyme) {
-      promises.push(this.database.context.findAll({
-        where: {
-          owner: owner
-        }
-      }));
+      promises.push(
+        this.database.context.findAll({
+          where: {
+            owner: owner
+          }
+        })
+      );
     } else {
       promises.push([]);
     }
 
     if (profils && profils.length) {
-      promises.push(this.database.context.findAll({
-        include: [{
-          model: this.database.contextPermission,
+      promises.push(
+        this.database.context.findAll({
+          include: [
+            {
+              model: this.database.contextPermission,
+              where: {
+                profil: profils
+              }
+            }
+          ],
           where: {
-            profil: profils
+            scope: 'protected',
+            owner: {
+              $ne: owner
+            }
           }
-        }],
-        where: {
-          scope: 'protected',
-          owner: {
-            $ne: owner
-          }
-        }
-      }));
+        })
+      );
     } else {
       promises.push([]);
     }
 
-    promises.push(this.database.context.findAll({
-      include: [{
-        model: this.database.contextPermission,
-        required: false,
+    promises.push(
+      this.database.context.findAll({
+        include: [
+          {
+            model: this.database.contextPermission,
+            required: false,
+            where: {
+              profil: profils
+            }
+          }
+        ],
         where: {
-          profil: profils
+          scope: 'public',
+          owner: {
+            $ne: owner
+          }
         }
-      }],
-      where: {
-        scope: 'public',
-        owner: {
-          $ne: owner
-        }
-      }
-    }));
+      })
+    );
 
     const repPromises = await Promise.all(promises);
     const oursPromises = repPromises[0];
     const sharedPromises = repPromises[1];
     const publicPromises = repPromises[2] || [];
 
-    const oursContexts = oursPromises.map(
-      (c) => {
-        const plainC = c.get();
-        plainC.permission = TypePermission[TypePermission.write];
-        return ObjectUtils.removeNull(plainC);
-      }
-    );
-    const sharedContexts = sharedPromises.map(
-      (c) => {
-        const plainC = c.get();
+    const oursContexts = oursPromises.map(c => {
+      const plainC = c.get();
+      plainC.permission = TypePermission[TypePermission.write];
+      return ObjectUtils.removeNull(plainC);
+    });
+    const sharedContexts = sharedPromises.map(c => {
+      const plainC = c.get();
 
-        plainC.permission = TypePermission[TypePermission.read];
-        for (const cp of plainC['contextPermissions']) {
-          const typePerm: any = cp.typePermission;
-          if (typePerm === TypePermission[TypePermission.write]) {
-            plainC.permission = TypePermission[TypePermission.write];
-            break;
-          }
+      plainC.permission = TypePermission[TypePermission.read];
+      for (const cp of plainC['contextPermissions']) {
+        const typePerm: any = cp.typePermission;
+        if (typePerm === TypePermission[TypePermission.write]) {
+          plainC.permission = TypePermission[TypePermission.write];
+          break;
         }
-
-        delete plainC['contextPermissions'];
-        return ObjectUtils.removeNull(plainC);
       }
-    );
-    const publicContexts = publicPromises.map(
-      (c) => {
+
+      delete plainC['contextPermissions'];
+      return ObjectUtils.removeNull(plainC);
+    });
+    const publicContexts = publicPromises
+      .map(c => {
         const plainC: any = c.get();
-        if (!plainC.contextPermissions.length &&
-          plainC.owner !== 'admin') {
+        if (!plainC.contextPermissions.length && plainC.owner !== 'admin') {
           return;
         }
         plainC.permission = TypePermission[TypePermission.read];
@@ -215,8 +226,8 @@ export class ContextController {
 
         delete plainC['contextPermissions'];
         return ObjectUtils.removeNull(plainC);
-      }
-    ).filter(c => c);
+      })
+      .filter(c => c);
 
     return {
       ours: oursContexts,
@@ -225,11 +236,12 @@ export class ContextController {
     };
   }
 
-  public async getDetailsById(request: Hapi.Request, h: Hapi.ResponseToolkit) {
+  public async getDetailsById(request: Hapi.Request, _h: Hapi.ResponseToolkit) {
     const owner = request.headers['x-consumer-username'];
     const id = request.params['contextId'];
 
-    const contextDetails = await this.context.getById(id, owner, true, true)
+    const contextDetails = await this.context
+      .getById(id, owner, true, true)
       .catch(handleError);
 
     const permission = await this.contextPermission
@@ -247,11 +259,11 @@ export class ContextController {
   public async getDefault(request: Hapi.Request, h: Hapi.ResponseToolkit) {
     const customId = request.headers['x-consumer-custom-id'];
 
-    UserApi.info(customId).then(
-      (user) => {
+    UserApi.info(customId)
+      .then(user => {
         request.params['contextId'] = user.defaultContextId || 'default';
         this.getDetailsById(request, h);
-      }).catch(handleError);
+      })
+      .catch(handleError);
   }
-
 }

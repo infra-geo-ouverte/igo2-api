@@ -8,16 +8,11 @@ import { ObjectUtils } from '../utils';
 
 const ServerConfigs = Configs.getServerConfig();
 
-
 export class UserApi {
-
   static async getRoutes() {
-
-    const res = await axios
-      .get(`${ServerConfigs.userApi}/routes`)
-      .catch(e => {
-        throw Boom.badImplementation(e);
-      });
+    const res = await axios.get(`${ServerConfigs.userApi}/routes`).catch(e => {
+      throw Boom.badImplementation(e);
+    });
 
     return res.data;
   }
@@ -33,10 +28,15 @@ export class UserApi {
       return;
     }
 
-    const routeFound = routes.data.find((route) => {
-      return route.paths
-        && !!route.paths.length
-        && route.paths.indexOf(uri) !== -1;
+    const routeFound = routes.data.find(route => {
+      if (route.paths && !!route.paths.length) {
+        const pathFiltered = route.paths.filter(path => {
+          return path.length > 3 && uri.indexOf(path) === 0;
+        });
+
+        return pathFiltered.length > 0;
+      }
+      return false;
     });
 
     return routeFound;
@@ -62,7 +62,6 @@ export class UserApi {
     return res.data;
   }
 
-
   static async verifyServicePermission(route, profils) {
     if (!route || !route.service) {
       return false;
@@ -70,10 +69,10 @@ export class UserApi {
 
     const plugins = await UserApi.getPlugins(route.service.id);
     if (!plugins.data) {
-      return false;
+      return true;
     }
     const acl = plugins.data.find(
-      (plugin) => plugin.name === 'acl' && plugin.enabled
+      plugin => plugin.name === 'acl' && plugin.enabled
     );
     let allowed = acl ? false : true;
     if (acl && acl.config.whitelist) {
@@ -97,9 +96,10 @@ export class UserApi {
 
     const localhost = ServerConfigs.localhost;
     const localhosts = localhost ? localhost.hosts : [];
-    if ((!url.host || localhosts.indexOf(url.host) !== -1) &&
-      UserApi.isInBasePath(url.pathname)) {
-
+    if (
+      (!url.host || localhosts.indexOf(url.host) !== -1) &&
+      UserApi.isInBasePath(url.pathname)
+    ) {
       const uri = url.pathname.substring(9);
       const route = await UserApi.getRouteByUri(uri);
       return await UserApi.verifyServicePermission(route, profils);
@@ -117,7 +117,6 @@ export class UserApi {
         found = true;
         break;
       }
-
     }
     return found;
   }
@@ -151,12 +150,11 @@ export class UserApi {
           id: id
         }
       })
-      .then((user) => {
+      .then(user => {
         if (!user) {
           throw Boom.notFound();
         }
         return ObjectUtils.removeNull(user.get());
       });
   }
-
 }

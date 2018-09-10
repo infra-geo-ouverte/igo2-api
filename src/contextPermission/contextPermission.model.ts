@@ -11,7 +11,7 @@ export interface IContextPermission {
   typePermission: TypePermission;
   profil: string;
   contextId: string;
-};
+}
 
 export interface ContextPermissionInstance
   extends Sequelize.Instance<IContextPermission> {
@@ -25,43 +25,50 @@ export interface ContextPermissionInstance
 }
 
 export interface ContextPermissionModel
-  extends Sequelize.Model<ContextPermissionInstance, IContextPermission> { }
+  extends Sequelize.Model<ContextPermissionInstance, IContextPermission> {}
 
 export default function define(sequelize: Sequelize.Sequelize, DataTypes) {
-  const contextPermission =
-    sequelize.define<ContextPermissionModel, IContextPermission>(
-      'contextPermission', {
-        'id': {
-          'type': DataTypes.INTEGER,
-          'allowNull': false,
-          'primaryKey': true,
-          'autoIncrement': true
-        },
-        'typePermission': {
-          'type': DataTypes.ENUM('read', 'write'),
-          'allowNull': false
-        },
-        'profil': {
-          'type': DataTypes.STRING,
-          'allowNull': false
-        },
-        'contextId': {
-          'type': DataTypes.INTEGER
-        }
+  const contextPermission = sequelize.define<
+    ContextPermissionModel,
+    IContextPermission
+  >(
+    'contextPermission',
+    {
+      id: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        primaryKey: true,
+        autoIncrement: true
       },
-      {
-        'indexes': [{
-          'unique': true,
-          'fields': ['contextId', 'profil']
-        }, {
-          'fields': ['contextId']
-        }, {
-          'fields': ['profil']
-        }],
-        'tableName': 'context_permission',
-        'timestamps': true
+      typePermission: {
+        type: DataTypes.ENUM('read', 'write'),
+        allowNull: false
+      },
+      profil: {
+        type: DataTypes.STRING,
+        allowNull: false
+      },
+      contextId: {
+        type: DataTypes.INTEGER
       }
-    );
+    },
+    {
+      indexes: [
+        {
+          unique: true,
+          fields: ['contextId', 'profil']
+        },
+        {
+          fields: ['contextId']
+        },
+        {
+          fields: ['profil']
+        }
+      ],
+      tableName: 'context_permission',
+      timestamps: true
+    }
+  );
 
   const context = sequelize.models['context'];
 

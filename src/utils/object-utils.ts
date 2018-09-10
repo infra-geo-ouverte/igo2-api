@@ -1,37 +1,49 @@
 export class ObjectUtils {
   static resolve(obj: Object, key: string): any {
-    const keysArray = key.replace(/\[/g, '.').replace(/\]/g, '').split('.');
+    const keysArray = key
+      .replace(/\[/g, '.')
+      .replace(/\]/g, '')
+      .split('.');
     let current = obj;
     while (keysArray.length) {
-        if (typeof current !== 'object') {
-          return undefined;
-        }
-        current = current[keysArray.shift()];
+      if (typeof current !== 'object') {
+        return undefined;
+      }
+      current = current[keysArray.shift()];
     }
 
     return current;
   }
 
   static isObject(item: Object) {
-    return (item && typeof item === 'object' &&
-            !Array.isArray(item) && item !== null &&
-            !(item instanceof Date));
+    return (
+      item &&
+      typeof item === 'object' &&
+      !Array.isArray(item) &&
+      item !== null &&
+      !(item instanceof Date)
+    );
   }
 
-  static mergeDeep(target: Object, source: Object,
-      ignoreUndefined = false): any {
-
+  static mergeDeep(
+    target: Object,
+    source: Object,
+    ignoreUndefined = false
+  ): any {
     const output = Object.assign({}, target);
     if (ObjectUtils.isObject(target) && ObjectUtils.isObject(source)) {
       Object.keys(source)
-        .filter((key) => !ignoreUndefined || source[key] !== undefined)
+        .filter(key => !ignoreUndefined || source[key] !== undefined)
         .forEach(key => {
           if (ObjectUtils.isObject(source[key])) {
             if (!(key in target)) {
               Object.assign(output, { [key]: source[key] });
             } else {
-              output[key] = ObjectUtils.mergeDeep(target[key],
-                source[key], ignoreUndefined);
+              output[key] = ObjectUtils.mergeDeep(
+                target[key],
+                source[key],
+                ignoreUndefined
+              );
             }
           } else {
             Object.assign(output, { [key]: source[key] });
@@ -45,7 +57,7 @@ export class ObjectUtils {
     const output = {};
     if (ObjectUtils.isObject(obj)) {
       Object.keys(obj)
-        .filter((key) => obj[key] !== undefined)
+        .filter(key => obj[key] !== undefined)
         .forEach(key => {
           if (ObjectUtils.isObject(obj[key]) || Array.isArray(obj[key])) {
             output[key] = ObjectUtils.removeUndefined(obj[key]);
@@ -58,9 +70,7 @@ export class ObjectUtils {
     }
 
     if (Array.isArray(obj)) {
-      return obj.map(
-        (o) => ObjectUtils.removeUndefined(o)
-      );
+      return obj.map(o => ObjectUtils.removeUndefined(o));
     }
 
     return obj;
@@ -70,7 +80,7 @@ export class ObjectUtils {
     const output = {};
     if (ObjectUtils.isObject(obj)) {
       Object.keys(obj)
-        .filter((key) => obj[key] !== null)
+        .filter(key => obj[key] !== null)
         .forEach(key => {
           if (ObjectUtils.isObject(obj[key]) || Array.isArray(obj[key])) {
             output[key] = ObjectUtils.removeNull(obj[key]);
@@ -83,9 +93,7 @@ export class ObjectUtils {
     }
 
     if (Array.isArray(obj)) {
-      return obj.map(
-        (o) => ObjectUtils.removeNull(o)
-      );
+      return obj.map(o => ObjectUtils.removeNull(o));
     }
 
     return obj;

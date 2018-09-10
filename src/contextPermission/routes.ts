@@ -5,9 +5,7 @@ import { ContextPermissionController } from './contextPermission.controller';
 import { ContextPermissionValidator } from './contextPermission.validator';
 
 export default function(server: Hapi.Server) {
-
-  const contextPermissionController =
-    new ContextPermissionController();
+  const contextPermissionController = new ContextPermissionController();
 
   server.bind(contextPermissionController);
 
@@ -28,10 +26,10 @@ export default function(server: Hapi.Server) {
         'hapi-swagger': {
           responses: {
             '200': {
-              'description': 'permissions founded.'
+              description: 'permissions founded.'
             },
             '404': {
-              'description': 'Permission does not exists.'
+              description: 'Permission does not exists.'
             }
           }
         }
@@ -57,10 +55,10 @@ export default function(server: Hapi.Server) {
         'hapi-swagger': {
           responses: {
             '204': {
-              'description': 'Deleted ContextPermission.',
+              description: 'Deleted ContextPermission.'
             },
             '404': {
-              'description': 'ContextPermission does not exists.'
+              description: 'ContextPermission does not exists.'
             }
           }
         }
@@ -87,10 +85,10 @@ export default function(server: Hapi.Server) {
         'hapi-swagger': {
           responses: {
             '200': {
-              'description': 'Deleted ContextPermission.',
+              description: 'Deleted ContextPermission.'
             },
             '404': {
-              'description': 'ContextPermission does not exists.'
+              description: 'ContextPermission does not exists.'
             }
           }
         }
@@ -116,7 +114,7 @@ export default function(server: Hapi.Server) {
         'hapi-swagger': {
           responses: {
             '201': {
-              'description': 'Created ContextPermission.'
+              description: 'Created ContextPermission.'
             }
           }
         }

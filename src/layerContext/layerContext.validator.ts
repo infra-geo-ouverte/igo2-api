@@ -1,7 +1,6 @@
 import * as Joi from 'joi';
 
 export class LayerContextValidator {
-
   static createModel = Joi.object().keys({
     layerId: Joi.number().required(),
     view: Joi.object().keys({
@@ -28,5 +27,4 @@ export class LayerContextValidator {
     }),
     order: Joi.number()
   });
-
 }

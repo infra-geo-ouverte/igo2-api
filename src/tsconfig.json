@@ -9,8 +9,6 @@
     "experimentalDecorators": true,
     "noUnusedLocals": true,
     "lib": ["es7", "dom"],
-    "typeRoots": [
-      "../node_modules/@types"
-    ]
+    "typeRoots": ["../node_modules/@types"]
   }
 }

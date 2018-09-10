@@ -4,39 +4,39 @@ export interface IToolContext {
   id?: string;
   toolId?: string;
   contextId?: string;
-  options?: {[key: string]: any};
-};
+  options?: { [key: string]: any };
+}
 
-export interface ToolContextInstance
-  extends Sequelize.Instance<IToolContext> {
+export interface ToolContextInstance extends Sequelize.Instance<IToolContext> {
   id: string;
   createdAt: Date;
   updatedAt: Date;
 
   toolId: string;
   contextId: string;
-  options?: {[key: string]: any};
+  options?: { [key: string]: any };
 }
 
 export interface ToolContextModel
-  extends Sequelize.Model<ToolContextInstance, IToolContext> { }
+  extends Sequelize.Model<ToolContextInstance, IToolContext> {}
 
 export default function define(sequelize: Sequelize.Sequelize, DataTypes) {
   const toolContext = sequelize.define<ToolContextModel, IToolContext>(
-    'toolContext', {
-      'id': {
-        'type': DataTypes.INTEGER,
-        'allowNull': false,
-        'primaryKey': true,
-        'autoIncrement': true
+    'toolContext',
+    {
+      id: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        primaryKey: true,
+        autoIncrement: true
       },
-      'options': {
-        'type': DataTypes.TEXT,
-        'get': function() {
+      options: {
+        type: DataTypes.TEXT,
+        get: function() {
           const options = this.getDataValue('options');
           return options ? JSON.parse(options) : {};
         },
-        'set': function(val) {
+        set: function(val) {
           this.setDataValue('options', JSON.stringify(val));
         }
       },
@@ -48,16 +48,20 @@ export default function define(sequelize: Sequelize.Sequelize, DataTypes) {
       }
     },
     {
-      'indexes': [{
-        'unique': true,
-        'fields': ['contextId', 'toolId']
-      }, {
-        'fields': ['contextId']
-      }, {
-        'fields': ['toolId']
-      }],
-      'tableName': 'tool_context',
-      'timestamps': true
+      indexes: [
+        {
+          unique: true,
+          fields: ['contextId', 'toolId']
+        },
+        {
+          fields: ['contextId']
+        },
+        {
+          fields: ['toolId']
+        }
+      ],
+      tableName: 'tool_context',
+      timestamps: true
     }
   );
 

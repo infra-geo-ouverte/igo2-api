@@ -1,4 +1,4 @@
-import * as test from 'tape';
+let test = require('tape');
 import * as Server from '../server';
 import * as Configs from '../configurations';
 
@@ -329,7 +329,6 @@ const runTests = async () => {
       t.end();
     }
   });
-
 
   // ===============================================
 
@@ -676,8 +675,6 @@ const runTests = async () => {
     } finally {
       t.end();
     }
-
   });
-
 };
 runTests();

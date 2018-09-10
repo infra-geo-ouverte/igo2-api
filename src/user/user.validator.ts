@@ -28,14 +28,14 @@ export class UserValidator {
     }).unknown()
   );
 
-  static authenticateValidator = async (value, options) => {
+  static authenticateValidator = async (value, _options) => {
     const valid = Joi.validate(value, UserValidator.notAnonymousValidator);
     if (valid.error) {
       throw Boom.unauthorized('Must be authenticated');
     }
   };
 
-  static adminValidator = async (value, options) => {
+  static adminValidator = async (value, _options) => {
     const valid = Joi.validate(value, UserValidator.notAnonymousValidator);
     if (valid.error) {
       throw Boom.unauthorized('Must be authenticated');

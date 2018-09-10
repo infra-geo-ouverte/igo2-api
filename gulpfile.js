@@ -1,3 +1,4 @@
+/*jshint esversion: 6 */
 const gulp = require('gulp');
 const rimraf = require('gulp-rimraf');
 const tslint = require('gulp-tslint');

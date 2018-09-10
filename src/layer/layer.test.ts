@@ -1,4 +1,4 @@
-import * as test from 'tape';
+let test = require('tape');
 import * as Server from '../server';
 import * as Configs from '../configurations';
 
@@ -382,7 +382,6 @@ const runTests = async () => {
 
   // ----------------------------------------------------------------
 
-
   test('DELETE /layers/{id} - anonyme', async t => {
     let response;
     const options = {
@@ -441,7 +440,6 @@ const runTests = async () => {
     }
   });
 
-
   test('GET /layers - admin', async t => {
     let response;
     const options = {
@@ -462,7 +460,6 @@ const runTests = async () => {
       t.end();
     }
   });
-
 };
 
 runTests();

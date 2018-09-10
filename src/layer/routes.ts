@@ -5,142 +5,141 @@ import { LayerController } from './layer.controller';
 import { LayerValidator } from './layer.validator';
 import { UserValidator } from '../user/user.validator';
 
-export default function (server: Hapi.Server) {
+export default function(server: Hapi.Server) {
+  const layerController = new LayerController();
+  server.bind(layerController);
 
-    const layerController = new LayerController();
-    server.bind(layerController);
-
-    server.route({
-        method: 'GET',
-        path: '/layers/{id}',
-        handler: layerController.getById,
-        options: {
-            tags: ['api', 'layers'],
-            description: 'Get layers by id.',
-            validate: {
-                params: {
-                    id: Joi.string().required()
-                },
-                headers: UserValidator.userValidator
+  server.route({
+    method: 'GET',
+    path: '/layers/{id}',
+    handler: layerController.getById,
+    options: {
+      tags: ['api', 'layers'],
+      description: 'Get layers by id.',
+      validate: {
+        params: {
+          id: Joi.string().required()
+        },
+        headers: UserValidator.userValidator
+      },
+      plugins: {
+        'hapi-swagger': {
+          responses: {
+            '200': {
+              description: 'Layer founded.'
             },
-            plugins: {
-                'hapi-swagger': {
-                    responses: {
-                        '200': {
-                            'description': 'Layer founded.'
-                        },
-                        '404': {
-                            'description': 'Layer does not exists.'
-                        }
-                    }
-                }
+            '404': {
+              description: 'Layer does not exists.'
             }
+          }
         }
-    });
+      }
+    }
+  });
 
-    server.route({
-        method: 'GET',
-        path: '/layers',
-        handler: layerController.get,
-        options: {
-            tags: ['api', 'layers'],
-            description: 'Get all layers.',
-            validate: {
-                headers: UserValidator.adminValidator
-            }
-        }
-    });
+  server.route({
+    method: 'GET',
+    path: '/layers',
+    handler: layerController.get,
+    options: {
+      tags: ['api', 'layers'],
+      description: 'Get all layers.',
+      validate: {
+        headers: UserValidator.adminValidator
+      }
+    }
+  });
 
-    server.route({
-        method: 'GET',
-        path: '/baselayers',
-        handler: layerController.getBaseLayers,
-        options: {
-            tags: ['api', 'layers'],
-            description: 'Get base layers.',
-            validate: {
-                headers: UserValidator.userValidator
-            }
-        }
-    });
+  server.route({
+    method: 'GET',
+    path: '/baselayers',
+    handler: layerController.getBaseLayers,
+    options: {
+      tags: ['api', 'layers'],
+      description: 'Get base layers.',
+      validate: {
+        headers: UserValidator.userValidator
+      }
+    }
+  });
 
-    server.route({
-        method: 'DELETE',
-        path: '/layers/{id}',
-        handler: layerController.delete,
-        options: {
-            tags: ['api', 'layers'],
-            description: 'Delete layer by id.',
-            validate: {
-                params: {
-                    id: Joi.string().required()
-                },
-                headers: UserValidator.adminValidator
+  server.route({
+    method: 'DELETE',
+    path: '/layers/{id}',
+    handler: layerController.delete,
+    options: {
+      tags: ['api', 'layers'],
+      description: 'Delete layer by id.',
+      validate: {
+        params: {
+          id: Joi.string().required()
+        },
+        headers: UserValidator.adminValidator
+      },
+      plugins: {
+        'hapi-swagger': {
+          responses: {
+            '204': {
+              description: 'Deleted Layer.'
             },
-            plugins: {
-                'hapi-swagger': {
-                    responses: {
-                        '204': {
-                            'description': 'Deleted Layer.',
-                        },
-                        '404': {
-                            'description': 'Layer does not exists.'
-                        }
-                    }
-                }
+            '404': {
+              description: 'Layer does not exists.'
             }
+          }
         }
-    });
+      }
+    }
+  });
 
-    server.route({
-        method: 'PATCH',
-        path: '/layers/{id}',
-        handler: layerController.update,
-        options: {
-            tags: ['api', 'layers'],
-            description: 'Update layer by id.',
-            validate: {
-                params: {
-                    id: Joi.string().required()
-                },
-                payload: LayerValidator.updateModel,
-                headers: UserValidator.adminValidator
+  server.route({
+    method: 'PATCH',
+    path: '/layers/{id}',
+    handler: layerController.update,
+    options: {
+      tags: ['api', 'layers'],
+      description: 'Update layer by id.',
+      validate: {
+        params: {
+          id: Joi.string().required()
+        },
+        payload: LayerValidator.updateModel,
+        headers: UserValidator.adminValidator
+      },
+      plugins: {
+        'hapi-swagger': {
+          responses: {
+            '200': {
+              description: 'Deleted Layer.'
             },
-            plugins: {
-                'hapi-swagger': {
-                    responses: {
-                        '200': {
-                            'description': 'Deleted Layer.',
-                        },
-                        '404': {
-                            'description': 'Layer does not exists.'
-                        }
-                    }
-                }
+            '404': {
+              description: 'Layer does not exists.'
             }
+          }
         }
-    });
+      }
+    }
+  });
 
-    server.route({
-        method: 'POST',
-        path: '/layers',
-        handler: layerController.create,
-        options: {
-            tags: ['api', 'layers'],
-            description: 'Create a layer.',
-            validate: {
-                payload: LayerValidator.createModel,
-                headers: UserValidator.userValidator
-            },
-            plugins: {
-                'hapi-swagger': {
-                    responses: {
-                        '201': {
-                            'description': 'Created Layer.'
-                        }
-                    }
-                }
+  server.route({
+    method: 'POST',
+    path: '/layers',
+    handler: layerController.create,
+    options: {
+      tags: ['api', 'layers'],
+      description: 'Create a layer.',
+      validate: {
+        payload: LayerValidator.createModel,
+        headers: UserValidator.userValidator
+      },
+      plugins: {
+        'hapi-swagger': {
+          responses: {
+            '201': {
+              description: 'Created Layer.'
             }
+          }
         }
-    });
+      }
+    }
+  });
 }

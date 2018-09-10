@@ -1,4 +1,4 @@
-import * as test from 'tape';
+let test = require('tape');
 import * as Server from '../server';
 import * as Configs from '../configurations';
 
@@ -983,15 +983,20 @@ const runTests = async () => {
         title: 'withTool',
         scope: 'public',
         map: {},
-        tools: [{
-          id: '1'
-        }, {
-          id: '90'
-        }, {
-          id: '2'
-        }, {
-          name: 'extraTool'
-        }]
+        tools: [
+          {
+            id: '1'
+          },
+          {
+            id: '90'
+          },
+          {
+            id: '2'
+          },
+          {
+            name: 'extraTool'
+          }
+        ]
       }
     };
     try {
@@ -1032,7 +1037,6 @@ const runTests = async () => {
       t.end();
     }
   });
-
 };
 
 runTests();

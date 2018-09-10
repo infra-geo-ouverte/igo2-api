@@ -6,7 +6,6 @@ import { Layer } from './layer';
 import { ILayer } from './layer.model';
 
 export class LayerController {
-
   private layer: Layer;
 
   constructor() {
@@ -21,7 +20,7 @@ export class LayerController {
     return h.response(res).code(201);
   }
 
-  public async update(request: Hapi.Request, h: Hapi.ResponseToolkit) {
+  public async update(request: Hapi.Request, _h: Hapi.ResponseToolkit) {
     const id = request.params['id'];
     const layerToUpdate: ILayer = request.payload as ILayer;
 
@@ -36,19 +35,18 @@ export class LayerController {
     return h.response().code(204);
   }
 
-  public async getById(request: Hapi.Request, h: Hapi.ResponseToolkit) {
+  public async getById(request: Hapi.Request, _h: Hapi.ResponseToolkit) {
     const id = request.params['id'];
     const user = request.headers['x-consumer-username'];
 
     return await this.layer.getById(id, user).catch(handleError);
   }
 
-  public async get(request: Hapi.Request, h: Hapi.ResponseToolkit) {
+  public async get(_request: Hapi.Request, _h: Hapi.ResponseToolkit) {
     return await this.layer.get().catch(handleError);
   }
 
-  public async getBaseLayers(request: Hapi.Request, h: Hapi.ResponseToolkit) {
+  public async getBaseLayers(_request: Hapi.Request, _h: Hapi.ResponseToolkit) {
     return await this.layer.getBaseLayers().catch(handleError);
   }
-
 }

@@ -8,11 +8,7 @@
     "port": 5000,
     "adminProfil": "admin",
     "userApi": "http://localhost:8001",
-    "plugins": [
-      "logger",
-      "sanitizer",
-      "swagger"
-    ],
+    "plugins": ["logger", "sanitizer", "swagger"],
     "pluginsOptions": {
       "swagger": {
         "basePath": "/",
@@ -21,18 +17,28 @@
           "description": "Igo2 Authentification Api Documentation",
           "version": "0.1.0"
         },
-        "tags": [{
-          "name": "users",
-          "description": "Api users interface."
-        }],
+        "tags": [
+          {
+            "name": "users",
+            "description": "Api users interface."
+          }
+        ],
         "documentationPath": "/docs",
         "jsonPath": "/docs/swagger.json",
         "lang": "en",
         "swaggerUIPath": "/swaggerui/"
       }
     },
-    "routes": ["layer", "tool", "poi", "catalog", "context",
-      "contextPermission", "layerContext", "toolContext"],
+    "routes": [
+      "layer",
+      "tool",
+      "poi",
+      "catalog",
+      "context",
+      "contextPermission",
+      "layerContext",
+      "toolContext"
+    ],
     "localhost": {
       "hosts": [
         "spssogl97d.sso.msp.gouv.qc.ca",

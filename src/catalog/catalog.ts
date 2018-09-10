@@ -7,48 +7,50 @@ import { UserApi } from '../user';
 import { ICatalog, CatalogInstance } from './catalog.model';
 
 export class Catalog {
-
   private database: IDatabase = database;
 
-  constructor() { }
+  constructor() {}
 
   public async create(catalog: ICatalog): Promise<CatalogInstance> {
     return await this.database.catalog.create(catalog);
   }
 
   public async update(id: string, catalog: ICatalog): Promise<{ id: string }> {
+    return await this.database.catalog
+      .update(catalog, {
+        where: {
+          id: id
+        }
+      })
+      .then((count: [number, CatalogInstance[]]) => {
+        if (!count[0]) {
+          throw Boom.notFound();
+        }
 
-    return await this.database.catalog.update(catalog, {
-      where: {
-        id: id
-      }
-    }).then((count: [number, CatalogInstance[]]) => {
-      if (!count[0]) {
-        throw Boom.notFound();
-      }
-
-      return { id: id };
-    });
+        return { id: id };
+      });
   }
 
   public async delete(id: string): Promise<void> {
-    return await this.database.catalog.destroy({
-      where: {
-        id: id
-      }
-    }).then((count: number) => {
-      if (!count) {
-        throw Boom.notFound();
-      }
-      return;
-    });
+    return await this.database.catalog
+      .destroy({
+        where: {
+          id: id
+        }
+      })
+      .then((count: number) => {
+        if (!count) {
+          throw Boom.notFound();
+        }
+        return;
+      });
   }
 
   public async get(user: string): Promise<CatalogInstance[]> {
     const catalogs = await this.database.catalog.findAll();
 
-    const plainCatalogs = catalogs.map(
-      (catalog) => ObjectUtils.removeNull(catalog.get())
+    const plainCatalogs = catalogs.map(catalog =>
+      ObjectUtils.removeNull(catalog.get())
     );
 
     if (!plainCatalogs.length) {
@@ -68,7 +70,7 @@ export class Catalog {
       }
     }
 
-    return catalogsAllowed
+    return catalogsAllowed;
   }
 
   public async getById(id: string, user: string): Promise<CatalogInstance> {
@@ -86,8 +88,10 @@ export class Catalog {
       return [];
     });
     profils.push(user);
-    const isAllowed =
-      await UserApi.verifyPermissionByUrl(catalogPlain.url, profils);
+    const isAllowed = await UserApi.verifyPermissionByUrl(
+      catalogPlain.url,
+      profils
+    );
 
     if (!isAllowed) {
       throw Boom.forbidden();

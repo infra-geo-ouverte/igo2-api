@@ -14,7 +14,7 @@ interface Map {
     zoom: number;
     projection: string;
   };
-};
+}
 
 export interface IContext {
   id?: string;
@@ -25,7 +25,7 @@ export interface IContext {
   map: Map;
   owner: string;
   permission?: TypePermission | string;
-};
+}
 
 export interface ContextInstance extends Sequelize.Instance<IContext> {
   id: string;
@@ -41,7 +41,6 @@ export interface ContextInstance extends Sequelize.Instance<IContext> {
   permission?: TypePermission | string;
 }
 
-
 export interface ContextDetailed extends ContextInstance {
   tools?: any[];
   layers?: any[];
@@ -49,56 +48,62 @@ export interface ContextDetailed extends ContextInstance {
 }
 
 export interface ContextModel
-  extends Sequelize.Model<ContextInstance, IContext> { }
+  extends Sequelize.Model<ContextInstance, IContext> {}
 
 export default function define(sequelize: Sequelize.Sequelize, DataTypes) {
-  const context = sequelize.define<ContextModel, IContext>('context', {
-    'id': {
-      'type': DataTypes.INTEGER,
-      'allowNull': false,
-      'primaryKey': true,
-      'autoIncrement': true
-    },
-    'uri': {
-      'type': DataTypes.STRING(64),
-      'allowNull': false,
-      'unique': true
-    },
-    'title': {
-      'type': DataTypes.STRING(128),
-      'allowNull': false
-    },
-    'icon': {
-      'type': DataTypes.STRING(128)
-    },
-    'owner': {
-      'type': DataTypes.STRING(128),
-      'allowNull': false
-    },
-    'scope': {
-      'type': DataTypes.ENUM('public async', 'protected', 'private'),
-      'allowNull': false
-    },
-    'map': {
-      'type': DataTypes.TEXT,
-      'get': function() {
-        const map = this.getDataValue('map');
-        return map ? JSON.parse(map) : {};
+  const context = sequelize.define<ContextModel, IContext>(
+    'context',
+    {
+      id: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        primaryKey: true,
+        autoIncrement: true
       },
-      'set': function(val) {
-        this.setDataValue('map', JSON.stringify(val));
+      uri: {
+        type: DataTypes.STRING(64),
+        allowNull: false,
+        unique: true
+      },
+      title: {
+        type: DataTypes.STRING(128),
+        allowNull: false
+      },
+      icon: {
+        type: DataTypes.STRING(128)
+      },
+      owner: {
+        type: DataTypes.STRING(128),
+        allowNull: false
+      },
+      scope: {
+        type: DataTypes.ENUM('public async', 'protected', 'private'),
+        allowNull: false
+      },
+      map: {
+        type: DataTypes.TEXT,
+        get: function() {
+          const map = this.getDataValue('map');
+          return map ? JSON.parse(map) : {};
+        },
+        set: function(val) {
+          this.setDataValue('map', JSON.stringify(val));
+        }
       }
+    },
+    {
+      indexes: [
+        {
+          fields: ['scope']
+        },
+        {
+          fields: ['owner']
+        }
+      ],
+      tableName: 'context',
+      timestamps: true
     }
-  },
-  {
-    'indexes': [{
-      'fields': ['scope']
-    }, {
-      'fields': ['owner']
-    }],
-    'tableName': 'context',
-    'timestamps': true
-  });
+  );
 
   context.sync();
 

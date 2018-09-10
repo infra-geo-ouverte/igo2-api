@@ -6,7 +6,6 @@ import { Tool } from './tool';
 import { ITool } from './tool.model';
 
 export class ToolController {
-
   private tool: Tool;
 
   constructor() {
@@ -16,13 +15,12 @@ export class ToolController {
   public async create(request: Hapi.Request, h: Hapi.ResponseToolkit) {
     const toolToCreate: ITool = request.payload as ITool;
 
-    const res = await this.tool.create(toolToCreate)
-      .catch(handleError);
+    const res = await this.tool.create(toolToCreate).catch(handleError);
 
     return h.response(res).code(201);
   }
 
-  public async update(request: Hapi.Request, h: Hapi.ResponseToolkit) {
+  public async update(request: Hapi.Request, _h: Hapi.ResponseToolkit) {
     const id = request.params['id'];
     const toolToUpdate: ITool = request.payload as ITool;
 
@@ -36,13 +34,13 @@ export class ToolController {
     return h.response().code(204);
   }
 
-  public async getById(request: Hapi.Request, h: Hapi.ResponseToolkit) {
+  public async getById(request: Hapi.Request, _h: Hapi.ResponseToolkit) {
     const id = request.params['id'];
 
     return await this.tool.getById(id).catch(handleError);
   }
 
-  public async get(request: Hapi.Request, h: Hapi.ResponseToolkit) {
+  public async get(_request: Hapi.Request, _h: Hapi.ResponseToolkit) {
     return await this.tool.get().catch(handleError);
   }
 }

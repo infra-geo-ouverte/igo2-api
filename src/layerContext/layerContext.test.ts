@@ -1,4 +1,4 @@
-import * as test from 'tape';
+let test = require('tape');
 import * as Server from '../server';
 import * as Configs from '../configurations';
 
@@ -220,7 +220,6 @@ const runTests = async () => {
       t.end();
     }
   });
-
 
   test('POST /layers - before layerContext', async t => {
     let response;
@@ -999,28 +998,34 @@ const runTests = async () => {
         title: 'withLayer',
         scope: 'public',
         map: {},
-        layers: [{
-          id: '1',
-          order: '4',
-          visible: false
-        }, {
-          id: '90'
-        }, {
-          id: '2',
-          order: '2'
-        }, {
-          id: '3',
-          order: '1'
-        }, {
-          title: 'dummyTitleLayerContext',
-          type: 'wms',
-          view: {},
-          source: {
-            url: 'http://source.com'
+        layers: [
+          {
+            id: '1',
+            order: '4',
+            visible: false
           },
-          order: '3',
-          visible: false
-        }]
+          {
+            id: '90'
+          },
+          {
+            id: '2',
+            order: '2'
+          },
+          {
+            id: '3',
+            order: '1'
+          },
+          {
+            title: 'dummyTitleLayerContext',
+            type: 'wms',
+            view: {},
+            source: {
+              url: 'http://source.com'
+            },
+            order: '3',
+            visible: false
+          }
+        ]
       }
     };
     try {
@@ -1083,28 +1088,28 @@ const runTests = async () => {
   //   }
   // });
 
-//   test('GET /contexts/{id}/details - context cloned with layer', async t => {
-//     let response;
-//     const options = {
-//       method: 'GET',
-//       url: `/contexts/${idContextClonedWithLayer}/details`,
-//       headers: standardHeaders
-//     };
-//     try {
-//       response = await server.inject(options);
-//       const result: any = response.result;
-//       t.equal(result.layers.length, 3);
-//       t.equal(result.layers[2].id, 1);
-//       t.equal(result.layers[0].id, 2);
-//       t.equal(result.layers[1].title, 'dummyTitleLayerContext');
-//       t.equal(response.statusCode, 200);
-//     } catch (e) {
-//       console.error(response.result);
-//       t.fail(e);
-//     } finally {
-//       t.end();
-//     }
-//   });
+  //   test('GET /contexts/{id}/details - context cloned with layer', async t => {
+  //     let response;
+  //     const options = {
+  //       method: 'GET',
+  //       url: `/contexts/${idContextClonedWithLayer}/details`,
+  //       headers: standardHeaders
+  //     };
+  //     try {
+  //       response = await server.inject(options);
+  //       const result: any = response.result;
+  //       t.equal(result.layers.length, 3);
+  //       t.equal(result.layers[2].id, 1);
+  //       t.equal(result.layers[0].id, 2);
+  //       t.equal(result.layers[1].title, 'dummyTitleLayerContext');
+  //       t.equal(response.statusCode, 200);
+  //     } catch (e) {
+  //       console.error(response.result);
+  //       t.fail(e);
+  //     } finally {
+  //       t.end();
+  //     }
+  //   });
 };
 
 runTests();

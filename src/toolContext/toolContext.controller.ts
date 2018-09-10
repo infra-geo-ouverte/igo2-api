@@ -5,7 +5,6 @@ import { handleError } from '../utils';
 import { ToolContext, IToolContext } from './index';
 
 export class ToolContextController {
-
   private toolContext: ToolContext;
 
   constructor() {
@@ -16,18 +15,20 @@ export class ToolContextController {
     const newToolContext = request.payload as IToolContext;
     newToolContext['contextId'] = request.params['contextId'];
 
-    const res = await this.toolContext.create(newToolContext)
+    const res = await this.toolContext
+      .create(newToolContext)
       .catch(handleError);
 
     return h.response(res).code(201);
   }
 
-  public async update(request: Hapi.Request, h: Hapi.ResponseToolkit) {
+  public async update(request: Hapi.Request, _h: Hapi.ResponseToolkit) {
     const toolId = request.params['toolId'];
     const contextId = request.params['contextId'];
     const toolContext = request.payload as IToolContext;
 
-    return await this.toolContext.update(contextId, toolId, toolContext)
+    return await this.toolContext
+      .update(contextId, toolId, toolContext)
       .catch(handleError);
   }
 
@@ -40,17 +41,16 @@ export class ToolContextController {
     return h.response().code(204);
   }
 
-  public async getById(request: Hapi.Request, h: Hapi.ResponseToolkit) {
+  public async getById(request: Hapi.Request, _h: Hapi.ResponseToolkit) {
     const toolId = request.params['toolId'];
     const contextId = request.params['contextId'];
 
     return await this.toolContext.getById(contextId, toolId).catch(handleError);
   }
 
-  public async getByContextId(request: Hapi.Request, h: Hapi.ResponseToolkit) {
+  public async getByContextId(request: Hapi.Request, _h: Hapi.ResponseToolkit) {
     const contextId = request.params['contextId'];
 
     return await this.toolContext.getByContextId(contextId).catch(handleError);
   }
-
 }

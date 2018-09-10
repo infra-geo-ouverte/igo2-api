@@ -7,20 +7,22 @@ import { Layer, ILayer } from '../layer';
 import { ILayerContext, LayerContextInstance } from './layerContext.model';
 
 export class LayerContext {
-
   private database: IDatabase = database;
   private layer: Layer = new Layer();
 
-  constructor() { }
+  constructor() {}
 
   public async create(
-    layerContext: ILayerContext): Promise<LayerContextInstance> {
-
-    return await this.database.layerContext.create(layerContext)
-      .catch((error) => {
+    layerContext: ILayerContext
+  ): Promise<LayerContextInstance> {
+    return await this.database.layerContext
+      .create(layerContext)
+      .catch(error => {
         const uniqueFields = ['contextId', 'layerId'];
-        if (error.name === 'SequelizeUniqueConstraintError' &&
-          error.fields.toString() === uniqueFields.toString()) {
+        if (
+          error.name === 'SequelizeUniqueConstraintError' &&
+          error.fields.toString() === uniqueFields.toString()
+        ) {
           const message = 'The pair contextId and layerId must be unique.';
           throw Boom.conflict(message);
         } else if (error.name === 'SequelizeForeignKeyConstraintError') {
@@ -32,91 +34,103 @@ export class LayerContext {
       });
   }
 
-  public async update(contextId: string, layerId: string,
-    layerContext: ILayerContext): Promise<ILayerContext> {
-
-    return await this.database.layerContext.update(layerContext, {
-      where: {
-        layerId: layerId,
-        contextId: contextId
-      }
-    }).then((count: [number, LayerContextInstance[]]) => {
-      if (!count[0]) {
-        throw Boom.notFound();
-      }
-      return {
-        layerId: layerId,
-        contextId: contextId
-      };
-    });
+  public async update(
+    contextId: string,
+    layerId: string,
+    layerContext: ILayerContext
+  ): Promise<ILayerContext> {
+    return await this.database.layerContext
+      .update(layerContext, {
+        where: {
+          layerId: layerId,
+          contextId: contextId
+        }
+      })
+      .then((count: [number, LayerContextInstance[]]) => {
+        if (!count[0]) {
+          throw Boom.notFound();
+        }
+        return {
+          layerId: layerId,
+          contextId: contextId
+        };
+      });
   }
 
   public async delete(contextId: string, layerId: string): Promise<void> {
-    return await this.database.layerContext.destroy({
-      where: {
-        layerId: layerId,
-        contextId: contextId
-      }
-    }).then((count: number) => {
-      if (!count) {
-        throw Boom.notFound();
-      }
-      return;
-    });
+    return await this.database.layerContext
+      .destroy({
+        where: {
+          layerId: layerId,
+          contextId: contextId
+        }
+      })
+      .then((count: number) => {
+        if (!count) {
+          throw Boom.notFound();
+        }
+        return;
+      });
   }
 
   public async deleteByContextId(contextId: string): Promise<void> {
-    return await this.database.layerContext.destroy({
-      where: {
-        contextId: contextId
-      }
-    }).then((count: number) => {
-      if (!count) {
-        throw Boom.notFound();
-      }
-      return;
-    });
+    return await this.database.layerContext
+      .destroy({
+        where: {
+          contextId: contextId
+        }
+      })
+      .then((count: number) => {
+        if (!count) {
+          throw Boom.notFound();
+        }
+        return;
+      });
   }
 
   public async getByContextId(
-    contextId: string): Promise<LayerContextInstance[]> {
-
-    return await this.database.layerContext.findAll({
-      where: {
-        contextId: contextId,
-      },
-      order: ['order']
-    }).then((layerContextsContexts: LayerContextInstance[]) => {
-      const plainLayerContextsContexts = layerContextsContexts.map(
-        (layerContext) => ObjectUtils.removeNull(layerContext.get())
-      );
-      return plainLayerContextsContexts;
-
-    });
+    contextId: string
+  ): Promise<LayerContextInstance[]> {
+    return await this.database.layerContext
+      .findAll({
+        where: {
+          contextId: contextId
+        },
+        order: ['order']
+      })
+      .then((layerContextsContexts: LayerContextInstance[]) => {
+        const plainLayerContextsContexts = layerContextsContexts.map(
+          layerContext => ObjectUtils.removeNull(layerContext.get())
+        );
+        return plainLayerContextsContexts;
+      });
   }
 
-  public async getById(contextId: string,
-    layerId: string): Promise<LayerContextInstance> {
-
-    return await this.database.layerContext.findOne({
-      where: {
-        layerId: layerId,
-        contextId: contextId
-      }
-    }).then((layerContext: LayerContextInstance) => {
-      if (!layerContext) {
-        throw Boom.notFound();
-      }
-      return ObjectUtils.removeNull(layerContext.get());
-    });
+  public async getById(
+    contextId: string,
+    layerId: string
+  ): Promise<LayerContextInstance> {
+    return await this.database.layerContext
+      .findOne({
+        where: {
+          layerId: layerId,
+          contextId: contextId
+        }
+      })
+      .then((layerContext: LayerContextInstance) => {
+        if (!layerContext) {
+          throw Boom.notFound();
+        }
+        return ObjectUtils.removeNull(layerContext.get());
+      });
   }
 
   public async bulkCreate(
     contextId: string,
     layers: ILayer[],
     ignoreErrors = true,
-    createLayerIfNotExist = false) {
-
+    createLayerIfNotExist = false
+  ) {
     const handleError = (layer, error) => {
       if (!ignoreErrors) {
         throw error;
@@ -125,29 +139,28 @@ export class LayerContext {
         layer: layer,
         error: error
       };
-    }
+    };
 
     const promises = [];
     for (const layer of layers) {
       promises.push(
-        new Promise(async (resolve, reject) => {
-          let layerFound: any = await this.layer.getBySource(layer).catch(
-            (error) => {
+        new Promise(async (resolve, _reject) => {
+          let layerFound: any = await this.layer
+            .getBySource(layer)
+            .catch(error => {
               if (createLayerIfNotExist) {
                 return;
               }
               return handleError(layer, error);
-            }
-          );
+            });
 
           if (!layerFound) {
-            layerFound = await this.layer.create(layer)
-              .catch((error) => {
-                handleError(layer, error);
-              });
+            layerFound = await this.layer.create(layer).catch(error => {
+              handleError(layer, error);
+            });
           }
 
-          if (!layerFound || layerFound.error) {
+          if (!layerFound || layerFound.error) {
             resolve(layerFound);
             return;
           }
@@ -160,17 +173,19 @@ export class LayerContext {
               visible: layer.visible,
               title: layerFound.title !== layer.title ? layer.title : undefined
             }
-          }).then((l) => {
-            return { layerId: l.layerId };
-          }).catch((error) => {
-            if (!ignoreErrors) {
-              throw error;
-            }
-            return {
-              layerId: layerFound.id,
-              error: error
-            };
-          });
+          })
+            .then(l => {
+              return { layerId: l.layerId };
+            })
+            .catch(error => {
+              if (!ignoreErrors) {
+                throw error;
+              }
+              return {
+                layerId: layerFound.id,
+                error: error
+              };
+            });
 
           resolve(rep);
         })
@@ -179,5 +194,4 @@ export class LayerContext {
 
     return await Promise.all(promises);
   }
-
 }

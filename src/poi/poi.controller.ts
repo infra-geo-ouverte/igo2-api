@@ -6,7 +6,6 @@ import { POI } from './poi';
 import { IPOI } from './poi.model';
 
 export class POIController {
-
   private poi: POI;
 
   constructor() {
@@ -17,18 +16,16 @@ export class POIController {
     const poiToCreate: IPOI = request.payload as IPOI;
     poiToCreate.userId = request.headers['x-consumer-custom-id'];
 
-    const res = await this.poi.create(poiToCreate)
-      .catch(handleError);
+    const res = await this.poi.create(poiToCreate).catch(handleError);
     return h.response(res).code(201);
   }
 
-  public async update(request: Hapi.Request, h: Hapi.ResponseToolkit) {
+  public async update(request: Hapi.Request, _h: Hapi.ResponseToolkit) {
     const id = request.params['id'];
     const userId = request.headers['x-consumer-custom-id'];
     const poiToUpdate: IPOI = request.payload as IPOI;
 
     return await this.poi.update(id, userId, poiToUpdate).catch(handleError);
-
   }
 
   public async delete(request: Hapi.Request, h: Hapi.ResponseToolkit) {
@@ -40,14 +37,14 @@ export class POIController {
     return h.response().code(204);
   }
 
-  public async getById(request: Hapi.Request, h: Hapi.ResponseToolkit) {
+  public async getById(request: Hapi.Request, _h: Hapi.ResponseToolkit) {
     const id = request.params['id'];
     const userId = request.headers['x-consumer-custom-id'];
 
     return await this.poi.getById(id, userId).catch(handleError);
   }
 
-  public async get(request: Hapi.Request, h: Hapi.ResponseToolkit) {
+  public async get(request: Hapi.Request, _h: Hapi.ResponseToolkit) {
     const userId = request.headers['x-consumer-custom-id'];
 
     return await this.poi.get(userId).catch(handleError);

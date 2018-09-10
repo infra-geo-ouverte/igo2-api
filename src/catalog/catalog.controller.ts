@@ -6,7 +6,6 @@ import { Catalog } from './catalog';
 import { ICatalog } from './catalog.model';
 
 export class CatalogController {
-
   private catalog: Catalog;
 
   constructor() {
@@ -16,12 +15,11 @@ export class CatalogController {
   public async create(request: Hapi.Request, h: Hapi.ResponseToolkit) {
     const catalogToCreate: ICatalog = request.payload as ICatalog;
 
-    const res = await this.catalog.create(catalogToCreate)
-      .catch(handleError);
-    return h.response(res).code(201)
+    const res = await this.catalog.create(catalogToCreate).catch(handleError);
+    return h.response(res).code(201);
   }
 
-  public async update(request: Hapi.Request, h: Hapi.ResponseToolkit) {
+  public async update(request: Hapi.Request, _h: Hapi.ResponseToolkit) {
     const id = request.params['id'];
     const catalogToUpdate: ICatalog = request.payload as ICatalog;
 
@@ -36,14 +34,14 @@ export class CatalogController {
     return h.response().code(204);
   }
 
-  public async getById(request: Hapi.Request, h: Hapi.ResponseToolkit) {
+  public async getById(request: Hapi.Request, _h: Hapi.ResponseToolkit) {
     const id = request.params['id'];
     const user = request.headers['x-consumer-username'];
 
     return await this.catalog.getById(id, user).catch(handleError);
   }
 
-  public async get(request: Hapi.Request, h: Hapi.ResponseToolkit) {
+  public async get(request: Hapi.Request, _h: Hapi.ResponseToolkit) {
     const user = request.headers['x-consumer-username'];
 
     return await this.catalog.get(user).catch(handleError);
