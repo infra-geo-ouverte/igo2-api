@@ -166,10 +166,12 @@ const initDB = async () => {
         url: '/layers',
         headers: adminHeaders,
         payload: {
-          title: 'Relief',
-          type: 'xyz',
-          baseLayer: true,
-          source: {
+          layerOptions: {
+            title: 'Relief'
+          },
+          sourceOptions: {
+            type: 'xyz',
+            baseLayer: true,
             url:
               'https://geoegl.msp.gouv.qc.ca/carto/tms/1.0.0/' +
               'carte_relief@EPSG_3857/{z}/{x}/{-y}.png'
@@ -184,10 +186,12 @@ const initDB = async () => {
         url: '/layers',
         headers: adminHeaders,
         payload: {
-          title: 'Satellite',
-          type: 'xyz',
-          baseLayer: true,
-          source: {
+          layerOptions: {
+            title: 'Satellite'
+          },
+          sourceOptions: {
+            type: 'xyz',
+            baseLayer: true,
             url:
               'https://geoegl.msp.gouv.qc.ca/carto/tms/1.0.0/' +
               'orthos@EPSG_3857/{z}/{x}/{-y}.png'
@@ -227,20 +231,24 @@ const initDB = async () => {
           ],
           layers: [
             {
-              title: 'Plan',
-              type: 'xyz',
-              baseLayer: true,
-              visible: true,
-              source: {
+              layerOptions: {
+                title: 'Plan'
+              },
+              sourceOptions: {
+                type: 'xyz',
+                baseLayer: true,
+                visible: true,
                 url:
                   'https://geoegl.msp.gouv.qc.ca/carto/tms/1.0.0/' +
                   'carte_gouv_qc_ro@EPSG_3857/{z}/{x}/{-y}.png'
               }
             },
             {
-              title: 'MSP DESSERTE MUN 911',
-              type: 'wms',
-              source: {
+              layerOptions: {
+                title: 'MSP DESSERTE MUN 911'
+              },
+              sourceOptions: {
+                type: 'wms',
                 url: '/ws/igo_gouvouvert.fcgi',
                 params: {
                   layers: 'MSP_DESSERTE_MUN_911',
@@ -249,9 +257,11 @@ const initDB = async () => {
               }
             },
             {
-              title: 'MSP Tel. Urgence',
-              type: 'wms',
-              source: {
+              layerOptions: {
+                title: 'MSP Tel. Urgence'
+              },
+              sourceOptions: {
+                type: 'wms',
                 url: '/ws/igo_gouvouvert.fcgi',
                 params: {
                   layers: 'telephone_urg',
@@ -260,10 +270,12 @@ const initDB = async () => {
               }
             },
             {
-              visible: false,
-              title: 'cs avec filtre',
-              type: 'wfs',
-              source: {
+              layerOptions: {
+                title: 'cs avec filtre',
+                visible: false
+              },
+              sourceOptions: {
+                type: 'wfs',
                 url: '/ws/igo_gouvouvert.fcgi',
                 featureTypes: 'bgr_v_centr_servc_geomt_act',
                 fieldNameGeometry: 'geometry',
@@ -305,9 +317,11 @@ const initDB = async () => {
             },
 
             {
-              title: 'WMS-WFS isOgcFilterable HasFilters HasSourceFields',
-              type: 'wms',
-              source: {
+              layerOptions: {
+                title: 'WMS-WFS isOgcFilterable HasFilters HasSourceFields'
+              },
+              sourceOptions: {
+                type: 'wms',
                 url: '/geoserver/wms',
                 params: {
                   layers: 'water_areas',
