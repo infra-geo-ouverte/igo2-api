@@ -81,14 +81,7 @@ export default function define(sequelize: Sequelize.Sequelize, DataTypes) {
         allowNull: false
       },
       map: {
-        type: DataTypes.TEXT,
-        get: function() {
-          const map = this.getDataValue('map');
-          return map ? JSON.parse(map) : {};
-        },
-        set: function(val) {
-          this.setDataValue('map', JSON.stringify(val));
-        }
+        type: DataTypes.JSON
       }
     },
     {

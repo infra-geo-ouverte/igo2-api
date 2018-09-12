@@ -17,32 +17,6 @@ const updateLayerModel = LayerValidator.updateModel.keys({
 });
 
 export class ContextValidator {
-  static createModel = Joi.object().keys({
-    scope: Joi.string()
-      .required()
-      .valid('public', 'protected', 'private'),
-    uri: Joi.string().required(),
-    title: Joi.string().required(),
-    icon: Joi.string().allow(''),
-    map: Joi.object()
-      .required()
-      .keys({
-        view: Joi.object().keys({
-          center: Joi.array()
-            .length(2)
-            .items(Joi.number()),
-          zoom: Joi.number(),
-          projection: Joi.string()
-        })
-      }),
-    layers: Joi.array().items(
-      Joi.alternatives().try(createLayerModel, updateLayerModel)
-    ),
-    tools: Joi.array().items(
-      Joi.alternatives().try(createToolModel, updateToolModel)
-    )
-  });
-
   static updateModel = Joi.object().keys({
     scope: Joi.string().valid('public', 'protected', 'private'),
     uri: Joi.string(),
@@ -64,4 +38,13 @@ export class ContextValidator {
       Joi.alternatives().try(createToolModel, updateToolModel)
     )
   });
+
+  static createModel = ContextValidator.updateModel.concat(
+    Joi.object().keys({
+      scope: Joi.required(),
+      uri: Joi.required(),
+      title: Joi.required(),
+      map: Joi.required()
+    })
+  );
 }

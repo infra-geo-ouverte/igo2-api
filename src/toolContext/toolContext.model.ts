@@ -31,14 +31,7 @@ export default function define(sequelize: Sequelize.Sequelize, DataTypes) {
         autoIncrement: true
       },
       options: {
-        type: DataTypes.TEXT,
-        get: function() {
-          const options = this.getDataValue('options');
-          return options ? JSON.parse(options) : {};
-        },
-        set: function(val) {
-          this.setDataValue('options', JSON.stringify(val));
-        }
+        type: DataTypes.JSON
       },
       contextId: {
         type: DataTypes.INTEGER

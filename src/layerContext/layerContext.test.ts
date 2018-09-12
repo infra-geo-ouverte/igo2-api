@@ -1,4 +1,4 @@
-let test = require('tape');
+import * as test from 'tape';
 import * as Server from '../server';
 import * as Configs from '../configurations';
 
@@ -228,10 +228,12 @@ const runTests = async () => {
       url: '/layers',
       headers: adminHeaders,
       payload: {
-        title: 'dummyTitle',
-        type: 'osm',
-        view: {},
-        source: {}
+        layerOptions: {
+          title: 'dummyTitle'
+        },
+        sourceOptions: {
+          type: 'osm'
+        }
       }
     };
     try {
@@ -252,10 +254,12 @@ const runTests = async () => {
       url: '/layers',
       headers: adminHeaders,
       payload: {
-        title: 'dummyTitle2',
-        type: 'wfs',
-        view: {},
-        source: {}
+        layerOptions: {
+          title: 'dummyTitle2'
+        },
+        sourceOptions: {
+          type: 'wfs'
+        }
       }
     };
     try {
@@ -279,24 +283,20 @@ const runTests = async () => {
       headers: standardHeaders,
       payload: {
         layerId: 1,
-        view: {
-          minZoom: 5
-        },
-        options: {
+        layerOptions: {
           title: 'New Title',
-          visible: false
-        },
-        order: 2
+          visible: false,
+          zIndex: 2
+        }
       }
     };
     try {
       response = await server.inject(options);
       const result: any = response.result;
       t.equal(result.layerId, 1);
-      t.equal(result.order, 2);
+      t.equal(result.layerOptions.zIndex, 2);
       t.equal(Number(result.contextId), 1);
-      t.equal(result.view.minZoom, 5);
-      t.equal(result.options.visible, false);
+      t.equal(result.layerOptions.visible, false);
       t.equal(response.statusCode, 201);
     } catch (e) {
       console.error(response.result);
@@ -314,17 +314,16 @@ const runTests = async () => {
       headers: standardHeaders,
       payload: {
         layerId: 2,
-        view: {
-          minZoom: 4
-        },
-        order: 1
+        layerOptions: {
+          zIndex: 1
+        }
       }
     };
     try {
       response = await server.inject(options);
       const result: any = response.result;
       t.equal(result.layerId, 2);
-      t.equal(result.order, 1);
+      t.equal(result.layerOptions.zIndex, 1);
       t.equal(Number(result.contextId), 1);
       t.equal(response.statusCode, 201);
     } catch (e) {
@@ -459,10 +458,7 @@ const runTests = async () => {
       url: '/contexts/1/layers',
       headers: standardHeaders,
       payload: {
-        layerId: 10,
-        view: {
-          minZoom: 5
-        }
+        layerId: 10
       }
     };
     try {
@@ -558,10 +554,7 @@ const runTests = async () => {
       url: '/contexts/1/layers/1',
       headers: standardHeaders,
       payload: {
-        layerId: 1,
-        view: {
-          minZoom: 5
-        }
+        layerId: 1
       }
     };
     try {
@@ -584,10 +577,7 @@ const runTests = async () => {
       url: '/contexts/1/layers/1',
       headers: standardHeaders,
       payload: {
-        view: {
-          minZoom: 3
-        },
-        options: {
+        layerOptions: {
           title: 'patch title'
         }
       }
@@ -613,8 +603,8 @@ const runTests = async () => {
       url: '/contexts/2/layers/1',
       headers: standardHeaders,
       payload: {
-        view: {
-          minZoom: 4
+        layerOptions: {
+          title: 'patch title'
         }
       }
     };
@@ -638,8 +628,8 @@ const runTests = async () => {
       url: '/contexts/3/layers/1',
       headers: standardHeaders,
       payload: {
-        view: {
-          minZoom: 8
+        layerOptions: {
+          title: 'patch title'
         }
       }
     };
@@ -663,8 +653,8 @@ const runTests = async () => {
       url: '/contexts/4/layers/1',
       headers: standardHeaders,
       payload: {
-        view: {
-          minZoom: 6
+        layerOptions: {
+          zIndex: 7
         }
       }
     };
@@ -689,8 +679,8 @@ const runTests = async () => {
       url: '/contexts/5/layers/1',
       headers: standardHeaders,
       payload: {
-        view: {
-          minZoom: 9
+        layerOptions: {
+          title: 'patch title'
         }
       }
     };
@@ -714,8 +704,8 @@ const runTests = async () => {
       url: '/contexts/6/layers/1',
       headers: standardHeaders,
       payload: {
-        view: {
-          minZoom: 11
+        layerOptions: {
+          zIndex: 8
         }
       }
     };
@@ -740,8 +730,8 @@ const runTests = async () => {
       url: '/contexts/1/layers/10',
       headers: standardHeaders,
       payload: {
-        view: {
-          minZoom: 5
+        layerOptions: {
+          zIndex: 7
         }
       }
     };
@@ -769,10 +759,11 @@ const runTests = async () => {
       response = await server.inject(options);
       const result: any = response.result;
       t.equal(result.length, 2);
-      t.equal(result[1].options.title, 'patch title');
-      t.equal(result[0].layerId, 2);
-      t.equal(result[1].layerId, 1);
-      t.equal(result[0].view.minZoom, 4);
+      t.equal(result[0].layerOptions.title, 'patch title');
+      t.equal(result[0].layerId, 1);
+      t.equal(result[1].layerId, 2);
+      t.equal(result[0].layerOptions.zIndex, undefined);
+      t.equal(result[1].layerOptions.zIndex, 1);
       t.equal(response.statusCode, 200);
     } catch (e) {
       console.error(response.result);
@@ -833,7 +824,7 @@ const runTests = async () => {
       response = await server.inject(options);
       const result: any = response.result;
       t.equal(result.length, 1);
-      t.equal(result[0].view.minZoom, 6);
+      t.equal(result[0].layerOptions.zIndex, 7);
       t.equal(response.statusCode, 200);
     } catch (e) {
       console.error(response.result);
@@ -874,7 +865,7 @@ const runTests = async () => {
       response = await server.inject(options);
       const result: any = response.result;
       t.equal(result.length, 2);
-      t.equal(result[0].view.minZoom, 11);
+      t.equal(result[1].layerOptions.zIndex, 8);
       t.equal(response.statusCode, 200);
     } catch (e) {
       console.error(response.result);
@@ -956,7 +947,7 @@ const runTests = async () => {
       response = await server.inject(options);
       const result: any = response.result;
       t.equal(result.layers.length, 2);
-      t.equal(result.layers[0].title, 'dummyTitle2');
+      t.equal(result.layers[0].layerOptions.title, 'dummyTitle2');
       t.equal(response.statusCode, 200);
     } catch (e) {
       console.error(response.result);
@@ -1001,29 +992,36 @@ const runTests = async () => {
         layers: [
           {
             id: '1',
-            order: '4',
-            visible: false
+            layerOptions: {
+              zIndex: '4',
+              visible: false
+            }
           },
           {
             id: '90'
           },
           {
             id: '2',
-            order: '2'
+            layerOptions: {
+              zIndex: '2'
+            }
           },
           {
             id: '3',
-            order: '1'
+            layerOptions: {
+              zIndex: '1'
+            }
           },
           {
-            title: 'dummyTitleLayerContext',
-            type: 'wms',
-            view: {},
-            source: {
-              url: 'http://source.com'
+            layerOptions: {
+              title: 'dummyTitleLayerContext',
+              zIndex: '3',
+              visible: false
             },
-            order: '3',
-            visible: false
+            sourceOptions: {
+              type: 'wms',
+              url: 'http://source.com'
+            }
           }
         ]
       }
@@ -1040,76 +1038,6 @@ const runTests = async () => {
       t.end();
     }
   });
-
-  // test('GET /contexts/{id}/details - context with layer', async t => {
-  //   let response;
-  //   const options = {
-  //     method: 'GET',
-  //     url: `/contexts/${idContextWithLayer}/details`,
-  //     headers: standardHeaders
-  //   };
-  //   try {
-  //     response = await server.inject(options);
-  //     const result: any = response.result;
-  //     t.equal(result.uri, 'withLayer');
-  //     t.equal(result.layers.length, 3);
-  //     t.equal(result.layers[2].id, 1);
-  //     t.equal(result.layers[0].id, 2);
-  //     t.equal(result.layers[1].title, 'dummyTitleLayerContext');
-  //     t.equal(result.layers[1].visible, false);
-  //     t.equal(result.layers[2].visible, false);
-  //     t.equal(response.statusCode, 200);
-  //   } catch (e) {
-  //     console.error(response.result);
-  //     t.fail(e);
-  //   } finally {
-  //     t.end();
-  //   }
-  // });
-  //
-  // let idContextClonedWithLayer;
-  // test('POST /contexts/{id}/clone - context with layer', async t => {
-  //   let response;
-  //   const options = {
-  //     method: 'POST',
-  //     url: `/contexts/${idContextWithLayer}/clone`,
-  //     headers: standardHeaders
-  //   };
-  //   try {
-  //     response = await server.inject(options);
-  //     const result: any = response.result;
-  //     idContextClonedWithLayer = result.id;
-  //     t.equal(response.statusCode, 201);
-  //   } catch (e) {
-  //     console.error(response.result);
-  //     t.fail(e);
-  //   } finally {
-  //     t.end();
-  //   }
-  // });
-
-  //   test('GET /contexts/{id}/details - context cloned with layer', async t => {
-  //     let response;
-  //     const options = {
-  //       method: 'GET',
-  //       url: `/contexts/${idContextClonedWithLayer}/details`,
-  //       headers: standardHeaders
-  //     };
-  //     try {
-  //       response = await server.inject(options);
-  //       const result: any = response.result;
-  //       t.equal(result.layers.length, 3);
-  //       t.equal(result.layers[2].id, 1);
-  //       t.equal(result.layers[0].id, 2);
-  //       t.equal(result.layers[1].title, 'dummyTitleLayerContext');
-  //       t.equal(response.statusCode, 200);
-  //     } catch (e) {
-  //       console.error(response.result);
-  //       t.fail(e);
-  //     } finally {
-  //       t.end();
-  //     }
-  //   });
 };
 
 runTests();

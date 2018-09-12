@@ -20,10 +20,12 @@ export class Layer {
     const localhost = ServerConfigs.localhost;
     const hosts = localhost ? localhost.hosts : [];
     const urlObj = URL.parse(
-      layer.source && layer.source.url ? layer.source.url : ''
+      layer.sourceOptions && layer.sourceOptions.url
+        ? layer.sourceOptions.url
+        : ''
     );
     if (urlObj && hosts.indexOf(urlObj.hostname) !== -1) {
-      Object.assign(layer.source, { url: urlObj.path });
+      Object.assign(layer.sourceOptions, { url: urlObj.path });
     }
 
     return await this.database.layer.create(layer);
@@ -33,10 +35,12 @@ export class Layer {
     const localhost = ServerConfigs.localhost;
     const hosts = localhost ? localhost.hosts : [];
     const urlObj = URL.parse(
-      layer.source && layer.source.url ? layer.source.url : ''
+      layer.sourceOptions && layer.sourceOptions.url
+        ? layer.sourceOptions.url
+        : ''
     );
     if (urlObj && hosts.indexOf(urlObj.hostname) !== -1) {
-      Object.assign(layer.source, { url: urlObj.path });
+      Object.assign(layer.sourceOptions, { url: urlObj.path });
     }
 
     return await this.database.layer
@@ -81,10 +85,13 @@ export class Layer {
   }
 
   public async getBaseLayers(): Promise<LayerInstance[]> {
+    // const sequelize = this.database.sequelize;
     return await this.database.layer
       .findAll({
         where: {
-          baseLayer: true
+          sourceOptions: {
+            baseLayer: true
+          }
         }
       })
       .then((layers: LayerInstance[]) => {
@@ -113,7 +120,7 @@ export class Layer {
     profils.push(user);
 
     const isAllowed = await UserApi.verifyPermissionByUrl(
-      layerPlain.source.url,
+      layerPlain.sourceOptions.url,
       profils
     );
 
@@ -126,17 +133,16 @@ export class Layer {
   public async getBySource(layer: ILayer): Promise<LayerInstance> {
     const localhost = ServerConfigs.localhost;
     const hosts = localhost ? localhost.hosts : [];
-    const urlObj = URL.parse(layer.source.url || '');
+    const urlObj = URL.parse(layer.sourceOptions.url || '');
     if (urlObj && hosts.indexOf(urlObj.hostname) !== -1) {
-      layer.source.url = urlObj.path;
+      layer.sourceOptions.url = urlObj.path;
     }
 
     const where: any = {
       $or: [
         { id: layer.id },
         {
-          type: layer.type,
-          source: JSON.stringify(layer.source)
+          source: JSON.stringify(layer.sourceOptions)
         }
       ]
     };

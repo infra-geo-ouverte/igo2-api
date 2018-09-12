@@ -4,5 +4,6 @@ export function S4() {
 }
 
 export function uuid() {
-  return `${S4()}${S4()}-${S4()}-${S4()}-${S4()}-${S4()}${S4()}${S4()}`.toLowerCase();
+  const id = `${S4()}${S4()}-${S4()}-${S4()}-${S4()}-${S4()}${S4()}${S4()}`;
+  return id.toLowerCase();
 }

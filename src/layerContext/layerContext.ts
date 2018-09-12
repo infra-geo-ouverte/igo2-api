@@ -96,7 +96,7 @@ export class LayerContext {
         where: {
           contextId: contextId
         },
-        order: ['order']
+        order: ['layerOptions.zIndex']
       })
       .then((layerContextsContexts: LayerContextInstance[]) => {
         const plainLayerContextsContexts = layerContextsContexts.map(
@@ -165,13 +165,17 @@ export class LayerContext {
             return;
           }
 
+          layer.layerOptions = layer.layerOptions || {};
           const rep = await this.create({
             contextId: contextId,
             layerId: layerFound.id,
-            order: layer.order,
-            options: {
-              visible: layer.visible,
-              title: layerFound.title !== layer.title ? layer.title : undefined
+            layerOptions: {
+              zIndex: layer.layerOptions.zIndex,
+              visible: layer.layerOptions.visible,
+              title:
+                layerFound.layerOptions.title !== layer.layerOptions.title
+                  ? layer.layerOptions.title
+                  : undefined
             }
           })
             .then(l => {

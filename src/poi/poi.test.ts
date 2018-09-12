@@ -1,4 +1,4 @@
-let test = require('tape');
+import * as test from 'tape';
 import * as Server from '../server';
 import * as Configs from '../configurations';
 import { database } from '../database';

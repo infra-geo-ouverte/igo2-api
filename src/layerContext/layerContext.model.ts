@@ -1,23 +1,13 @@
 import * as Sequelize from 'sequelize';
 
-interface ViewLayer {
-  attribution?: string;
-  minZoom?: number;
-  maxZoom?: number;
-}
-
-interface OptionsLayer {
-  visible?: boolean;
-  title?: string;
-}
+import { SourceOptions, LayerOptions } from '../layer';
 
 export interface ILayerContext {
   id?: string;
   layerId?: string;
   contextId?: string;
-  view?: ViewLayer;
-  order?: number;
-  options?: OptionsLayer;
+  layerOptions?: LayerOptions;
+  sourceOptions?: SourceOptions;
 }
 
 export interface LayerContextInstance
@@ -28,9 +18,8 @@ export interface LayerContextInstance
 
   layerId: string;
   contextId: string;
-  view: ViewLayer;
-  order: number;
-  options?: OptionsLayer;
+  layerOptions?: LayerOptions;
+  sourceOptions?: SourceOptions;
 }
 
 export interface LayerContextModel
@@ -46,28 +35,11 @@ export default function define(sequelize: Sequelize.Sequelize, DataTypes) {
         primaryKey: true,
         autoIncrement: true
       },
-      view: {
-        type: DataTypes.TEXT,
-        get: function() {
-          const view = this.getDataValue('view');
-          return view ? JSON.parse(view) : {};
-        },
-        set: function(val) {
-          this.setDataValue('view', JSON.stringify(val));
-        }
+      layerOptions: {
+        type: DataTypes.JSON
       },
-      options: {
-        type: DataTypes.TEXT,
-        get: function() {
-          const options = this.getDataValue('options');
-          return options ? JSON.parse(options) : {};
-        },
-        set: function(val) {
-          this.setDataValue('options', JSON.stringify(val));
-        }
-      },
-      order: {
-        type: DataTypes.INTEGER
+      sourceOptions: {
+        type: DataTypes.JSON
       },
       contextId: {
         type: DataTypes.INTEGER

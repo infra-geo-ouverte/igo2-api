@@ -138,20 +138,25 @@ export class Context {
     for (const layer of context.layers) {
       const plainL = layer.get();
       plainLayers.push(plainL);
-      promises.push(UserApi.verifyPermissionByUrl(plainL.source.url, profils));
+      promises.push(
+        UserApi.verifyPermissionByUrl(plainL.sourceOptions.url, profils)
+      );
     }
 
     const promisesResult = await Promise.all(promises);
     let i = 0;
     for (const plainLayer of plainLayers) {
       if (promisesResult[i]) {
-        Object.assign(plainLayer.view, plainLayer.layerContext.view);
+        Object.assign(
+          plainLayer.sourceOptions,
+          plainLayer.layerContext.sourceOptions
+        );
         Object.assign(
           plainLayer,
-          plainLayer.options,
-          plainLayer.layerContext.options
+          plainLayer.layerOptions,
+          plainLayer.layerContext.layerOptions
         );
-        plainLayer.order = plainLayer.layerContext.order;
+
         plainLayer.layerContext = null;
         plain.layers.push(plainLayer);
       }
@@ -160,7 +165,12 @@ export class Context {
 
     plain = ObjectUtils.removeNull(plain);
     plain.layers = plain.layers.sort(
-      (a, b) => (a.order < b.order ? -1 : a.order > b.order ? 1 : 0)
+      (a, b) =>
+        a.layerOptions.zIndex < b.layerOptions.zIndex
+          ? -1
+          : a.layerOptions.zIndex > b.layerOptions.zIndex
+            ? 1
+            : 0
     );
 
     return ObjectUtils.removeNull(plain);
