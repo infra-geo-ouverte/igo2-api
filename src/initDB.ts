@@ -358,4 +358,8 @@ const initDB = async () => {
   }, 1000);
 };
 
-initDB();
+if (!adminHeaders) {
+  console.error('Must have test.adminHeaders in configuration.');
+} else {
+  initDB();
+}
