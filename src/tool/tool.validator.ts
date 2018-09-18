@@ -13,6 +13,8 @@ export class ToolValidator {
       .allow('')
       .max(128),
     inToolbar: Joi.boolean(),
+    global: Joi.boolean(),
+    order: Joi.number(),
     options: Joi.object()
   });
 

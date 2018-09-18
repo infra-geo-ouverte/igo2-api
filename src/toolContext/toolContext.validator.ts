@@ -1,12 +1,13 @@
 import * as Joi from 'joi';
 
 export class ToolContextValidator {
-  static createModel = Joi.object().keys({
-    toolId: Joi.number().required(),
+  static updateModel = Joi.object().keys({
+    enabled: Joi.boolean(),
+    order: Joi.number(),
     options: Joi.object()
   });
 
-  static updateModel = Joi.object().keys({
-    options: Joi.object()
+  static createModel = ToolContextValidator.updateModel.keys({
+    toolId: Joi.number().required()
   });
 }

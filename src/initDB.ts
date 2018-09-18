@@ -3,7 +3,7 @@ import * as Configs from './configurations';
 
 const serverConfigs = Configs.getServerConfig();
 const testConfigs = Configs.getTestConfig();
-const adminHeaders: any = testConfigs.adminHeaders;
+const adminHeaders: any = testConfigs ? testConfigs.adminHeaders : undefined;
 
 const initDB = async () => {
   const server = await Server.init(serverConfigs);
@@ -360,6 +360,7 @@ const initDB = async () => {
 
 if (!adminHeaders) {
   console.error('Must have test.adminHeaders in configuration.');
+  process.exit(1);
 } else {
   initDB();
 }

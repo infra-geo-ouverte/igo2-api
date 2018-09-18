@@ -117,8 +117,14 @@ export class Context {
 
     for (const tool of context.tools) {
       const plainTool = tool.get();
-      Object.assign(plainTool.options, plainTool.toolContext.options);
+
+      plainTool.options = Object.assign(
+        {},
+        plainTool.options,
+        plainTool.toolContext.options
+      );
       plainTool.toolContext = null;
+
       plain.tools.push(plainTool);
       if (plainTool.inToolbar) {
         plain.toolbar.push(plainTool.name);
@@ -147,7 +153,8 @@ export class Context {
     let i = 0;
     for (const plainLayer of plainLayers) {
       if (promisesResult[i]) {
-        Object.assign(
+        plainLayer.sourceOptions = Object.assign(
+          {},
           plainLayer.sourceOptions,
           plainLayer.layerContext.sourceOptions
         );
@@ -158,6 +165,7 @@ export class Context {
         );
 
         plainLayer.layerContext = null;
+        plainLayer.layerOptions = null;
         plain.layers.push(plainLayer);
       }
       i++;

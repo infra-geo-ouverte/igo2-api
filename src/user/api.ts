@@ -3,8 +3,6 @@ import * as URL from 'url';
 import * as Boom from 'boom';
 
 import * as Configs from '../configurations';
-import { database } from '../database';
-import { ObjectUtils } from '../utils';
 
 const ServerConfigs = Configs.getServerConfig();
 
@@ -141,20 +139,5 @@ export class UserApi {
     }
 
     return profils;
-  }
-
-  static async info(id: string): Promise<any> {
-    return await database.user
-      .findOne({
-        where: {
-          id: id
-        }
-      })
-      .then(user => {
-        if (!user) {
-          throw Boom.notFound();
-        }
-        return ObjectUtils.removeNull(user.get());
-      });
   }
 }

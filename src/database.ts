@@ -5,6 +5,7 @@ import { UserModel } from './user/user.model';
 import { POIModel } from './poi/poi.model';
 import { CatalogModel } from './catalog/catalog.model';
 import { ContextModel } from './context/context.model';
+import { UserIgoModel } from './user/userIgo.model';
 import { LayerModel } from './layer/layer.model';
 import { ToolModel } from './tool/tool.model';
 import { ToolContextModel } from './toolContext/toolContext.model';
@@ -15,6 +16,7 @@ export interface IDatabase {
   sequelize: Sequelize.Sequelize;
   context: ContextModel;
   user: UserModel;
+  userIgo: UserIgoModel;
   poi: POIModel;
   catalog: CatalogModel;
   layer: LayerModel;
@@ -55,6 +57,7 @@ if (dbString.connectionString) {
 const db = {};
 db['context'] = sequelize['import']('./context/context.model');
 db['user'] = sequelize['import']('./user/user.model');
+db['userIgo'] = sequelize['import']('./user/userIgo.model');
 db['poi'] = sequelize['import']('./poi/poi.model');
 db['catalog'] = sequelize['import']('./catalog/catalog.model');
 db['layer'] = sequelize['import']('./layer/layer.model');

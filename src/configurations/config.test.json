@@ -16,6 +16,7 @@
       "poi",
       "catalog",
       "context",
+      "userIgo",
       "contextPermission",
       "layerContext",
       "toolContext"

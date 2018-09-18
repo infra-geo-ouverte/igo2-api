@@ -4,7 +4,7 @@ import * as Boom from 'boom';
 import { IDatabase, database } from '../database';
 import { ObjectUtils, uuid, handleError } from '../utils';
 
-import { UserApi } from '../user';
+import { UserApi, UserIgo } from '../user';
 import { TypePermission, ContextPermission } from '../contextPermission';
 import { ToolContext } from '../toolContext';
 import { LayerContext } from '../layerContext';
@@ -17,12 +17,14 @@ export class ContextController {
   private contextPermission: ContextPermission;
   private toolContext: ToolContext;
   private layerContext: LayerContext;
+  private userIgo: UserIgo;
 
   constructor() {
     this.contextPermission = new ContextPermission();
     this.context = new Context();
     this.toolContext = new ToolContext();
     this.layerContext = new LayerContext();
+    this.userIgo = new UserIgo();
   }
 
   public async create(request: Hapi.Request, h: Hapi.ResponseToolkit) {
@@ -36,7 +38,7 @@ export class ContextController {
     if (newContext.layers) {
       await this.layerContext.bulkCreate(
         context.id,
-        newContext.layers,
+        this.mapLayersOptions(newContext.layers),
         true,
         true
       );
@@ -87,7 +89,7 @@ export class ContextController {
       await this.layerContext.deleteByContextId(context.id).catch(handleError);
       await this.layerContext.bulkCreate(
         context.id,
-        newContext.layers,
+        this.mapLayersOptions(newContext.layers),
         true,
         true
       );
@@ -259,11 +261,29 @@ export class ContextController {
   public async getDefault(request: Hapi.Request, h: Hapi.ResponseToolkit) {
     const customId = request.headers['x-consumer-custom-id'];
 
-    UserApi.info(customId)
+    this.userIgo
+      .get(customId)
       .then(user => {
         request.params['contextId'] = user.defaultContextId || 'default';
         this.getDetailsById(request, h);
       })
       .catch(handleError);
+  }
+
+  private mapLayersOptions(layersToConvert) {
+    const layers = [];
+    for (const layer of layersToConvert) {
+      const sourceOptions = layer.sourceOptions;
+      const layerOptions = Object.assign({}, layer, layer.layerOptions, {
+        sourceOptions: undefined
+      });
+      layers.push({
+        id: layer.id,
+        sourceOptions: sourceOptions,
+        layerOptions: layerOptions
+      });
+    }
+
+    return layers;
   }
 }

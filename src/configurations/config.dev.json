@@ -35,6 +35,7 @@
       "poi",
       "catalog",
       "context",
+      "userIgo",
       "contextPermission",
       "layerContext",
       "toolContext"
@@ -46,6 +47,14 @@
         "testgeoegl.msp.gouv.qc.ca"
       ],
       "basePaths": ["/igo2/api/"]
+    }
+  },
+  "test": {
+    "adminHeaders": {
+      "x-consumer-id": "1234-admin-abcd",
+      "x-consumer-username": "king",
+      "x-consumer-custom-id": "2",
+      "x-consumer-groups": "admin, privilege, another"
     }
   }
 }

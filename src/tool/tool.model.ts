@@ -7,6 +7,8 @@ export interface ITool {
   tooltip?: string;
   icon?: string;
   inToolbar?: boolean;
+  global?: boolean;
+  order?: number;
   options?: { [key: string]: any };
 }
 
@@ -20,6 +22,8 @@ export interface ToolInstance extends Sequelize.Instance<ITool> {
   tooltip?: string;
   icon?: string;
   inToolbar?: boolean;
+  global?: boolean;
+  order?: number;
   options?: { [key: string]: any };
 }
 
@@ -50,6 +54,12 @@ export default function define(sequelize: Sequelize.Sequelize, DataTypes) {
       },
       inToolbar: {
         type: DataTypes.BOOLEAN
+      },
+      global: {
+        type: DataTypes.BOOLEAN
+      },
+      order: {
+        type: DataTypes.INTEGER
       },
       options: {
         type: DataTypes.JSON

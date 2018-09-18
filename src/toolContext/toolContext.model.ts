@@ -4,6 +4,8 @@ export interface IToolContext {
   id?: string;
   toolId?: string;
   contextId?: string;
+  enabled?: boolean;
+  order?: number;
   options?: { [key: string]: any };
 }
 
@@ -14,6 +16,8 @@ export interface ToolContextInstance extends Sequelize.Instance<IToolContext> {
 
   toolId: string;
   contextId: string;
+  enabled?: boolean;
+  order?: number;
   options?: { [key: string]: any };
 }
 
@@ -32,6 +36,12 @@ export default function define(sequelize: Sequelize.Sequelize, DataTypes) {
       },
       options: {
         type: DataTypes.JSON
+      },
+      enabled: {
+        type: DataTypes.BOOLEAN
+      },
+      order: {
+        type: DataTypes.INTEGER
       },
       contextId: {
         type: DataTypes.INTEGER

@@ -6,14 +6,12 @@ import { LayerValidator } from '../layer/layer.validator';
 const createToolModel = ToolValidator.createModel;
 const updateToolModel = ToolValidator.updateModel.keys({ id: Joi.string() });
 
-const createLayerModel = LayerValidator.createModel.keys({
-  order: Joi.number(),
-  visible: Joi.boolean()
+const createLayerModel = LayerValidator.layerOptionsModel.keys({
+  sourceOptions: LayerValidator.sourceOptionsModel,
+  layerOptions: LayerValidator.layerOptionsModel
 });
-const updateLayerModel = LayerValidator.updateModel.keys({
-  id: Joi.string(),
-  order: Joi.number(),
-  visible: Joi.boolean()
+const updateLayerModel = createLayerModel.keys({
+  id: Joi.string()
 });
 
 export class ContextValidator {
