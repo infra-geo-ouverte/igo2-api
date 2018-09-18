@@ -27,6 +27,10 @@ export default function define(sequelize: Sequelize.Sequelize, DataTypes) {
         allowNull: false,
         primaryKey: true,
         autoIncrement: true
+      },
+      defaultContextId: {
+        type: DataTypes.INTEGER,
+        allowNull: false
       }
     },
     {
@@ -41,7 +45,7 @@ export default function define(sequelize: Sequelize.Sequelize, DataTypes) {
   );
 
   const user = sequelize.models['user'];
-  const context = sequelize.models['context'];
+  // const context = sequelize.models['context'];
 
   user.hasOne(userIgo, {
     foreignKey: {
@@ -50,16 +54,16 @@ export default function define(sequelize: Sequelize.Sequelize, DataTypes) {
     }
   });
 
-  context.belongsToMany(user, {
-    through: {
-      model: userIgo,
-      unique: false
-    },
-    foreignKey: {
-      name: 'defaultContextId',
-      allowNull: false
-    }
-  });
+  // context.belongsToMany(user, {
+  //   through: {
+  //     model: userIgo,
+  //     unique: false
+  //   },
+  //   foreignKey: {
+  //     name: 'defaultContextId',
+  //     allowNull: false
+  //   }
+  // });
 
   userIgo.sync();
 

@@ -4,7 +4,8 @@ import * as Boom from 'boom';
 import { IDatabase, database } from '../database';
 import { ObjectUtils, uuid, handleError } from '../utils';
 
-import { UserApi, UserIgo } from '../user';
+import { UserApi } from '../user';
+import { UserIgo } from '../userIgo';
 import { TypePermission, ContextPermission } from '../contextPermission';
 import { ToolContext } from '../toolContext';
 import { LayerContext } from '../layerContext';
