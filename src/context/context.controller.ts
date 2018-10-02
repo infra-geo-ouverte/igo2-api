@@ -265,7 +265,7 @@ export class ContextController {
     this.userIgo
       .get(customId)
       .then(user => {
-        request.params['contextId'] = user.defaultContextId || 'default';
+        request.params['contextId'] = user ? user.defaultContextId : 'default';
         this.getDetailsById(request, h);
       })
       .catch(handleError);

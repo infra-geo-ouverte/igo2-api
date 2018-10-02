@@ -39,7 +39,7 @@ export default function define(sequelize: Sequelize.Sequelize, DataTypes) {
           fields: ['userId']
         }
       ],
-      tableName: 'userIgo',
+      tableName: 'user_igo',
       timestamps: true
     }
   );
