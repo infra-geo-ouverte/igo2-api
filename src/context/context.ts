@@ -102,14 +102,24 @@ export class Context {
     if (!context) {
       throw Boom.notFound();
     }
+
+    let globalTools;
+    if (includeTools) {
+      globalTools = await this.database.tool.findAll({
+        where: { global: true }
+      });
+    }
+
     if (includeLayers || includeTools) {
-      return await this.contextObjToPlainObj(context, user);
+      return await this.contextObjToPlainObj(context, user, globalTools);
     } else {
       return ObjectUtils.removeNull(context.get());
     }
   }
 
-  private async contextObjToPlainObj(context, user): Promise<ContextDetailed> {
+  private async contextObjToPlainObj(context, user, globalTools?):
+    Promise<ContextDetailed> {
+
     let plain: any = context.get();
     plain.layers = [];
     plain.tools = [];
@@ -128,6 +138,16 @@ export class Context {
       plain.tools.push(plainTool);
       if (plainTool.inToolbar) {
         plain.toolbar.push(plainTool.name);
+      }
+    }
+
+    for (const tool of globalTools) {
+      const plainTool = tool.get();
+      if (plain.tools.findIndex(t => t.name === plainTool.name) === -1) {
+        plain.tools.push(plainTool);
+        if (plainTool.inToolbar) {
+          plain.toolbar.push(plainTool.name);
+        }
       }
     }
 
