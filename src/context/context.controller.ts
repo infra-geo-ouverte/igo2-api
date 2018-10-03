@@ -262,13 +262,10 @@ export class ContextController {
   public async getDefault(request: Hapi.Request, h: Hapi.ResponseToolkit) {
     const customId = request.headers['x-consumer-custom-id'];
 
-    this.userIgo
-      .get(customId)
-      .then(user => {
-        request.params['contextId'] = user ? user.defaultContextId : 'default';
-        this.getDetailsById(request, h);
-      })
-      .catch(handleError);
+    const user = await this.userIgo.get(customId).catch(handleError);
+    request.params['contextId'] = user.defaultContextId;
+
+    return await this.getDetailsById(request, h);
   }
 
   private mapLayersOptions(layersToConvert) {
