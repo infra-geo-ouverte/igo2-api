@@ -107,7 +107,6 @@ export class ContextController {
   public async getById(request: Hapi.Request, _h: Hapi.ResponseToolkit) {
     const owner = request.headers['x-consumer-username'];
     const id = request.params['contextId'];
-
     const context = await this.context.getById(id, owner).catch(handleError);
     const permission = await this.contextPermission.getPermission(
       context,
@@ -262,9 +261,13 @@ export class ContextController {
   public async getDefault(request: Hapi.Request, h: Hapi.ResponseToolkit) {
     const customId = request.headers['x-consumer-custom-id'];
 
-    const user = await this.userIgo.get(customId).catch(handleError);
-    request.params['contextId'] = user.defaultContextId;
+    const user = await this.userIgo.get(customId).catch(() => {
+      return {
+        defaultContextId: 'default'
+      };
+    });
 
+    request.params['contextId'] = user.defaultContextId;
     return await this.getDetailsById(request, h);
   }
 

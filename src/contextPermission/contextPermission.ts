@@ -142,10 +142,13 @@ export class ContextPermission {
     contextId: string,
     user?: string
   ): Promise<TypePermission> {
+    let where: any = { id: contextId };
+
+    if (isNaN(<number>(<any>contextId))) {
+      where = { uri: contextId };
+    }
     const context = await this.database.context.findOne({
-      where: {
-        id: contextId
-      }
+      where: where
     });
 
     if (!context) {
