@@ -142,7 +142,7 @@ export class Layer {
       $or: [
         { id: layer.id },
         {
-          source: JSON.stringify(layer.sourceOptions)
+          sourceOptions: layer.sourceOptions
         }
       ]
     };
