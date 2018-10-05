@@ -95,26 +95,4 @@ export default function(server: Hapi.Server) {
     }
   });
 
-  server.route({
-    method: 'POST',
-    path: '/contexts/default',
-    handler: userIgoController.setDefaultContext,
-    options: {
-      tags: ['api', 'userIgo'],
-      description: 'Define default context',
-      validate: {
-        payload: UserIgoValidator.createModel,
-        headers: UserValidator.authenticateValidator
-      },
-      plugins: {
-        'hapi-swagger': {
-          responses: {
-            '201': {
-              description: 'Default Context defined'
-            }
-          }
-        }
-      }
-    }
-  });
 }

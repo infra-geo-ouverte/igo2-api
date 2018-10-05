@@ -5,7 +5,7 @@ import { IDatabase, database } from '../database';
 import { ObjectUtils, uuid, handleError } from '../utils';
 
 import { UserApi } from '../user';
-import { UserIgo } from '../userIgo';
+import { UserIgo, IUserIgo } from '../userIgo';
 import { TypePermission, ContextPermission } from '../contextPermission';
 import { ToolContext } from '../toolContext';
 import { LayerContext } from '../layerContext';
@@ -269,6 +269,23 @@ export class ContextController {
 
     request.params['contextId'] = user.defaultContextId;
     return await this.getDetailsById(request, h);
+  }
+
+  public async setDefaultContext(
+    request: Hapi.Request,
+    h: Hapi.ResponseToolkit
+  ) {
+    const userId = request.headers['x-consumer-custom-id'];
+    const userIgoToCreate: IUserIgo = request.payload as IUserIgo;
+    const userIGO = await this.userIgo.get(userId).catch(() => {});
+
+    if (userIGO) {
+      return await this.userIgo.update(userId, userIgoToCreate)
+        .catch(handleError);
+    } else {
+      userIgoToCreate.userId = userId;
+      return await this.userIgo.create(userIgoToCreate).catch(handleError);
+    }
   }
 
   private mapLayersOptions(layersToConvert) {

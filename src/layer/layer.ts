@@ -89,7 +89,7 @@ export class Layer {
     return await this.database.layer
       .findAll({
         where: {
-          sourceOptions: {
+          layerOptions: {
             baseLayer: true
           }
         }

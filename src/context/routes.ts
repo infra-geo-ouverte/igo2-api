@@ -36,6 +36,31 @@ export default function(server: Hapi.Server) {
   });
 
   server.route({
+    method: 'POST',
+    path: '/contexts/default',
+    handler: contextController.setDefaultContext,
+    options: {
+      tags: ['api', 'context'],
+      description: 'Define default context',
+      validate: {
+        payload: {
+          defaultContextId: Joi.number().integer().required()
+        },
+        headers: UserValidator.authenticateValidator
+      },
+      plugins: {
+        'hapi-swagger': {
+          responses: {
+            '201': {
+              description: 'Default Context defined'
+            }
+          }
+        }
+      }
+    }
+  });
+
+  server.route({
     method: 'GET',
     path: '/contexts/{contextId}',
     handler: contextController.getById,

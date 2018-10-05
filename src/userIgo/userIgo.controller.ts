@@ -42,19 +42,4 @@ export class UserIgoController {
 
     return await this.userIgo.get(userId).catch(handleError);
   }
-
-  public async setDefaultContext(
-    request: Hapi.Request,
-    h: Hapi.ResponseToolkit
-  ) {
-    const userId = request.headers['x-consumer-custom-id'];
-
-    const userIGO = await this.userIgo.get(userId).catch(handleError);
-
-    if (userIGO) {
-      return await this.update(request, h);
-    } else {
-      return await this.create(request, h);
-    }
-  }
 }
