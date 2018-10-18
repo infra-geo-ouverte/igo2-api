@@ -194,9 +194,9 @@ export class Context {
     plain = ObjectUtils.removeNull(plain);
     plain.layers = plain.layers.sort(
       (a, b) =>
-        a.layerOptions.zIndex < b.layerOptions.zIndex
+        a.zIndex < b.zIndex
           ? -1
-          : a.layerOptions.zIndex > b.layerOptions.zIndex
+          : a.zIndex > b.zIndex
             ? 1
             : 0
     );
