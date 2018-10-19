@@ -155,7 +155,10 @@ export class LayerContext {
             });
 
           if (!layerFound) {
-            layerFound = await this.layer.create(layer).catch(error => {
+            const layerToCreate = Object.assign(undefined, layer);
+            delete layerToCreate.layerOptions.zIndex;
+            delete layerToCreate.layerOptions.visible;
+            layerFound = await this.layer.create(layerToCreate).catch(error => {
               handleError(layer, error);
             });
           }
