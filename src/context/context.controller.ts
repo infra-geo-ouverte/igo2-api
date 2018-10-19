@@ -280,7 +280,8 @@ export class ContextController {
     const userIGO = await this.userIgo.get(userId).catch(() => {});
 
     if (userIGO) {
-      return await this.userIgo.update(userId, userIgoToCreate)
+      return await this.userIgo
+        .update(userId, userIgoToCreate)
         .catch(handleError);
     } else {
       userIgoToCreate.userId = userId;
@@ -292,9 +293,11 @@ export class ContextController {
     const layers = [];
     for (const layer of layersToConvert) {
       const sourceOptions = layer.sourceOptions;
-      const layerOptions = Object.assign({}, layer, layer.layerOptions, {
-        sourceOptions: undefined
-      });
+      const layerOptions = ObjectUtils.removeUndefined(
+        Object.assign({}, layer, layer.layerOptions, {
+          sourceOptions: undefined
+        })
+      );
       layers.push({
         id: layer.id,
         sourceOptions: sourceOptions,
