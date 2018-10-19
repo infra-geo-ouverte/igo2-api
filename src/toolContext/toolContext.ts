@@ -15,7 +15,7 @@ export class ToolContext {
       const uniqueFields = ['contextId', 'toolId'];
       if (
         error.name === 'SequelizeUniqueConstraintError' &&
-        error.fields.toString() === uniqueFields.toString()
+        Object.keys(error.fields) === uniqueFields
       ) {
         const message = 'The pair contextId and toolId must be unique.';
         throw Boom.conflict(message);

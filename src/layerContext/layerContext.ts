@@ -21,7 +21,7 @@ export class LayerContext {
         const uniqueFields = ['contextId', 'layerId'];
         if (
           error.name === 'SequelizeUniqueConstraintError' &&
-          error.fields.toString() === uniqueFields.toString()
+          Object.keys(error.fields) === uniqueFields
         ) {
           const message = 'The pair contextId and layerId must be unique.';
           throw Boom.conflict(message);
