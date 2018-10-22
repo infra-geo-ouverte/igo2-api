@@ -85,7 +85,6 @@ export class Layer {
   }
 
   public async getBaseLayers(): Promise<LayerInstance[]> {
-    // const sequelize = this.database.sequelize;
     return await this.database.layer
       .findAll({
         where: {
@@ -95,9 +94,14 @@ export class Layer {
         }
       })
       .then((layers: LayerInstance[]) => {
-        const plainLayers = layers.map(layer =>
-          ObjectUtils.removeNull(layer.get())
-        );
+        const plainLayers = layers.map(layer => {
+          const plainLayer = layer.get();
+          Object.assign(plainLayer, plainLayer.layerOptions);
+
+          plainLayer.layerOptions = null;
+
+          return ObjectUtils.removeNull(plainLayer);
+        });
         // TODO verify permission
         return plainLayers;
       });
