@@ -77,7 +77,7 @@ export default function define(sequelize: Sequelize.Sequelize, DataTypes) {
         allowNull: false
       },
       scope: {
-        type: DataTypes.ENUM('public async', 'protected', 'private'),
+        type: DataTypes.ENUM('public', 'protected', 'private'),
         allowNull: false
       },
       map: {
