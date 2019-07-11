@@ -1,4 +1,4 @@
-# API pour Infrastructure géomatique ouverte 2.0 (IGO2) / API for IGO 2.0
+# API de gestion de contexte pour Infrastructure géomatique ouverte 2.0 (IGO2) / API for IGO 2.0
 ***
 
 ### Qu'est-ce qu'IGO?
