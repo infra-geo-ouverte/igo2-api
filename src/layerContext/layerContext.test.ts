@@ -947,7 +947,7 @@ const runTests = async () => {
       response = await server.inject(options);
       const result: any = response.result;
       t.equal(result.layers.length, 2);
-      t.equal(result.layers[0].layerOptions.title, 'dummyTitle2');
+      t.equal(result.layers[0].title, 'patch title');
       t.equal(response.statusCode, 200);
     } catch (e) {
       console.error(response.result);

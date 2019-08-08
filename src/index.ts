@@ -6,6 +6,15 @@ console.log(`Running enviroment ${process.env.NODE_ENV || 'dev'}`);
 // Starting Application Server
 const serverConfigs = Configs.getServerConfig();
 
+if (serverConfigs.apm) {
+  require('elastic-apm-node').start({
+    serviceName: serverConfigs.apm.name,
+    serverUrl: serverConfigs.apm.url,
+    verifyServerCert: false
+  });
+}
+
+
 const start = async () => {
   const server = await Server.init(serverConfigs);
   await server.start();

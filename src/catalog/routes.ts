@@ -129,4 +129,11 @@ export default function(server: Hapi.Server) {
       }
     }
   });
+
+  server.route({
+    method: 'GET',
+    path: '/test',
+    handler: () => { return true; }
+  });
+
 }
