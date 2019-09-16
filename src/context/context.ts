@@ -124,6 +124,7 @@ export class Context {
     plain.layers = [];
     plain.tools = [];
     plain.toolbar = [];
+    const toolbar = [];
 
     for (const tool of context.tools) {
       const plainTool = tool.get();
@@ -137,7 +138,7 @@ export class Context {
 
       plain.tools.push(plainTool);
       if (plainTool.inToolbar) {
-        plain.toolbar.push(plainTool.name);
+        toolbar.push(plainTool);
       }
     }
 
@@ -146,12 +147,12 @@ export class Context {
       if (plain.tools.findIndex(t => t.name === plainTool.name) === -1) {
         plain.tools.push(plainTool);
         if (plainTool.inToolbar) {
-          plain.toolbar.push(plainTool.name);
+          toolbar.push(plainTool);
         }
       }
     }
 
-    plain.toolbar = plain.toolbar.sort((t1, t2) => t1 - t2);
+    plain.toolbar = plain.toolbar.sort((t1, t2) => t1 - t2).map(t => t.name);
 
     if (!context.layers || !context.layers.length) {
       return ObjectUtils.removeNull(plain);
