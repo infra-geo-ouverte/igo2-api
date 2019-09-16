@@ -152,7 +152,7 @@ export class Context {
       }
     }
 
-    plain.toolbar = plain.toolbar.sort((t1, t2) => t1 - t2).map(t => t.name);
+    plain.toolbar = toolbar.sort((t1, t2) => t1 - t2).map(t => t.name);
 
     if (!context.layers || !context.layers.length) {
       return ObjectUtils.removeNull(plain);
