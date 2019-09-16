@@ -151,6 +151,8 @@ export class Context {
       }
     }
 
+    plain.toolbar = plain.toolbar.sort((t1, t2) => t1 - t2);
+
     if (!context.layers || !context.layers.length) {
       return ObjectUtils.removeNull(plain);
     }
