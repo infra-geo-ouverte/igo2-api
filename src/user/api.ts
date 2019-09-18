@@ -98,12 +98,7 @@ export class UserApi {
       (!url.host || localhosts.indexOf(url.host) !== -1) &&
       UserApi.isInBasePath(url.pathname)
     ) {
-      const basePaths = localhost ? localhost.basePaths : [];
-      let uri = url.pathname;
-      for (const base of basePaths) {
-        const regex = new RegExp(`^${base}`);
-        uri = uri.replace(regex, '/');
-      }
+      const uri = url.pathname;
       const route = await UserApi.getRouteByUri(uri);
       return await UserApi.verifyServicePermission(route, profils);
     } else {
