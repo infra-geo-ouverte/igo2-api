@@ -1,0 +1,77 @@
+import * as Sequelize from 'sequelize';
+
+export interface ITool {
+  id?: string;
+  name: string;
+  title?: string;
+  tooltip?: string;
+  icon?: string;
+  inToolbar?: boolean;
+  global?: boolean;
+  order?: number;
+  options?: { [key: string]: any };
+}
+
+export interface ToolInstance extends Sequelize.Instance<ITool> {
+  id: string;
+  createdAt: Date;
+  updatedAt: Date;
+
+  name: string;
+  title?: string;
+  tooltip?: string;
+  icon?: string;
+  inToolbar?: boolean;
+  global?: boolean;
+  order?: number;
+  options?: { [key: string]: any };
+}
+
+export interface ToolModel extends Sequelize.Model<ToolInstance, ITool> {}
+
+export default function define(sequelize: Sequelize.Sequelize, DataTypes) {
+  const tool = sequelize.define<ToolModel, ITool>(
+    'tool',
+    {
+      id: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        primaryKey: true,
+        autoIncrement: true
+      },
+      name: {
+        type: DataTypes.STRING(64),
+        allowNull: false
+      },
+      title: {
+        type: DataTypes.STRING(64)
+      },
+      tooltip: {
+        type: DataTypes.STRING(128)
+      },
+      icon: {
+        type: DataTypes.STRING(128)
+      },
+      inToolbar: {
+        type: DataTypes.BOOLEAN
+      },
+      global: {
+        type: DataTypes.BOOLEAN
+      },
+      order: {
+        type: DataTypes.INTEGER
+      },
+      options: {
+        type: DataTypes.JSON
+      }
+    },
+    {
+      tableName: 'tool',
+      timestamps: true
+    }
+  );
+
+  tool.sync();
+
+  return tool;
+}

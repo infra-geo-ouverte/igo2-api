@@ -1,0 +1,14 @@
+{
+  "compilerOptions": {
+    "outDir": "../build",
+    "target": "es6",
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "sourceMap": true,
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "noUnusedLocals": true,
+    "lib": ["es7", "dom"],
+    "typeRoots": ["../node_modules/@types"]
+  }
+}

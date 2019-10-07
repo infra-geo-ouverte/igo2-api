@@ -1,0 +1,112 @@
+stages:
+  - install
+  - test
+  - build
+  - replace
+  - pack
+  - deploy
+
+cache:
+  key: '$CI_COMMIT_REF_NAME'
+  untracked: true
+  paths:
+    - node_modules/
+    - build/
+
+variables:
+  ARCHIVE_NAME: ${CI_COMMIT_REF_NAME}_${CI_PROJECT_PATH_SLUG}
+
+install:
+  stage: install
+  script:
+    - npm install
+  only:
+    - dev
+    - preprod
+    - tags
+
+test:
+  stage: test
+  script:
+    - npm run test
+  only:
+    - dev
+    - preprod
+
+build:
+  stage: build
+  script:
+    - npm run build.prod
+  dependencies:
+    - install
+  only:
+    - dev
+    - preprod
+    - tags
+
+replace:
+  stage: replace
+  script:
+    - >
+      if [ "$CI_COMMIT_REF_NAME" == "dev" ]; then
+        ServerAPM=https://spssogl20d.sso.msp.gouv.qc.ca
+        ServerGeo=https://testgeoegl.msp.gouv.qc.ca
+        ServerRITM=http://beta.geomsp.qc
+      elif [ "$CI_COMMIT_REF_NAME" == "preprod" ]; then
+        ServerAPM=https://spmt2gl95.mt2.msp.gouv.qc.ca
+        ServerGeo=https://pregeoegl.msp.gouv.qc.ca
+        ServerRITM=http://rc.geomsp.qc
+      else
+        ServerAPM=https://spssogl121.sso.msp.gouv.qc.ca
+        ServerGeo=https://geoegl.msp.gouv.qc.ca
+        ServerRITM=http://www.geomsp.qc
+      fi
+    - find ./build/configurations/ -type f -name '*.json' | xargs sed -i "s|@ServerAPM|$ServerAPM|g"
+    - find ./build/configurations/ -type f -name '*.json' | xargs sed -i "s|@ServerGeo|$ServerGeo|g"
+    - find ./build/configurations/ -type f -name '*.json' | xargs sed -i "s|@ServerRITM|$ServerRITM|g"
+  dependencies:
+    - build
+  only:
+    - dev
+    - preprod
+    - tags
+
+pack:
+  stage: pack
+  script:
+    - rm -f *.tgz
+    - files=$(node -p -e "require('./package.json').files.join(' ')")
+    - tar zcf ${ARCHIVE_NAME}.tgz package.json README.md $files
+  dependencies:
+    - replace
+  only:
+    - dev
+    - preprod
+    - tags
+  artifacts:
+    paths:
+      - ${ARCHIVE_NAME}.tgz
+    name: 'build'
+    when: on_success
+    expire_in: 1 week
+
+deploy:
+  stage: deploy
+  environment: ${CI_COMMIT_REF_NAME}
+  script:
+    - synchro_envgitlab.sh ./${ARCHIVE_NAME}.tgz /srv/geomatique/apps/igo2-api ${CI_COMMIT_REF_NAME} -c -r
+  dependencies:
+    - pack
+  only:
+    - dev
+    - preprod
+
+deploy_prod:
+  stage: deploy
+  environment: prod
+  script:
+    - synchro_envgitlab.sh ./${ARCHIVE_NAME}.tgz /srv/geomatique/apps/igo2-api prod -c -r
+  dependencies:
+    - pack
+  only:
+    - tags
