@@ -55,7 +55,7 @@
     "pg-hstore": "^2.3.2",
     "request": "^2.81.0",
     "rxjs": "^5.4.1",
-    "sequelize": "^3.30.2",
+    "sequelize": "^5.15.1",
     "sqlite3": "^3.1.8",
     "vision": "^4.1.1",
     "xss": "^0.3.3"
