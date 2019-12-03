@@ -7,6 +7,9 @@ export class CatalogValidator {
     options: Joi.object()
       .optional()
       .keys({
+        sortDirection: Joi.string()
+          .allow('asc', 'desc')
+          .optional(),
         regFilters: Joi.array()
           .items(Joi.string())
           .optional()
