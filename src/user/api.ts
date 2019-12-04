@@ -91,7 +91,7 @@ export class UserApi {
       return true;
     }
     const urlObj = URL.parse(url);
-    url = urlObj ? urlObj.protocol + '://' + urlObj.hostname : '';
+    url = urlObj ? urlObj.protocol + '//' + urlObj.hostname : '';
 
     const localhost = ServerConfigs.localhost;
     const localhosts = localhost ? localhost.hosts : [];

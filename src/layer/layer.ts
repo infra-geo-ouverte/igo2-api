@@ -24,7 +24,7 @@ export class Layer {
         ? layer.sourceOptions.url
         : ''
     );
-    const url = urlObj ? urlObj.protocol + '://' + urlObj.hostname : '';
+    const url = urlObj ? urlObj.protocol + '//' + urlObj.hostname : '';
     if (url && hosts.indexOf(url) !== -1) {
       Object.assign(layer.sourceOptions, { url: urlObj.path });
     }
@@ -40,7 +40,7 @@ export class Layer {
         ? layer.sourceOptions.url
         : ''
     );
-    const url = urlObj ? urlObj.protocol + '://' + urlObj.hostname : '';
+    const url = urlObj ? urlObj.protocol + '//' + urlObj.hostname : '';
     if (url && hosts.indexOf(url) !== -1) {
       Object.assign(layer.sourceOptions, { url: urlObj.path });
     }
@@ -140,7 +140,7 @@ export class Layer {
     const localhost = ServerConfigs.localhost;
     const hosts = localhost ? localhost.hosts : [];
     const urlObj = URL.parse(layer.sourceOptions.url || '');
-    const url = urlObj ? urlObj.protocol + '://' + urlObj.hostname : '';
+    const url = urlObj ? urlObj.protocol + '//' + urlObj.hostname : '';
     if (url && hosts.indexOf(url) !== -1) {
       layer.sourceOptions.url = urlObj.path;
     }
@@ -152,7 +152,7 @@ export class Layer {
           sourceOptions: {
             url: layer.sourceOptions.url,
             params: {
-              layers: layer.sourceOptions.params.layers
+              layers: layer.sourceOptions.params ? layer.sourceOptions.params.layers : undefined
             }
           }
         }
