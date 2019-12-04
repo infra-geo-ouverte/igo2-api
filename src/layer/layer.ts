@@ -151,7 +151,7 @@ export class Layer {
           sourceOptions: {
             url: layer.sourceOptions.url,
             params: {
-              "LAYERS": layer.sourceOptions.params ?
+              'LAYERS': layer.sourceOptions.params ?
                 layer.sourceOptions.params.LAYERS : undefined
             }
           }
