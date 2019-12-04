@@ -95,7 +95,7 @@ export class UserApi {
     const localhost = ServerConfigs.localhost;
     const localhosts = localhost ? localhost.hosts : [];
     if (
-      (!url.host || localhosts.indexOf(url.host) !== -1) &&
+      (!url.host || localhosts.indexOf(url.protocol + '://' + url.hostname) !== -1) &&
       UserApi.isInBasePath(url.pathname)
     ) {
       const uri = url.pathname;
