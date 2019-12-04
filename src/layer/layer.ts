@@ -24,7 +24,8 @@ export class Layer {
         ? layer.sourceOptions.url
         : ''
     );
-    if (urlObj && hosts.indexOf(urlObj.protocol + '://' + urlObj.hostname) !== -1) {
+    const url = urlObj ? urlObj.protocol + '://' + urlObj.hostname : '';
+    if (url && hosts.indexOf(url) !== -1) {
       Object.assign(layer.sourceOptions, { url: urlObj.path });
     }
 
@@ -39,7 +40,8 @@ export class Layer {
         ? layer.sourceOptions.url
         : ''
     );
-    if (urlObj && hosts.indexOf(urlObj.protocol + '://' + urlObj.hostname) !== -1) {
+    const url = urlObj ? urlObj.protocol + '://' + urlObj.hostname : '';
+    if (url && hosts.indexOf(url) !== -1) {
       Object.assign(layer.sourceOptions, { url: urlObj.path });
     }
 
@@ -138,7 +140,8 @@ export class Layer {
     const localhost = ServerConfigs.localhost;
     const hosts = localhost ? localhost.hosts : [];
     const urlObj = URL.parse(layer.sourceOptions.url || '');
-    if (urlObj && hosts.indexOf(urlObj.protocol + '://' + urlObj.hostname) !== -1) {
+    const url = urlObj ? urlObj.protocol + '://' + urlObj.hostname : '';
+    if (url && hosts.indexOf(url) !== -1) {
       layer.sourceOptions.url = urlObj.path;
     }
 
@@ -146,7 +149,12 @@ export class Layer {
       $or: [
         { id: layer.id },
         {
-          sourceOptions: layer.sourceOptions
+          sourceOptions: {
+            url: layer.sourceOptions.url,
+            params: {
+              layers: layer.sourceOptions.params.layers
+            }
+          }
         }
       ]
     };

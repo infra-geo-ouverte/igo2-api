@@ -5,7 +5,6 @@ export interface SourceOptions {
   url?: string;
   version?: string;
   params?: { [key: string]: any };
-  legend?: any;
   [key: string]: any;
 }
 

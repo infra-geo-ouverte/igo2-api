@@ -90,15 +90,16 @@ export class UserApi {
     if (!url) {
       return true;
     }
-    url = URL.parse(url);
+    const urlObj = URL.parse(url);
+    url = urlObj ? urlObj.protocol + '://' + urlObj.hostname : '';
 
     const localhost = ServerConfigs.localhost;
     const localhosts = localhost ? localhost.hosts : [];
     if (
-      (!url.host || localhosts.indexOf(url.protocol + '://' + url.hostname) !== -1) &&
-      UserApi.isInBasePath(url.pathname)
+      (!urlObj.host || localhosts.indexOf(url) !== -1) &&
+      UserApi.isInBasePath(urlObj.pathname)
     ) {
-      const uri = url.pathname;
+      const uri = urlObj.pathname;
       const route = await UserApi.getRouteByUri(uri);
       return await UserApi.verifyServicePermission(route, profils);
     } else {
