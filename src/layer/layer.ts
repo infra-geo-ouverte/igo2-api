@@ -144,7 +144,6 @@ export class Layer {
     if (url && hosts.indexOf(url) !== -1) {
       layer.sourceOptions.url = urlObj.path;
     }
-
     const where: any = {
       $or: [
         { id: layer.id },
@@ -152,7 +151,8 @@ export class Layer {
           sourceOptions: {
             url: layer.sourceOptions.url,
             params: {
-              layers: layer.sourceOptions.params ? layer.sourceOptions.params.layers : undefined
+              layers: layer.sourceOptions.params ?
+                layer.sourceOptions.params.layers : undefined
             }
           }
         }
