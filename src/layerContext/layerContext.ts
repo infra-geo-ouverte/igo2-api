@@ -18,11 +18,7 @@ export class LayerContext {
     return await this.database.layerContext
       .create(layerContext)
       .catch(error => {
-        const uniqueFields = ['contextId', 'layerId'];
-        if (
-          error.name === 'SequelizeUniqueConstraintError' &&
-          error.fields.toString() === uniqueFields.toString()
-        ) {
+        if (error.name === 'SequelizeUniqueConstraintError') {
           const message = 'The pair contextId and layerId must be unique.';
           throw Boom.conflict(message);
         } else if (error.name === 'SequelizeForeignKeyConstraintError') {

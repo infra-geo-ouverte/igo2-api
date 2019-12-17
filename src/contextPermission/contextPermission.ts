@@ -38,11 +38,7 @@ export class ContextPermission {
         individualHooks: true
       })
       .catch(error => {
-        const uniqueFields = ['contextId', 'profil'];
-        if (
-          error.name === 'SequelizeUniqueConstraintError' &&
-          error.fields.toString() === uniqueFields.toString()
-        ) {
+        if (error.name === 'SequelizeUniqueConstraintError') {
           const message = 'The pair contextId and profil must be unique.';
           throw Boom.conflict(message);
         } else {
@@ -71,11 +67,7 @@ export class ContextPermission {
         if (Boom.isBoom(error)) {
           throw error;
         }
-        const uniqueFields = ['contextId', 'profil'];
-        if (
-          error.name === 'SequelizeUniqueConstraintError' &&
-          error.fields.toString() === uniqueFields.toString()
-        ) {
+        if (error.name === 'SequelizeUniqueConstraintError') {
           const message = 'The pair contextId and profil must be unique.';
           throw Boom.conflict(message);
         }

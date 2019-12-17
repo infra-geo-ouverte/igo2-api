@@ -12,11 +12,7 @@ export class ToolContext {
 
   public async create(toolContext: IToolContext): Promise<ToolContextInstance> {
     return await this.database.toolContext.create(toolContext).catch(error => {
-      const uniqueFields = ['contextId', 'toolId'];
-      if (
-        error.name === 'SequelizeUniqueConstraintError' &&
-        error.fields.toString() === uniqueFields.toString()
-      ) {
+      if (error.name === 'SequelizeUniqueConstraintError') {
         const message = 'The pair contextId and toolId must be unique.';
         throw Boom.conflict(message);
       }
