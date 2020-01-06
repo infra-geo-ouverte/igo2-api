@@ -154,9 +154,11 @@ export class LayerContext {
             const layerToCreate = JSON.parse(JSON.stringify(layer));
             delete layerToCreate.layerOptions.zIndex;
             delete layerToCreate.layerOptions.visible;
-            delete layerToCreate.sourceOptions.dpi;
-            delete layerToCreate.sourceOptions.MAP_RESOLUTION;
-            delete layerToCreate.sourceOptions.FORMAT_OPTIONS;
+            if (layerToCreate.sourceOptions.params) {
+              delete layerToCreate.sourceOptions.params.dpi;
+              delete layerToCreate.sourceOptions.params.MAP_RESOLUTION;
+              delete layerToCreate.sourceOptions.params.FORMAT_OPTIONS;
+            }
             layerFound = await this.layer.create(layerToCreate).catch(error => {
               handleError(layer, error);
             });
