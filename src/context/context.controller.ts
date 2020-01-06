@@ -293,11 +293,7 @@ export class ContextController {
     const layers = [];
     for (const layer of layersToConvert) {
       const sourceOptions = layer.sourceOptions;
-      const layerOptions = ObjectUtils.removeUndefined(
-        Object.assign({}, layer, layer.layerOptions, {
-          sourceOptions: undefined
-        })
-      );
+      const layerOptions = layer.layerOptions;
       layers.push({
         id: layer.id,
         sourceOptions: sourceOptions,

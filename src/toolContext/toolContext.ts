@@ -123,7 +123,7 @@ export class ToolContext {
     const promises = [];
 
     for (const tool of tools) {
-      if (tool.id) {
+      if (tool.id && !tool.global) {
         promises.push(
           this.create({
             contextId: contextId,

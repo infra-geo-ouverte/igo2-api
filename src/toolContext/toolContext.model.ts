@@ -6,6 +6,7 @@ export interface IToolContext {
   contextId?: string;
   enabled?: boolean;
   order?: number;
+  global?: boolean;
   options?: { [key: string]: any };
 }
 

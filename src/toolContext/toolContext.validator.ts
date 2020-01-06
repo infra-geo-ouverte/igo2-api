@@ -8,6 +8,7 @@ export class ToolContextValidator {
   });
 
   static createModel = ToolContextValidator.updateModel.keys({
-    toolId: Joi.number().required()
+    toolId: Joi.number().required(),
+    global: Joi.boolean()
   });
 }
