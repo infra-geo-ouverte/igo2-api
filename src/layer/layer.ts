@@ -139,6 +139,7 @@ export class Layer {
   public async getBySource(layer: ILayer): Promise<LayerInstance> {
     const localhost = ServerConfigs.localhost;
     const hosts = localhost ? localhost.hosts : [];
+    layer.sourceOptions = layer.sourceOptions || {};
     const urlObj = URL.parse(layer.sourceOptions.url || '');
     const url = urlObj ? urlObj.protocol + '//' + urlObj.hostname : '';
     if (url && hosts.indexOf(url) !== -1) {

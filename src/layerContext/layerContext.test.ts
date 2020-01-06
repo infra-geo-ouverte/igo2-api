@@ -998,9 +998,6 @@ const runTests = async () => {
             }
           },
           {
-            id: '90'
-          },
-          {
             id: '2',
             layerOptions: {
               zIndex: '2'

@@ -154,8 +154,6 @@ export class LayerContext {
             const layerToCreate = JSON.parse(JSON.stringify(layer));
             delete layerToCreate.layerOptions.zIndex;
             delete layerToCreate.layerOptions.visible;
-            delete layerToCreate.layerOptions.visible;
-            delete layerToCreate.layerOptions.visible;
             delete layerToCreate.sourceOptions.dpi;
             delete layerToCreate.sourceOptions.MAP_RESOLUTION;
             delete layerToCreate.sourceOptions.FORMAT_OPTIONS;
