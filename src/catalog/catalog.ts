@@ -48,7 +48,7 @@ export class Catalog {
 
   public async get(user: string): Promise<CatalogInstance[]> {
     const catalogs = await this.database.catalog.findAll({
-      order: ['order', 'asc']
+      order: ['order']
     });
 
     const plainCatalogs = catalogs.map(catalog =>
