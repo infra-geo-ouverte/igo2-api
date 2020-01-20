@@ -4,6 +4,7 @@ export class CatalogValidator {
   static updateModel = Joi.object().keys({
     title: Joi.string(),
     url: Joi.string(),
+    order: Joi.number().optional(),
     options: Joi.object()
       .optional()
       .keys({

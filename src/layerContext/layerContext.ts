@@ -155,7 +155,7 @@ export class LayerContext {
             delete layerToCreate.layerOptions.zIndex;
             delete layerToCreate.layerOptions.visible;
             if (layerToCreate.sourceOptions.params) {
-              delete layerToCreate.sourceOptions.params.dpi;
+              delete layerToCreate.sourceOptions.params.DPI;
               delete layerToCreate.sourceOptions.params.MAP_RESOLUTION;
               delete layerToCreate.sourceOptions.params.FORMAT_OPTIONS;
             }

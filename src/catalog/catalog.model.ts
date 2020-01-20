@@ -9,6 +9,7 @@ export interface ICatalog {
   title: string;
   url: string;
   options?: ICatalogOptions;
+  order?: number;
 }
 
 export interface CatalogInstance extends Sequelize.Instance<ICatalog> {
@@ -19,6 +20,7 @@ export interface CatalogInstance extends Sequelize.Instance<ICatalog> {
   title: string;
   url: string;
   options: ICatalogOptions;
+  order: number;
 }
 
 export interface CatalogModel
@@ -44,6 +46,9 @@ export default function define(sequelize: Sequelize.Sequelize, DataTypes) {
       },
       options: {
         type: DataTypes.JSON
+      },
+      order: {
+        type: DataTypes.INTEGER
       }
     },
     {
