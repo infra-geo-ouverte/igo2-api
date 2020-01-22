@@ -268,7 +268,12 @@ export class ContextController {
     });
 
     request.params['contextId'] = user.defaultContextId;
-    return await this.getDetailsById(request, h);
+    return await this.getDetailsById(request, h).catch(async () => {
+      request.params['contextId'] = 'default';
+      const defaultContext = await this.getDetailsById(request, h);
+      this.userIgo.update(customId, {defaultContextId: defaultContext.id});
+      return defaultContext;
+    });
   }
 
   public async setDefaultContext(
