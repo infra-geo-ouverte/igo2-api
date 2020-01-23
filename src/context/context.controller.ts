@@ -9,6 +9,7 @@ import { UserIgo, IUserIgo } from '../userIgo';
 import { TypePermission, ContextPermission } from '../contextPermission';
 import { ToolContext } from '../toolContext';
 import { LayerContext } from '../layerContext';
+import { ContextAccess } from '../contextAccess';
 
 import { IContext, Context, Scope } from './index';
 
@@ -18,6 +19,7 @@ export class ContextController {
   private contextPermission: ContextPermission;
   private toolContext: ToolContext;
   private layerContext: LayerContext;
+  private contextAccess: ContextAccess;
   private userIgo: UserIgo;
 
   constructor() {
@@ -26,6 +28,7 @@ export class ContextController {
     this.toolContext = new ToolContext();
     this.layerContext = new LayerContext();
     this.userIgo = new UserIgo();
+    this.contextAccess = new ContextAccess();
   }
 
   public async create(request: Hapi.Request, h: Hapi.ResponseToolkit) {
@@ -255,6 +258,9 @@ export class ContextController {
       throw Boom.forbidden(msg);
     }
     contextDetails.permission = TypePermission[permission];
+
+
+    this.contextAccess.update(contextDetails.id);
     return contextDetails;
   }
 

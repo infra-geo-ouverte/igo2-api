@@ -5,6 +5,7 @@ import { UserModel } from './user/user.model';
 import { POIModel } from './poi/poi.model';
 import { CatalogModel } from './catalog/catalog.model';
 import { ContextModel } from './context/context.model';
+import { ContextAccessModel } from './contextAccess/contextAccess.model';
 import { UserIgoModel } from './userIgo/userIgo.model';
 import { LayerModel } from './layer/layer.model';
 import { ToolModel } from './tool/tool.model';
@@ -15,6 +16,7 @@ import { ContextPermissionModel } from './contextPermission/contextPermission.mo
 export interface IDatabase {
   sequelize: Sequelize.Sequelize;
   context: ContextModel;
+  contextAccess: ContextAccessModel;
   user: UserModel;
   userIgo: UserIgoModel;
   poi: POIModel;
@@ -56,6 +58,9 @@ if (dbString.connectionString) {
 
 const db = {};
 db['context'] = sequelize['import']('./context/context.model');
+db['contextAccess'] = sequelize['import'](
+  './contextAccess/contextAccess.model'
+);
 db['user'] = sequelize['import']('./user/user.model');
 db['userIgo'] = sequelize['import']('./userIgo/userIgo.model');
 db['poi'] = sequelize['import']('./poi/poi.model');
