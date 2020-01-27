@@ -7,7 +7,7 @@ export class ContextAccess {
 
   public async update(
     contextId: string
-  ): Promise<{ id: string }> {
+  ): Promise<any> {
     const accessObj = await this.database.contextAccess.findOne({
       where: {
         contextId
@@ -15,7 +15,6 @@ export class ContextAccess {
     });
 
     if (accessObj) {
-      console.log(accessObj);
       return await this.database.contextAccess.update(
         {contextId: contextId, calls: ++accessObj.calls},
         {where: {id: accessObj.id}}
