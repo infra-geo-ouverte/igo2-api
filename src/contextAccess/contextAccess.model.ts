@@ -11,7 +11,7 @@ export interface ContextAccessInstance
   id?: string;
   calls: number;
   createdAt: Date;
-  updatedAt: Date;
+  accessedAt: Date;
 
   contextId: string;
 }
@@ -47,7 +47,8 @@ export default function define(sequelize: Sequelize.Sequelize, DataTypes) {
         },
       ],
       tableName: 'context_access',
-      timestamps: true
+      timestamps: true,
+      updatedAt: 'accessedAt'
     }
   );
 
