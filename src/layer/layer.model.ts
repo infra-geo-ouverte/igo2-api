@@ -1,8 +1,6 @@
 import * as Sequelize from 'sequelize';
 
 export interface SourceOptions {
-  type?: string;
-  url?: string;
   version?: string;
   params?: { [key: string]: any };
   [key: string]: any;
@@ -17,10 +15,15 @@ export interface LayerOptions {
   zIndex?: number;
   minResolution?: number;
   maxResolution?: number;
+  [key: string]: any;
 }
 
 export interface ILayer {
   id?: string;
+  type?: string;
+  url?: string;
+  layers?: string;
+  global?: boolean;
   layerOptions?: LayerOptions;
   sourceOptions?: SourceOptions;
 }
@@ -30,6 +33,10 @@ export interface LayerInstance extends Sequelize.Instance<ILayer> {
   createdAt: Date;
   updatedAt: Date;
 
+  type: string;
+  url?: string;
+  layers?: string;
+  global?: boolean;
   layerOptions?: LayerOptions;
   sourceOptions?: SourceOptions;
 }
@@ -46,6 +53,19 @@ export default function define(sequelize: Sequelize.Sequelize, DataTypes) {
         primaryKey: true,
         autoIncrement: true
       },
+      type: {
+        type: DataTypes.STRING(16),
+        allowNull: false
+      },
+      url: {
+        type: DataTypes.STRING(128)
+      },
+      layers: {
+        type: DataTypes.STRING(128)
+      },
+      global: {
+        type: DataTypes.BOOLEAN
+      },
       layerOptions: {
         type: DataTypes.JSON
       },
@@ -55,7 +75,14 @@ export default function define(sequelize: Sequelize.Sequelize, DataTypes) {
     },
     {
       tableName: 'layer',
-      timestamps: true
+      timestamps: true,
+      indexes: [{
+        unique: true,
+        fields: ['type', 'url', 'layers']
+      }, {
+        unique: false,
+        fields: ['global']
+      }]
     }
   );
 

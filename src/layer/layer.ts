@@ -19,14 +19,10 @@ export class Layer {
   public async create(layer: ILayer): Promise<LayerInstance> {
     const localhost = ServerConfigs.localhost;
     const hosts = localhost ? localhost.hosts : [];
-    const urlObj = URL.parse(
-      layer.sourceOptions && layer.sourceOptions.url
-        ? layer.sourceOptions.url
-        : ''
-    );
+    const urlObj = URL.parse(layer.url || '');
     const url = urlObj ? urlObj.protocol + '//' + urlObj.hostname : '';
     if (url && hosts.indexOf(url) !== -1) {
-      Object.assign(layer.sourceOptions, { url: urlObj.path });
+      layer.url = urlObj.path;
     }
 
     return await this.database.layer.create(layer);
@@ -35,14 +31,10 @@ export class Layer {
   public async update(id: string, layer: ILayer): Promise<{ id: string }> {
     const localhost = ServerConfigs.localhost;
     const hosts = localhost ? localhost.hosts : [];
-    const urlObj = URL.parse(
-      layer.sourceOptions && layer.sourceOptions.url
-        ? layer.sourceOptions.url
-        : ''
-    );
+    const urlObj = URL.parse(layer.url || '');
     const url = urlObj ? urlObj.protocol + '//' + urlObj.hostname : '';
     if (url && hosts.indexOf(url) !== -1) {
-      Object.assign(layer.sourceOptions, { url: urlObj.path });
+      layer.url = urlObj.path;
     }
 
     return await this.database.layer
@@ -126,7 +118,7 @@ export class Layer {
     profils.push(user);
 
     const isAllowed = await UserApi.verifyPermissionByUrl(
-      layerPlain.sourceOptions.url,
+      layerPlain.url,
       profils
     );
 
@@ -149,13 +141,9 @@ export class Layer {
       $or: [
         { id: layer.id },
         {
-          sourceOptions: {
-            url: layer.sourceOptions.url,
-            params: {
-              'LAYERS': layer.sourceOptions.params ?
-                layer.sourceOptions.params.LAYERS : undefined
-            }
-          }
+          type: layer.sourceOptions.type,
+          url: layer.sourceOptions.url || null,
+          layers: (layer.sourceOptions.params || {}).layers || (layer.sourceOptions.params || {}).LAYERS || null
         }
       ]
     };

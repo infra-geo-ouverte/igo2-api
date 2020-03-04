@@ -4,7 +4,6 @@ import * as Configs from '../configurations';
 
 const serverConfigs = Configs.getServerConfig();
 const testConfigs = Configs.getTestConfig();
-const adminHeaders: any = testConfigs.adminHeaders;
 const standardHeaders: any = testConfigs.standardHeaders;
 const user2Headers: any = testConfigs.user2Headers;
 
@@ -213,53 +212,6 @@ const runTests = async () => {
     };
     try {
       response = await server.inject(options);
-    } catch (e) {
-      console.error(response.result);
-      t.fail(e);
-    } finally {
-      t.end();
-    }
-  });
-
-  test('POST /tools - before toolContext', async t => {
-    let response;
-    const options = {
-      method: 'POST',
-      url: '/tools',
-      headers: adminHeaders,
-      payload: {
-        name: 'dummyName',
-        title: 'dummyTitle',
-        inToolbar: true,
-        options: {}
-      }
-    };
-    try {
-      response = await server.inject(options);
-      t.equal(response.statusCode, 201);
-    } catch (e) {
-      console.error(response.result);
-      t.fail(e);
-    } finally {
-      t.end();
-    }
-  });
-
-  test('POST /tools - before toolContext', async t => {
-    let response;
-    const options = {
-      method: 'POST',
-      url: '/tools',
-      headers: adminHeaders,
-      payload: {
-        name: 'dummyName2',
-        title: 'dummyTitle2',
-        inToolbar: false
-      }
-    };
-    try {
-      response = await server.inject(options);
-      t.equal(response.statusCode, 201);
     } catch (e) {
       console.error(response.result);
       t.fail(e);

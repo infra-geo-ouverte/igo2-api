@@ -110,14 +110,21 @@ export class Context {
       });
     }
 
+    let globalLayers;
+    if (includeLayers) {
+      globalLayers = await this.database.layer.findAll({
+        where: { global: true }
+      });
+    }
+
     if (includeLayers || includeTools) {
-      return await this.contextObjToPlainObj(context, user, globalTools);
+      return await this.contextObjToPlainObj(context, user, globalTools, globalLayers);
     } else {
       return ObjectUtils.removeNull(context.get());
     }
   }
 
-  private async contextObjToPlainObj(context, user, globalTools?):
+  private async contextObjToPlainObj(context, user, globalTools?, globalLayers?):
     Promise<ContextDetailed> {
 
     let plain: any = context.get();
@@ -156,7 +163,7 @@ export class Context {
       .sort((t1, t2) => t1.order - t2.order)
       .map(t => t.name);
 
-    if (!context.layers || !context.layers.length) {
+    if ((!context.layers || !context.layers.length) && !globalLayers ) {
       return ObjectUtils.removeNull(plain);
     }
 
@@ -166,6 +173,7 @@ export class Context {
     profils.push(user);
     const promises = [];
     const plainLayers = [];
+
     for (const layer of context.layers) {
       const plainL = layer.get();
       plainLayers.push(plainL);
@@ -174,24 +182,52 @@ export class Context {
       );
     }
 
+    for (const layer of globalLayers) {
+      const plainL = layer.get();
+      if (plainLayers.findIndex(l => l.id === plainL.id) === -1) {
+        plainL.layerContext = {};
+        plainLayers.push(plainL);
+        promises.push(
+          UserApi.verifyPermissionByUrl(plainL.sourceOptions.url, profils)
+        );
+      }
+    }
+
     const promisesResult = await Promise.all(promises);
     let i = 0;
     for (const plainLayer of plainLayers) {
       if (promisesResult[i]) {
-        plainLayer.sourceOptions = Object.assign(
-          {},
-          plainLayer.sourceOptions,
-          plainLayer.layerContext.sourceOptions
-        );
-        Object.assign(
-          plainLayer,
-          plainLayer.layerOptions,
-          plainLayer.layerContext.layerOptions
+        const params = Object.assign(
+          {
+            layers: plainLayer.layers
+          },
+          (plainLayer.sourceOptions || {}).params,
+          (plainLayer.layerContext.sourceOptions || {}).params
         );
 
-        plainLayer.layerContext = null;
-        plainLayer.layerOptions = null;
-        plain.layers.push(plainLayer);
+        const sourceOptions = Object.assign(
+          {
+            type: plainLayer.type,
+            url: plainLayer.url,
+            optionsFromCapabilities: true
+          },
+          plainLayer.sourceOptions,
+          plainLayer.layerContext.sourceOptions,
+          {
+              params
+          }
+        );
+
+        const layerFormatted = Object.assign(
+          {},
+          plainLayer.layerOptions,
+          plainLayer.layerContext.layerOptions,
+          {
+            sourceOptions
+          }
+        );
+
+        plain.layers.push(layerFormatted);
       }
       i++;
     }

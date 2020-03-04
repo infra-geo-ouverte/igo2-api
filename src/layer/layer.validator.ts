@@ -20,26 +20,20 @@ export class LayerValidator {
 
   static sourceOptionsModel = Joi.object()
     .keys({
-      type: Joi.string(),
-      url: Joi.string().allow(''),
       params: Joi.object(),
       version: Joi.string().allow('')
     })
     .unknown(true);
 
-  static createModel = Joi.object().keys({
-    layerOptions: LayerValidator.layerOptionsModel,
-    sourceOptions: LayerValidator.sourceOptionsModel.concat(
-      Joi.object()
-        .required()
-        .keys({
-          type: Joi.required()
-        })
-    )
-  });
-
   static updateModel = Joi.object().keys({
+    type: Joi.string(),
+    url: Joi.string(),
+    layers: Joi.string(),
     layerOptions: LayerValidator.layerOptionsModel,
     sourceOptions: LayerValidator.sourceOptionsModel
+  });
+
+  static createModel = LayerValidator.updateModel.append({
+    type: Joi.string().required()
   });
 }

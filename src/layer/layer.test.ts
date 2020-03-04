@@ -18,18 +18,17 @@ const runTests = async () => {
       url: '/layers',
       headers: adminHeaders,
       payload: {
+        type: 'osm',
         layerOptions: {
           title: 'dummyTitle'
         },
-        sourceOptions: {
-          type: 'osm'
-        }
+        sourceOptions: {}
       }
     };
     try {
       response = await server.inject(options);
       const result: any = response.result;
-      t.equal(result.sourceOptions.type, 'osm');
+      t.equal(result.type, 'osm');
       t.equal(result.layerOptions.title, 'dummyTitle');
       t.equal(response.statusCode, 201);
     } catch (e) {
@@ -47,19 +46,18 @@ const runTests = async () => {
       url: '/layers',
       headers: adminHeaders,
       payload: {
+        type: 'wms',
         layerOptions: {
           title: 'dummyTitle2'
         },
-        sourceOptions: {
-          type: 'osm'
-        }
+        sourceOptions: {}
       }
     };
     try {
       response = await server.inject(options);
       const result: any = response.result;
       t.equal(result.layerOptions.title, 'dummyTitle2');
-      t.equal(result.sourceOptions.type, 'osm');
+      t.equal(result.type, 'wms');
       t.equal(response.statusCode, 201);
     } catch (e) {
       console.error(response.result);
@@ -103,12 +101,11 @@ const runTests = async () => {
       url: '/layers',
       headers: adminHeaders,
       payload: {
+        type: 'osm',
         layerOptions: {
           title: 'dummyTitle'
         },
-        sourceOptions: {
-          type: 'osm'
-        },
+        sourceOptions: {},
         anotherParam: 'other'
       }
     };
@@ -132,19 +129,18 @@ const runTests = async () => {
       url: '/layers',
       headers: anonymeHeaders,
       payload: {
+        type: 'wfs',
         layerOptions: {
           title: 'dummyAnonyme'
         },
-        sourceOptions: {
-          type: 'wfs'
-        }
+        sourceOptions: {}
       }
     };
     try {
       response = await server.inject(options);
       const result: any = response.result;
       t.equal(result.layerOptions.title, 'dummyAnonyme');
-      t.equal(result.sourceOptions.type, 'wfs');
+      t.equal(result.type, 'wfs');
       t.equal(response.statusCode, 201);
     } catch (e) {
       console.error(response.result);
@@ -161,19 +157,19 @@ const runTests = async () => {
       url: '/layers',
       headers: standardHeaders,
       payload: {
+        type: 'wms',
+        layers: 'tests',
         layerOptions: {
           title: 'dummyStandard'
         },
-        sourceOptions: {
-          type: 'osm'
-        }
+        sourceOptions: {}
       }
     };
     try {
       response = await server.inject(options);
       const result: any = response.result;
       t.equal(result.layerOptions.title, 'dummyStandard');
-      t.equal(result.sourceOptions.type, 'osm');
+      t.equal(result.type, 'wms');
       t.equal(response.statusCode, 201);
     } catch (e) {
       console.error(response.result);
@@ -252,7 +248,7 @@ const runTests = async () => {
       headers: adminHeaders,
       payload: {
         sourceOptions: {
-          type: 'wms'
+          version: '1.3.0'
         }
       }
     };
@@ -348,7 +344,7 @@ const runTests = async () => {
       response = await server.inject(options);
       const result: any = response.result;
       t.equal(result.layerOptions.title, 'dummyTitle');
-      t.equal(result.sourceOptions.type, 'osm');
+      t.equal(result.type, 'osm');
       t.equal(response.statusCode, 200);
     } catch (e) {
       console.error(response.result);
@@ -369,7 +365,7 @@ const runTests = async () => {
       response = await server.inject(options);
       const result: any = response.result;
       t.equal(result.layerOptions.title, 'dummyTitle2');
-      t.equal(result.sourceOptions.type, 'wms');
+      t.equal(result.type, 'wms');
       t.equal(response.statusCode, 200);
     } catch (e) {
       console.error(response.result);

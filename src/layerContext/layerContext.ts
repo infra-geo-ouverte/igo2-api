@@ -151,13 +151,13 @@ export class LayerContext {
             });
 
           if (!layerFound) {
-            const layerToCreate = JSON.parse(JSON.stringify(layer));
-            delete layerToCreate.layerOptions.zIndex;
-            delete layerToCreate.layerOptions.visible;
-            if (layerToCreate.sourceOptions.params) {
-              delete layerToCreate.sourceOptions.params.DPI;
-              delete layerToCreate.sourceOptions.params.MAP_RESOLUTION;
-              delete layerToCreate.sourceOptions.params.FORMAT_OPTIONS;
+            const params = layer.sourceOptions.params;
+            const layerToCreate = {
+              type: layer.sourceOptions.type,
+              url: layer.sourceOptions.url,
+              layers: params ? params.layers || params.LAYERS : undefined,
+              layerOptions: {},
+              sourceOptions: {}
             }
             layerFound = await this.layer.create(layerToCreate).catch(error => {
               handleError(layer, error);
@@ -169,17 +169,18 @@ export class LayerContext {
             return;
           }
 
+          if (layerFound.global && !layer.layerOptions.visible) {
+            resolve(layerFound);
+            return;
+          }
+
           layer.layerOptions = layer.layerOptions || {};
           const rep = await this.create({
             contextId: contextId,
             layerId: layerFound.id,
             layerOptions: {
               zIndex: layer.layerOptions.zIndex,
-              visible: layer.layerOptions.visible,
-              title:
-                layerFound.layerOptions.title !== layer.layerOptions.title
-                  ? layer.layerOptions.title
-                  : undefined
+              visible: layer.layerOptions.visible
             }
           })
             .then(l => {

@@ -228,12 +228,11 @@ const runTests = async () => {
       url: '/layers',
       headers: adminHeaders,
       payload: {
+        type: 'osm',
         layerOptions: {
           title: 'dummyTitle'
         },
-        sourceOptions: {
-          type: 'osm'
-        }
+        sourceOptions: {}
       }
     };
     try {
@@ -254,12 +253,11 @@ const runTests = async () => {
       url: '/layers',
       headers: adminHeaders,
       payload: {
+        type: 'wfs',
         layerOptions: {
           title: 'dummyTitle2'
         },
-        sourceOptions: {
-          type: 'wfs'
-        }
+        sourceOptions: {}
       }
     };
     try {

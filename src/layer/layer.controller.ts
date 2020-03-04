@@ -49,4 +49,26 @@ export class LayerController {
   public async getBaseLayers(_request: Hapi.Request, _h: Hapi.ResponseToolkit) {
     return await this.layer.getBaseLayers().catch(handleError);
   }
+
+  public async getBySource(request: Hapi.Request, _h: Hapi.ResponseToolkit) {
+    const query: any = request.query;
+
+    return await this.layer
+      .getBySource({
+        sourceOptions: {
+          type: query.type,
+          url: query.url,
+          params: {
+            layers: query.layers
+          }
+        }
+      })
+      .catch(e => {
+        if (e.isBoom && e.output.statusCode === 404) {
+          return {};
+        }
+        throw e;
+      })
+      .catch(handleError);
+  }
 }

@@ -42,7 +42,7 @@ export class ContextController {
     if (newContext.layers) {
       await this.layerContext.bulkCreate(
         context.id,
-        this.mapLayersOptions(newContext.layers),
+        newContext.layers,
         true,
         true
       );
@@ -71,7 +71,14 @@ export class ContextController {
       icon: context.icon,
       map: context.map,
       tools: context.tools,
-      layers: context.layers
+      layers: context.layers.map(l => {
+        const layerOptions = Object.assign({}, l);
+        delete layerOptions.sourceOptions;
+        return {
+          layerOptions: layerOptions,
+          sourceOptions: l.sourceOptions
+        }
+      })
     };
     (request as any).payload = newContext;
     return await this.create(request, h);
@@ -93,7 +100,7 @@ export class ContextController {
       await this.layerContext.deleteByContextId(context.id).catch(handleError);
       await this.layerContext.bulkCreate(
         context.id,
-        this.mapLayersOptions(newContext.layers),
+        newContext.layers,
         true,
         true
       );
@@ -284,7 +291,7 @@ export class ContextController {
 
   public async setDefaultContext(
     request: Hapi.Request,
-    h: Hapi.ResponseToolkit
+    _h: Hapi.ResponseToolkit
   ) {
     const userId = request.headers['x-consumer-custom-id'];
     const userIgoToCreate: IUserIgo = request.payload as IUserIgo;
@@ -298,28 +305,5 @@ export class ContextController {
       userIgoToCreate.userId = userId;
       return await this.userIgo.create(userIgoToCreate).catch(handleError);
     }
-  }
-
-  private mapLayersOptions(layersToConvert) {
-    const layers = [];
-    for (const layer of layersToConvert) {
-      const sourceOptions = layer.sourceOptions;
-      const layerOptions = ObjectUtils.removeUndefined(
-        Object.assign({}, layer, layer.layerOptions, {
-          sourceOptions: undefined,
-          id: undefined,
-          createdAt: undefined,
-          updatedAt: undefined
-        })
-      );
-
-      layers.push({
-        id: layer.id,
-        sourceOptions: sourceOptions,
-        layerOptions: layerOptions
-      });
-    }
-
-    return layers;
   }
 }

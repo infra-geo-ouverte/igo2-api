@@ -11,7 +11,14 @@ export class Tool {
   constructor() {}
 
   public async create(tool: ITool): Promise<ToolInstance> {
-    return await this.database.tool.create(tool);
+    return await this.database.tool.create(tool).catch(error => {
+      if (error.name === 'SequelizeUniqueConstraintError') {
+        const message = 'The pair contextId and toolId must be unique.';
+        throw Boom.conflict(message);
+      }
+
+      throw Boom.badImplementation(error);
+    });
   }
 
   public async update(id: string, tool: ITool): Promise<{ id: string }> {

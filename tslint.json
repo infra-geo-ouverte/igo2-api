@@ -12,7 +12,7 @@
     "label-position": true,
     "max-line-length": [
       true,
-      { "limit": 80, "ignore-pattern": "^import {(.*?)}" }
+      { "limit": 120, "ignore-pattern": "^import {(.*?)}" }
     ],
     "member-access": false,
     "member-ordering": [
