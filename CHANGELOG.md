@@ -1,3 +1,12 @@
+## [1.1.1](http://gitlab.forge.gouv.qc.ca/igo2/igo2-api/compare/1.1.0...1.1.1) (2020-06-02)
+
+
+### Bug Fixes
+
+* **context:** length to max ([cae70c9](http://gitlab.forge.gouv.qc.ca/igo2/igo2-api/commit/cae70c9a590d67bc5aeb43938b1cbf510ad286d3))
+
+
+
 # [1.1.0](http://gitlab.forge.gouv.qc.ca/igo2/igo2-api/compare/1.0.1...1.1.0) (2020-06-02)
 
 
