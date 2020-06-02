@@ -134,7 +134,7 @@ export class ContextController {
           where: {
             owner: owner
           },
-          order: [['createAt', 'DESC']]
+          order: [['createdAt', 'DESC']]
         })
       );
     } else {
@@ -158,7 +158,7 @@ export class ContextController {
               $ne: owner
             }
           },
-          order: [['createAt', 'DESC']]
+          order: [['createdAt', 'DESC']]
         })
       );
     } else {
@@ -183,7 +183,7 @@ export class ContextController {
               $ne: owner
             }
           },
-          order: [['createAt', 'DESC']]
+          order: [['createdAt', 'DESC']]
         })
       );
     } else {
