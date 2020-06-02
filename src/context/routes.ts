@@ -124,7 +124,8 @@ export default function(server: Hapi.Server) {
       tags: ['api', 'contexts'],
       description: 'Get all contexts.',
       validate: {
-        headers: UserValidator.userValidator
+        headers: UserValidator.userValidator,
+        query: ContextValidator.getQuery
       }
     }
   });

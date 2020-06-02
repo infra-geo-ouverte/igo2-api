@@ -40,12 +40,7 @@ export class ContextController {
       await this.toolContext.bulkCreate(context.id, newContext.tools);
     }
     if (newContext.layers) {
-      await this.layerContext.bulkCreate(
-        context.id,
-        newContext.layers,
-        true,
-        true
-      );
+      await this.layerContext.bulkCreate(context.id, newContext.layers, true, true);
     }
 
     return h.response(context).code(201);
@@ -59,9 +54,7 @@ export class ContextController {
       properties = JSON.parse(request.payload);
     }
 
-    const context = await this.context
-      .getById(id, owner, true, true)
-      .catch(handleError);
+    const context = await this.context.getById(id, owner, true, true).catch(handleError);
 
     Object.assign(context, properties);
     const newContext = {
@@ -77,7 +70,7 @@ export class ContextController {
         return {
           layerOptions: layerOptions,
           sourceOptions: l.sourceOptions
-        }
+        };
       })
     };
     (request as any).payload = newContext;
@@ -88,9 +81,7 @@ export class ContextController {
     const id = request.params['contextId'];
     const newContext: any = request.payload;
 
-    const context = await this.context
-      .update(id, newContext as IContext)
-      .catch(handleError);
+    const context = await this.context.update(id, newContext as IContext).catch(handleError);
 
     if (newContext.tools) {
       await this.toolContext.deleteByContextId(context.id).catch(handleError);
@@ -98,12 +89,7 @@ export class ContextController {
     }
     if (newContext.layers) {
       await this.layerContext.deleteByContextId(context.id).catch(handleError);
-      await this.layerContext.bulkCreate(
-        context.id,
-        newContext.layers,
-        true,
-        true
-      );
+      await this.layerContext.bulkCreate(context.id, newContext.layers, true, true);
     }
     return context;
   }
@@ -118,10 +104,7 @@ export class ContextController {
     const owner = request.headers['x-consumer-username'];
     const id = request.params['contextId'];
     const context = await this.context.getById(id, owner).catch(handleError);
-    const permission = await this.contextPermission.getPermission(
-      context,
-      owner
-    );
+    const permission = await this.contextPermission.getPermission(context, owner);
 
     if (!permission) {
       throw Boom.unauthorized();
@@ -134,8 +117,12 @@ export class ContextController {
     const owner = request.headers['x-consumer-username'];
     const isAnonyme = request.headers['x-anonymous-consumer'];
     const id = request.headers['x-consumer-id'];
+    const permissions = request.query['permission'];
 
-    const profils: string[] = await UserApi.getProfils(id).catch(() => []);
+    const profils = ((await UserApi.getProfils(id).catch(() => [])) as string[]).filter(
+      p => !permissions || permissions.includes(p)
+    );
+
     if (owner) {
       profils.push(owner);
     }
@@ -176,29 +163,33 @@ export class ContextController {
       promises.push([]);
     }
 
-    promises.push(
-      this.database.context.findAll({
-        include: [
-          {
-            model: this.database.contextPermission,
-            required: false,
-            where: {
-              profil: profils
+    if (!permissions || permissions.include('public')) {
+      promises.push(
+        this.database.context.findAll({
+          include: [
+            {
+              model: this.database.contextPermission,
+              required: false,
+              where: {
+                profil: profils
+              }
+            }
+          ],
+          where: {
+            scope: 'public',
+            owner: {
+              $ne: owner
             }
           }
-        ],
-        where: {
-          scope: 'public',
-          owner: {
-            $ne: owner
-          }
-        }
-      })
-    );
+        })
+      );
+    } else {
+      promises.push([]);
+    }
 
     const repPromises = await Promise.all(promises);
     const oursPromises = repPromises[0];
-    const sharedPromises = repPromises[1];
+    const sharedPromises = repPromises[1] || [];
     const publicPromises = repPromises[2] || [];
 
     const oursContexts = oursPromises.map(c => {
@@ -252,20 +243,15 @@ export class ContextController {
     const owner = request.headers['x-consumer-username'];
     const id = request.params['contextId'];
 
-    const contextDetails = await this.context
-      .getById(id, owner, true, true)
-      .catch(handleError);
+    const contextDetails = await this.context.getById(id, owner, true, true).catch(handleError);
 
-    const permission = await this.contextPermission
-      .getPermission(contextDetails, owner)
-      .catch(handleError);
+    const permission = await this.contextPermission.getPermission(contextDetails, owner).catch(handleError);
 
     if (!permission) {
       const msg = 'Must have read permission for this context';
       throw Boom.forbidden(msg);
     }
     contextDetails.permission = TypePermission[permission];
-
 
     this.contextAccess.update(contextDetails.id);
     return contextDetails;
@@ -284,23 +270,18 @@ export class ContextController {
     return await this.getDetailsById(request, h).catch(async () => {
       request.params['contextId'] = 'default';
       const defaultContext = await this.getDetailsById(request, h);
-      this.userIgo.update(customId, {defaultContextId: defaultContext.id});
+      this.userIgo.update(customId, { defaultContextId: defaultContext.id });
       return defaultContext;
     });
   }
 
-  public async setDefaultContext(
-    request: Hapi.Request,
-    _h: Hapi.ResponseToolkit
-  ) {
+  public async setDefaultContext(request: Hapi.Request, _h: Hapi.ResponseToolkit) {
     const userId = request.headers['x-consumer-custom-id'];
     const userIgoToCreate: IUserIgo = request.payload as IUserIgo;
     const userIGO = await this.userIgo.get(userId).catch(() => {});
 
     if (userIGO) {
-      return await this.userIgo
-        .update(userId, userIgoToCreate)
-        .catch(handleError);
+      return await this.userIgo.update(userId, userIgoToCreate).catch(handleError);
     } else {
       userIgoToCreate.userId = userId;
       return await this.userIgo.create(userIgoToCreate).catch(handleError);
