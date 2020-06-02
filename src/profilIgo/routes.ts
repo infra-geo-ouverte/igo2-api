@@ -1,0 +1,120 @@
+import * as Hapi from 'hapi';
+import * as Joi from 'joi';
+
+import { ProfilIgoController } from './profilIgo.controller';
+import { ProfilIgoValidator } from './profilIgo.validator';
+import { UserValidator } from '../user/user.validator';
+
+export default function(server: Hapi.Server) {
+  const profilIgoController = new ProfilIgoController();
+  server.bind(profilIgoController);
+
+  server.route({
+    method: 'GET',
+    path: '/profils',
+    handler: profilIgoController.get,
+    options: {
+      tags: ['api', 'ProfilIgo'],
+      description: 'Get all profils Igo.',
+      validate: {
+        headers: UserValidator.authenticateValidator
+      }
+    }
+  });
+
+  server.route({
+    method: 'GET',
+    path: '/profils/{name}',
+    handler: profilIgoController.getById,
+    options: {
+      tags: ['api', 'ProfilIgo'],
+      description: 'Get Profil Igo.',
+      validate: {
+        params: {
+          name: Joi.string().required()
+        },
+        headers: UserValidator.authenticateValidator
+      }
+    }
+  });
+
+  server.route({
+    method: 'DELETE',
+    path: '/profils/{name}',
+    handler: profilIgoController.delete,
+    options: {
+      tags: ['api', 'ProfilIgo'],
+      description: 'Delete Profil Igo by name.',
+      validate: {
+        params: {
+          name: Joi.string().required()
+        },
+        headers: UserValidator.adminValidator
+      },
+      plugins: {
+        'hapi-swagger': {
+          responses: {
+            '204': {
+              description: 'Deleted Profil Igo.'
+            },
+            '404': {
+              description: 'Profil Igo does not exists.'
+            }
+          }
+        }
+      }
+    }
+  });
+
+  server.route({
+    method: 'PATCH',
+    path: '/profils/{name}',
+    handler: profilIgoController.update,
+    options: {
+      tags: ['api', 'ProfilIgo'],
+      description: 'Update Profil Igo by name.',
+      validate: {
+        params: {
+          name: Joi.string().required()
+        },
+        payload: ProfilIgoValidator.updateModel,
+        headers: UserValidator.adminValidator
+      },
+      plugins: {
+        'hapi-swagger': {
+          responses: {
+            '200': {
+              description: 'Deleted Profil Igo.'
+            },
+            '404': {
+              description: 'Profil Igo does not exists.'
+            }
+          }
+        }
+      }
+    }
+  });
+
+  server.route({
+    method: 'POST',
+    path: '/profils',
+    handler: profilIgoController.create,
+    options: {
+      tags: ['api', 'ProfilIgo'],
+      description: 'Create a profil Igo.',
+      validate: {
+        payload: ProfilIgoValidator.createModel,
+        headers: UserValidator.adminValidator
+      },
+      plugins: {
+        'hapi-swagger': {
+          responses: {
+            '201': {
+              description: 'Created profil Igo.'
+            }
+          }
+        }
+      }
+    }
+  });
+}

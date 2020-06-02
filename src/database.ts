@@ -7,6 +7,7 @@ import { CatalogModel } from './catalog/catalog.model';
 import { ContextModel } from './context/context.model';
 import { ContextAccessModel } from './contextAccess/contextAccess.model';
 import { UserIgoModel } from './userIgo/userIgo.model';
+import { ProfilIgoModel } from './profilIgo/profilIgo.model';
 import { LayerModel } from './layer/layer.model';
 import { ToolModel } from './tool/tool.model';
 import { ToolContextModel } from './toolContext/toolContext.model';
@@ -19,6 +20,7 @@ export interface IDatabase {
   contextAccess: ContextAccessModel;
   user: UserModel;
   userIgo: UserIgoModel;
+  profilIgo: ProfilIgoModel;
   poi: POIModel;
   catalog: CatalogModel;
   layer: LayerModel;
@@ -58,18 +60,15 @@ if (dbString.connectionString) {
 
 const db = {};
 db['context'] = sequelize['import']('./context/context.model');
-db['contextAccess'] = sequelize['import'](
-  './contextAccess/contextAccess.model'
-);
+db['contextAccess'] = sequelize['import']('./contextAccess/contextAccess.model');
 db['user'] = sequelize['import']('./user/user.model');
 db['userIgo'] = sequelize['import']('./userIgo/userIgo.model');
+db['profilIgo'] = sequelize['import']('./profilIgo/profilIgo.model');
 db['poi'] = sequelize['import']('./poi/poi.model');
 db['catalog'] = sequelize['import']('./catalog/catalog.model');
 db['layer'] = sequelize['import']('./layer/layer.model');
 db['tool'] = sequelize['import']('./tool/tool.model');
-db['contextPermission'] = sequelize['import'](
-  './contextPermission/contextPermission.model'
-);
+db['contextPermission'] = sequelize['import']('./contextPermission/contextPermission.model');
 db['layerContext'] = sequelize['import']('./layerContext/layerContext.model');
 db['toolContext'] = sequelize['import']('./toolContext/toolContext.model');
 
