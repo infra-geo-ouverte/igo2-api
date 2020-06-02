@@ -17,8 +17,8 @@ const updateLayerModel = createLayerModel.keys({
 export class ContextValidator {
   static updateModel = Joi.object().keys({
     scope: Joi.string().valid('public', 'protected', 'private'),
-    uri: Joi.string().length(64),
-    title: Joi.string().length(128),
+    uri: Joi.string().max(64),
+    title: Joi.string().max(128),
     icon: Joi.string().allow(''),
     map: Joi.object().keys({
       view: Joi.object().keys({
