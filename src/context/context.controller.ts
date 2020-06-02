@@ -133,7 +133,8 @@ export class ContextController {
         this.database.context.findAll({
           where: {
             owner: owner
-          }
+          },
+          order: [['createAt', 'DESC']]
         })
       );
     } else {
@@ -156,14 +157,15 @@ export class ContextController {
             owner: {
               $ne: owner
             }
-          }
+          },
+          order: [['createAt', 'DESC']]
         })
       );
     } else {
       promises.push([]);
     }
 
-    if (!permissions || permissions.include('public')) {
+    if (!permissions || permissions.includes('public')) {
       promises.push(
         this.database.context.findAll({
           include: [
@@ -180,7 +182,8 @@ export class ContextController {
             owner: {
               $ne: owner
             }
-          }
+          },
+          order: [['createAt', 'DESC']]
         })
       );
     } else {
