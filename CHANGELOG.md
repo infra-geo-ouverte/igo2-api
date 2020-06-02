@@ -1,3 +1,17 @@
+# [1.1.0](http://gitlab.forge.gouv.qc.ca/igo2/igo2-api/compare/1.0.1...1.1.0) (2020-06-02)
+
+
+### Bug Fixes
+
+* **context:** limit length title and uri ([46c2edd](http://gitlab.forge.gouv.qc.ca/igo2/igo2-api/commit/46c2edd8ef7a7e4a1847522ce522af98d000ada3))
+
+
+### Features
+
+* **options:** add options route ([b4e41b7](http://gitlab.forge.gouv.qc.ca/igo2/igo2-api/commit/b4e41b7192da8ab25d502db43407b7b8413c1905))
+
+
+
 ## [1.0.1](http://gitlab.forge.gouv.qc.ca/igo2/igo2-api/compare/1.0.0...1.0.1) (2020-02-03)
 
 
