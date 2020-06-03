@@ -34,13 +34,22 @@ const loadRoutes = (configs: IServerConfiguration, server: Hapi.Server) => {
   console.log('Routes loaded');
 };
 
-export async function init(
-  configs: IServerConfiguration
-): Promise<Hapi.Server> {
+export async function init(configs: IServerConfiguration): Promise<Hapi.Server> {
   const port = process.env.port || configs.port;
   const server = new Hapi.Server({
     port: port,
-    host: 'localhost'
+    host: 'localhost',
+    router: {
+      stripTrailingSlash: true,
+      isCaseSensitive: false
+    },
+    routes: {
+      validate: {
+        options: {
+          stripUnknown: true
+        }
+      }
+    }
   });
 
   await loadPlugins(configs, server);
