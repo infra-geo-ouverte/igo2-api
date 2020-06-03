@@ -39,7 +39,7 @@ export class ProfilIgoController {
 
     const profils: string[] = await UserApi.getProfils(id).catch(() => []);
 
-    return (await this.profilIgo.get().catch(handleError)).filter(p => profils.includes(p));
+    return (await this.profilIgo.get().catch(handleError)).filter(p => profils.includes(p.name));
   }
 
   public async getById(request: Hapi.Request, _h: Hapi.ResponseToolkit) {
