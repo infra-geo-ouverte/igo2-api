@@ -74,7 +74,7 @@ export class ProfilIgoController {
             .search(qRE) !== -1)
     );
 
-    const usersIgo = await UserApi.getAllUsers(q)
+    const usersIgo = await UserApi.getAllUsers(request.query['limit'], q)
       .then((users: UserInstance[]) => {
         return users.map(u => {
           return {

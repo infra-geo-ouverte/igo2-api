@@ -138,8 +138,8 @@ export class UserApi {
     return profils;
   }
 
-  static async getAllUsers(filter?: string): Promise<UserInstance[]> {
-    const where = filter
+  static async getAllUsers(limit: number = 10, filter?: string): Promise<UserInstance[]> {
+    const opts: any = filter
       ? {
           where: {
             [Sequelize.Op.or]: [
@@ -156,7 +156,9 @@ export class UserApi {
         }
       : {};
 
-    return await UserApi.database.user.findAll(where).then((users: UserInstance[]) => {
+    opts.limit = limit;
+
+    return await UserApi.database.user.findAll(opts).then((users: UserInstance[]) => {
       return users.map(u => ObjectUtils.removeNull(u.get()));
     });
   }
