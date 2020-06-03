@@ -19,6 +19,9 @@ export default function(server: Hapi.Server) {
         headers: UserValidator.authenticateValidator,
         query: {
           q: Joi.string().regex(/^[\wÀ-ÿ\ \-\_']+$/, 'Alphanum latin')
+        },
+        options: {
+          stripUnknown: true
         }
       }
     }

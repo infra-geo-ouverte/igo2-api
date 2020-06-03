@@ -42,13 +42,6 @@ export async function init(configs: IServerConfiguration): Promise<Hapi.Server> 
     router: {
       stripTrailingSlash: true,
       isCaseSensitive: false
-    },
-    routes: {
-      validate: {
-        options: {
-          stripUnknown: true
-        }
-      }
     }
   });
 
