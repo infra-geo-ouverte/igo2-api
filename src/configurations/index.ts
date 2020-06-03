@@ -21,11 +21,6 @@ interface ILocalhostConfiguration {
   basePaths: string[];
 }
 
-interface IApmConfiguration {
-  name: string;
-  url: string;
-}
-
 export interface IServerConfiguration {
   port: number;
   plugins: Array<string>;
@@ -37,7 +32,6 @@ export interface IServerConfiguration {
   googleKey?: string;
   adminProfil?: string;
   localhost?: ILocalhostConfiguration;
-  apm?: IApmConfiguration;
 }
 
 export interface IDatabaseConfiguration {
@@ -59,10 +53,7 @@ export interface IPostgresConfiguration extends IDatabaseConfiguration {
 export interface IDBStringConfiguration extends IDatabaseConfiguration {
   connectionString: string;
 }
-export type IDataConfiguration =
-  | ISqliteConfiguration
-  | IPostgresConfiguration
-  | IDBStringConfiguration;
+export type IDataConfiguration = ISqliteConfiguration | IPostgresConfiguration | IDBStringConfiguration;
 
 export interface IConsumerHeaders {
   'x-consumer-id': string;

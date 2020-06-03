@@ -1,22 +1,20 @@
-import { IPlugin } from '../interfaces';
+import { IPlugin, IPluginOptions } from '../interfaces';
 import * as Hapi from 'hapi';
+
+import { GoodConsole } from './logger';
 
 export default (): IPlugin => {
   return {
     name: 'Good Logger',
     version: '1.0.0',
-    register: async (server: Hapi.Server) => {
+    register: async (server: Hapi.Server, options: IPluginOptions = {}) => {
       const opts = {
-        ops: {
-          interval: 60000
+        ops: false,
+        includes: {
+          request: ['headers']
         },
         reporters: {
-          myConsoleReporter: [
-            {
-              module: 'good-console'
-            },
-            'stdout'
-          ]
+          myConsoleReporter: [new GoodConsole(options.logger), 'stdout']
         }
       };
 
