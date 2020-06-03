@@ -1,7 +1,8 @@
 import * as Hapi from 'hapi';
+import * as Boom from 'boom';
 
 import { handleError } from '../utils';
-
+import { UserApi } from '../user';
 import { ProfilIgo } from './profilIgo';
 import { IProfilIgo } from './profilIgo.model';
 
@@ -33,12 +34,23 @@ export class ProfilIgoController {
     return h.response().code(204);
   }
 
-  public async get(_request: Hapi.Request, _h: Hapi.ResponseToolkit) {
-    return await this.profilIgo.get().catch(handleError);
+  public async get(request: Hapi.Request, _h: Hapi.ResponseToolkit) {
+    const id = request.headers['x-consumer-id'];
+
+    const profils: string[] = await UserApi.getProfils(id).catch(() => []);
+
+    return (await this.profilIgo.get().catch(handleError)).filter(p => profils.includes(p));
   }
 
   public async getById(request: Hapi.Request, _h: Hapi.ResponseToolkit) {
+    const id = request.headers['x-consumer-id'];
     const profilName = (request.params as any).name;
+
+    const profils: string[] = await UserApi.getProfils(id).catch(() => []);
+    if (!profils.includes(profilName)) {
+      throw Boom.notFound();
+    }
+
     return await this.profilIgo.getById(profilName).catch(handleError);
   }
 }
