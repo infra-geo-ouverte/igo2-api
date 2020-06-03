@@ -1,12 +1,19 @@
 import axios from 'axios';
+import * as Sequelize from 'sequelize';
+
 import * as URL from 'url';
 import * as Boom from 'boom';
 
 import * as Configs from '../configurations';
+import { ObjectUtils } from '../utils';
+import { IDatabase, database } from '../database';
+import { UserInstance } from './user.model';
 
 const ServerConfigs = Configs.getServerConfig();
 
 export class UserApi {
+  static database: IDatabase = database;
+
   static async getRoutes() {
     const res = await axios.get(`${ServerConfigs.userApi}/routes`).catch(e => {
       throw Boom.badImplementation(e);
@@ -41,21 +48,17 @@ export class UserApi {
   }
 
   static async getServiceById(id) {
-    const res = await axios
-      .get(`${ServerConfigs.userApi}/services/${id}`)
-      .catch(e => {
-        throw Boom.badImplementation(e);
-      });
+    const res = await axios.get(`${ServerConfigs.userApi}/services/${id}`).catch(e => {
+      throw Boom.badImplementation(e);
+    });
 
     return res.data;
   }
 
   static async getPlugins(id) {
-    const res = await axios
-      .get(`${ServerConfigs.userApi}/services/${id}/plugins`)
-      .catch(e => {
-        throw Boom.badImplementation(e);
-      });
+    const res = await axios.get(`${ServerConfigs.userApi}/services/${id}/plugins`).catch(e => {
+      throw Boom.badImplementation(e);
+    });
 
     return res.data;
   }
@@ -69,9 +72,7 @@ export class UserApi {
     if (!plugins.data) {
       return true;
     }
-    const acl = plugins.data.find(
-      plugin => plugin.name === 'acl' && plugin.enabled
-    );
+    const acl = plugins.data.find(plugin => plugin.name === 'acl' && plugin.enabled);
     let allowed = acl ? false : true;
     if (acl && acl.config.whitelist) {
       for (const profil of profils) {
@@ -95,10 +96,7 @@ export class UserApi {
 
     const localhost = ServerConfigs.localhost;
     const localhosts = localhost ? localhost.hosts : [];
-    if (
-      (!urlObj.host || localhosts.indexOf(url) !== -1) &&
-      UserApi.isInBasePath(urlObj.pathname)
-    ) {
+    if ((!urlObj.host || localhosts.indexOf(url) !== -1) && UserApi.isInBasePath(urlObj.pathname)) {
       const uri = urlObj.pathname;
       const route = await UserApi.getRouteByUri(uri);
       return await UserApi.verifyServicePermission(route, profils);
@@ -125,14 +123,12 @@ export class UserApi {
       return [];
     }
 
-    const res = await axios
-      .get(`${ServerConfigs.userApi}/consumers/${id}/acls`)
-      .catch(e => {
-        if (e.response && e.response.status === 404) {
-          throw Boom.badRequest(`User '${id}' can not be found.`);
-        }
-        throw Boom.badImplementation(e);
-      });
+    const res = await axios.get(`${ServerConfigs.userApi}/consumers/${id}/acls`).catch(e => {
+      if (e.response && e.response.status === 404) {
+        throw Boom.badRequest(`User '${id}' can not be found.`);
+      }
+      throw Boom.badImplementation(e);
+    });
 
     const profils = [];
     for (const p of res.data.data) {
@@ -140,5 +136,28 @@ export class UserApi {
     }
 
     return profils;
+  }
+
+  static async getAllUsers(filter?: string): Promise<UserInstance[]> {
+    const where = filter
+      ? {
+          where: {
+            [Sequelize.Op.or]: [
+              {
+                sourceId: {
+                  [Sequelize.Op.iLike]: `%${filter}%`
+                }
+              },
+              Sequelize.where(Sequelize.fn('concat', Sequelize.col('firstName'), ' ', Sequelize.col('lastName')), {
+                [Sequelize.Op.iLike]: `%${filter}%`
+              })
+            ]
+          }
+        }
+      : {};
+
+    return await UserApi.database.user.findAll(where).then((users: UserInstance[]) => {
+      return users.map(u => ObjectUtils.removeNull(u.get()));
+    });
   }
 }

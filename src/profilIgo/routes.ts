@@ -11,6 +11,21 @@ export default function(server: Hapi.Server) {
 
   server.route({
     method: 'GET',
+    path: '/profils-users',
+    handler: profilIgoController.getProfilsAndUsers,
+    options: {
+      tags: ['api', 'ProfilIgo'],
+      validate: {
+        headers: UserValidator.authenticateValidator,
+        query: {
+          q: Joi.string().regex(/^[\wÀ-ÿ\ \-\_']+$/, 'Alphanum latin')
+        }
+      }
+    }
+  });
+
+  server.route({
+    method: 'GET',
     path: '/profils',
     handler: profilIgoController.get,
     options: {

@@ -5,6 +5,8 @@ export interface IUser {
   source: string;
   sourceId: string;
   email?: string;
+  firstName?: string;
+  lastName?: string;
 }
 
 export interface UserInstance extends Sequelize.Instance<IUser> {
@@ -12,6 +14,8 @@ export interface UserInstance extends Sequelize.Instance<IUser> {
   source: string;
   sourceId: string;
   email?: string;
+  firstName?: string;
+  lastName?: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -36,6 +40,12 @@ export default function define(sequelize: Sequelize.Sequelize, DataTypes) {
         type: DataTypes.STRING(64),
         allowNull: false
       },
+      firstName: {
+        type: DataTypes.STRING(64)
+      },
+      lastName: {
+        type: DataTypes.STRING(64)
+      },
       email: {
         type: DataTypes.STRING(128),
         allowNull: true,
@@ -44,7 +54,8 @@ export default function define(sequelize: Sequelize.Sequelize, DataTypes) {
     },
     {
       tableName: 'user',
-      timestamps: true
+      timestamps: true,
+      updatedAt: 'loginAt'
     }
   );
 

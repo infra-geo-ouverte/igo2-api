@@ -2,7 +2,7 @@ import * as Hapi from 'hapi';
 import * as Boom from 'boom';
 
 import { handleError } from '../utils';
-import { UserApi } from '../user';
+import { UserApi, UserInstance } from '../user';
 import { ProfilIgo } from './profilIgo';
 import { IProfilIgo } from './profilIgo.model';
 
@@ -52,5 +52,39 @@ export class ProfilIgoController {
     }
 
     return await this.profilIgo.getById(profilName).catch(handleError);
+  }
+
+  public async getProfilsAndUsers(request: Hapi.Request, _h: Hapi.ResponseToolkit) {
+    const id = request.headers['x-consumer-id'];
+    const q = request.query['q'] ? request.query['q'].normalize('NFD').replace(/[\u0300-\u036f]/g, '') : undefined;
+    const qRE = q ? new RegExp(q, 'gi') : undefined;
+
+    const profils: string[] = await UserApi.getProfils(id).catch(() => []);
+    const profilsIgo = (await this.profilIgo.get().catch(handleError)).filter(
+      p =>
+        profils.includes(p.name) &&
+        (!q ||
+          p.name
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '')
+            .search(qRE) !== -1 ||
+          p.title
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '')
+            .search(qRE) !== -1)
+    );
+
+    const usersIgo = await UserApi.getAllUsers(q)
+      .then((users: UserInstance[]) => {
+        return users.map(u => {
+          return {
+            name: u.sourceId,
+            title: u.firstName && u.lastName ? u.firstName + ' ' + u.lastName : u.sourceId
+          };
+        });
+      })
+      .catch(() => []);
+
+    return profilsIgo.concat(usersIgo);
   }
 }
