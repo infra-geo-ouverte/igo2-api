@@ -1,6 +1,6 @@
 import * as Hapi from 'hapi';
 
-import { removeUndefined, handleError } from '../utils';
+import { ObjectUtils, handleError } from '../utils';
 
 import { UserIgo } from './userIgo';
 import { IUserIgo } from './userIgo.model';
@@ -28,10 +28,12 @@ export class UserIgoController {
 
     if (userIGO) {
       return await this.userIgo
-        .update(userId, removeUndefined(Object.assign(userIGO.preference, userIgoToUpdate)))
+        .update(userId, ObjectUtils.removeUndefined(Object.assign(userIGO.preference, userIgoToUpdate)))
         .catch(handleError);
     } else {
-      return await this.userIgo.create(removeUndefined(Object.assign(userIgoToUpdate, { userId }))).catch(handleError);
+      return await this.userIgo
+        .create(ObjectUtils.removeUndefined(Object.assign(userIgoToUpdate, { userId })))
+        .catch(handleError);
     }
   }
 
