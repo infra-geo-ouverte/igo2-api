@@ -28,7 +28,7 @@ export class UserIgoController {
 
     if (userIGO) {
       return await this.userIgo
-        .update(userId, ObjectUtils.removeUndefined(Object.assign(userIGO.preference, userIgoToUpdate)))
+        .update(userId, ObjectUtils.removeUndefined(Object.assign({}, userIGO.preference, userIgoToUpdate)))
         .catch(handleError);
     } else {
       return await this.userIgo
