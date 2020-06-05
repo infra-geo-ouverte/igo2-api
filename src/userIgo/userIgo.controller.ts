@@ -1,6 +1,6 @@
 import * as Hapi from 'hapi';
 
-import { handleError } from '../utils';
+import { removeUndefined, handleError } from '../utils';
 
 import { UserIgo } from './userIgo';
 import { IUserIgo } from './userIgo.model';
@@ -21,12 +21,18 @@ export class UserIgoController {
   }
 
   public async update(request: Hapi.Request, _h: Hapi.ResponseToolkit) {
-    const userId = request.headers['x-consumer-custom-id'];
     const userIgoToUpdate: IUserIgo = request.payload as IUserIgo;
 
-    return await this.userIgo
-      .update(userId, userIgoToUpdate)
-      .catch(handleError);
+    const userId = request.headers['x-consumer-custom-id'];
+    const userIGO = await this.userIgo.get(userId).catch(() => {});
+
+    if (userIGO) {
+      return await this.userIgo
+        .update(userId, removeUndefined(Object.assign(userIGO.preference, userIgoToUpdate)))
+        .catch(handleError);
+    } else {
+      return await this.userIgo.create(removeUndefined(Object.assign(userIgoToUpdate, { userId }))).catch(handleError);
+    }
   }
 
   public async delete(request: Hapi.Request, h: Hapi.ResponseToolkit) {

@@ -61,7 +61,7 @@ export default function(server: Hapi.Server) {
         'hapi-swagger': {
           responses: {
             '200': {
-              description: 'Deleted User Igo.'
+              description: 'Updated User Igo.'
             },
             '404': {
               description: 'User Igo does not exists.'
@@ -94,5 +94,4 @@ export default function(server: Hapi.Server) {
       }
     }
   });
-
 }

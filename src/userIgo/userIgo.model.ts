@@ -3,7 +3,10 @@ import * as Sequelize from 'sequelize';
 export interface IUserIgo {
   id?: string;
   userId?: string;
-  defaultContextId: string;
+  defaultContextId?: string;
+  preference?: {
+    [key: string]: any;
+  };
 }
 
 export interface UserIgoInstance extends Sequelize.Instance<IUserIgo> {
@@ -13,10 +16,12 @@ export interface UserIgoInstance extends Sequelize.Instance<IUserIgo> {
 
   userId: string;
   defaultContextId: string;
+  preference: {
+    [key: string]: any;
+  };
 }
 
-export interface UserIgoModel
-  extends Sequelize.Model<UserIgoInstance, IUserIgo> {}
+export interface UserIgoModel extends Sequelize.Model<UserIgoInstance, IUserIgo> {}
 
 export default function define(sequelize: Sequelize.Sequelize, DataTypes) {
   const userIgo = sequelize.define<UserIgoModel, IUserIgo>(
@@ -31,6 +36,9 @@ export default function define(sequelize: Sequelize.Sequelize, DataTypes) {
       defaultContextId: {
         type: DataTypes.INTEGER,
         allowNull: false
+      },
+      preference: {
+        type: DataTypes.JSON
       }
     },
     {
