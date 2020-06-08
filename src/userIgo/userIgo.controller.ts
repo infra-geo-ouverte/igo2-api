@@ -27,9 +27,10 @@ export class UserIgoController {
     const userIGO = await this.userIgo.get(userId).catch(() => {});
 
     if (userIGO) {
-      return await this.userIgo
-        .update(userId, ObjectUtils.removeUndefined(Object.assign({}, userIGO.preference, userIgoToUpdate)))
-        .catch(handleError);
+      userIgoToUpdate.preference = ObjectUtils.removeUndefined(
+        Object.assign({}, userIGO.preference, userIgoToUpdate.preference)
+      );
+      return await this.userIgo.update(userId, userIgoToUpdate).catch(handleError);
     } else {
       return await this.userIgo
         .create(ObjectUtils.removeUndefined(Object.assign(userIgoToUpdate, { userId })))
