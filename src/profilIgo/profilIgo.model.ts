@@ -1,13 +1,21 @@
 import * as Sequelize from 'sequelize';
 
+export interface IProfilIgoChilds {
+  name: string;
+  title: string;
+  childs?: IProfilIgo[];
+}
+
 export interface IProfilIgo {
   name: string;
   title: string;
+  group?: string;
 }
 
 export interface ProfilIgoInstance extends Sequelize.Instance<IProfilIgo> {
   name: string;
   title: string;
+  group?: string;
 }
 
 export interface ProfilIgoModel extends Sequelize.Model<ProfilIgoInstance, IProfilIgo> {}
@@ -23,8 +31,11 @@ export default function define(sequelize: Sequelize.Sequelize, DataTypes) {
       },
       title: {
         type: DataTypes.STRING(128),
-        allowNull: false,
-        primaryKey: true
+        allowNull: false
+      },
+      group: {
+        type: DataTypes.STRING(128),
+        allowNull: true
       }
     },
     {

@@ -138,6 +138,18 @@ export class UserApi {
     return profils;
   }
 
+  static async getUser(id: string): Promise<UserInstance> {
+    return await UserApi.database.user
+      .findOne({
+        where: {
+          id: id
+        }
+      })
+      .then((user: UserInstance) => {
+        return user;
+      });
+  }
+
   static async getAllUsers(limit: number = 10, filter?: string): Promise<UserInstance[]> {
     const opts: any = filter
       ? {

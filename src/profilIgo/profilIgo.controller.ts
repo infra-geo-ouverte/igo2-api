@@ -4,7 +4,7 @@ import * as Boom from 'boom';
 import { handleError } from '../utils';
 import { UserApi, UserInstance } from '../user';
 import { ProfilIgo } from './profilIgo';
-import { IProfilIgo } from './profilIgo.model';
+import { IProfilIgo, IProfilIgoChilds } from './profilIgo.model';
 
 export class ProfilIgoController {
   private profilIgo: ProfilIgo;
@@ -38,8 +38,34 @@ export class ProfilIgoController {
     const id = request.headers['x-consumer-id'];
 
     const profils: string[] = await UserApi.getProfils(id).catch(() => []);
+    const user: UserInstance = await UserApi.getUser(id);
 
-    return (await this.profilIgo.get().catch(handleError)).filter(p => profils.includes(p.name));
+    const profilIgo = (await this.profilIgo.get().catch(handleError)).filter(p => profils.includes(p.name));
+
+    const regrProfils: IProfilIgoChilds[] = [
+      {
+        name: user.sourceId,
+        title: `${user.firstName} ${user.lastName}`
+      }
+    ]
+      .concat(profilIgo.filter(p => !p.group))
+      .concat([
+        {
+          name: 'public',
+          title: 'Public'
+        }
+      ]);
+
+    profilIgo
+      .filter(p => p.group)
+      .forEach(children => {
+        const parent = regrProfils.find(p => p.name === children.group);
+        if (parent) {
+          parent.childs = (parent.childs ? parent.childs.concat([children]) : [children]) as IProfilIgo[];
+        }
+      });
+
+    return regrProfils;
   }
 
   public async getById(request: Hapi.Request, _h: Hapi.ResponseToolkit) {
