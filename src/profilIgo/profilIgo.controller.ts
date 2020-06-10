@@ -36,9 +36,10 @@ export class ProfilIgoController {
 
   public async get(request: Hapi.Request, _h: Hapi.ResponseToolkit) {
     const id = request.headers['x-consumer-id'];
+    const username = request.headers['x-consumer-username'];
 
     const profils: string[] = await UserApi.getProfils(id).catch(() => []);
-    const user: UserInstance = await UserApi.getUser(id);
+    const user: UserInstance = await UserApi.getUser(username);
 
     const profilIgo = (await this.profilIgo.get().catch(handleError)).filter(p => profils.includes(p.name));
 

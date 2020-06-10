@@ -138,11 +138,11 @@ export class UserApi {
     return profils;
   }
 
-  static async getUser(id: string): Promise<UserInstance> {
+  static async getUser(username: string): Promise<UserInstance> {
     return await UserApi.database.user
       .findOne({
         where: {
-          id: id
+          sourceId: username
         }
       })
       .then((user: UserInstance) => {
