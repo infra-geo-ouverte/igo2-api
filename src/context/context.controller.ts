@@ -119,13 +119,13 @@ export class ContextController {
     const id = request.headers['x-consumer-id'];
     const permissions = request.query['permission'];
 
-    const profils = ((await UserApi.getProfils(id).catch(() => [])) as string[]).filter(
-      p => !permissions || permissions.includes(p)
-    );
+    let profils = (await UserApi.getProfils(id).catch(() => [])) as string[];
 
     if (owner) {
       profils.push(owner);
     }
+
+    profils = profils.filter(p => !permissions || permissions.includes(p));
 
     const promises = [];
     if (owner && !isAnonyme) {
