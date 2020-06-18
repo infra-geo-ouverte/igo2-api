@@ -221,26 +221,26 @@ export class ContextController {
 
     const oursContexts = oursPromises
       .filter(c => {
-        return showHidden || !c.dataValues.contextHidden.length;
+        return showHidden || !c.dataValues.contextHiddens.length;
       })
       .map(c => {
         const plainC = c.get();
         plainC.permission = TypePermission[TypePermission.write];
-        plainC.hidden = !!c.contextHidden.length;
+        plainC.hidden = !!c.contextHiddens.length;
 
-        delete plainC['contextHidden'];
+        delete plainC['contextHiddens'];
         return ObjectUtils.removeNull(plainC);
       });
 
     const sharedContexts = sharedPromises
       .filter(c => {
-        return showHidden || !c.dataValues.contextHidden.length;
+        return showHidden || !c.dataValues.contextHiddens.length;
       })
       .map(c => {
         const plainC = c.get();
 
         plainC.permission = TypePermission[TypePermission.read];
-        plainC.hidden = !!c.contextHidden.length;
+        plainC.hidden = !!c.contextHiddens.length;
 
         for (const cp of plainC['contextPermissions']) {
           const typePerm: any = cp.typePermission;
@@ -251,13 +251,13 @@ export class ContextController {
         }
 
         delete plainC['contextPermissions'];
-        delete plainC['contextHidden'];
+        delete plainC['contextHiddens'];
         return ObjectUtils.removeNull(plainC);
       });
 
     const publicContexts = publicPromises
       .filter(c => {
-        return showHidden || !c.dataValues.contextHidden.length;
+        return showHidden || !c.dataValues.contextHiddens.length;
       })
       .map(c => {
         const plainC: any = c.get();
@@ -266,7 +266,7 @@ export class ContextController {
         }
 
         plainC.permission = TypePermission[TypePermission.read];
-        plainC.hidden = !!c.contextHidden.length;
+        plainC.hidden = !!c.contextHiddens.length;
 
         for (const cp of plainC['contextPermissions']) {
           const typePerm: any = cp.typePermission;
@@ -277,7 +277,7 @@ export class ContextController {
         }
 
         delete plainC['contextPermissions'];
-        delete plainC['contextHidden'];
+        delete plainC['contextHiddens'];
         return ObjectUtils.removeNull(plainC);
       })
       .filter(c => c);
