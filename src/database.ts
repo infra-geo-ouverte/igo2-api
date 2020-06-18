@@ -6,6 +6,7 @@ import { POIModel } from './poi/poi.model';
 import { CatalogModel } from './catalog/catalog.model';
 import { ContextModel } from './context/context.model';
 import { ContextAccessModel } from './contextAccess/contextAccess.model';
+import { ContextHiddenModel } from './contextHidden/contextHidden.model';
 import { UserIgoModel } from './userIgo/userIgo.model';
 import { ProfilIgoModel } from './profilIgo/profilIgo.model';
 import { LayerModel } from './layer/layer.model';
@@ -18,6 +19,7 @@ export interface IDatabase {
   sequelize: Sequelize.Sequelize;
   context: ContextModel;
   contextAccess: ContextAccessModel;
+  contextHidden: ContextHiddenModel;
   user: UserModel;
   userIgo: UserIgoModel;
   profilIgo: ProfilIgoModel;
@@ -61,6 +63,7 @@ if (dbString.connectionString) {
 const db = {};
 db['context'] = sequelize['import']('./context/context.model');
 db['contextAccess'] = sequelize['import']('./contextAccess/contextAccess.model');
+db['contextHidden'] = sequelize['import']('./contextHidden/contextHidden.model');
 db['user'] = sequelize['import']('./user/user.model');
 db['userIgo'] = sequelize['import']('./userIgo/userIgo.model');
 db['profilIgo'] = sequelize['import']('./profilIgo/profilIgo.model');
