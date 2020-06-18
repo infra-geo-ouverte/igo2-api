@@ -47,11 +47,11 @@ export class ContextHidden {
           user
         }
       })
-      .then((contextHiddens: ContextHiddenInstance[]) => {
-        const plainContextHiddens = contextHiddens.map(contextHidden => {
+      .then((contextsHidden: ContextHiddenInstance[]) => {
+        const plainContextHidden = contextsHidden.map(contextHidden => {
           return ObjectUtils.removeNull(contextHidden.get());
         });
-        return plainContextHiddens;
+        return plainContextHidden;
       });
   }
 

@@ -47,8 +47,7 @@ export interface ContextDetailed extends ContextInstance {
   toolbar?: string[];
 }
 
-export interface ContextModel
-  extends Sequelize.Model<ContextInstance, IContext> {}
+export interface ContextModel extends Sequelize.Model<ContextInstance, IContext> {}
 
 export default function define(sequelize: Sequelize.Sequelize, DataTypes) {
   const context = sequelize.define<ContextModel, IContext>(

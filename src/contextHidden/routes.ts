@@ -23,7 +23,7 @@ export default function(server: Hapi.Server) {
         'hapi-swagger': {
           responses: {
             '200': {
-              description: 'Hiddens contexts founded.'
+              description: 'Hidden contexts founded.'
             }
           }
         }

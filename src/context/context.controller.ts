@@ -118,6 +118,7 @@ export class ContextController {
     const isAnonyme = request.headers['x-anonymous-consumer'];
     const id = request.headers['x-consumer-id'];
     const permissions = request.query['permission'];
+    const showHidden = request.query['hidden'];
 
     let profils = (await UserApi.getProfils(id).catch(() => [])) as string[];
 
@@ -131,6 +132,15 @@ export class ContextController {
     if (owner && !isAnonyme) {
       promises.push(
         this.database.context.findAll({
+          include: [
+            {
+              model: this.database.contextHidden,
+              required: false,
+              where: {
+                user: owner
+              }
+            }
+          ],
           where: {
             owner: owner
           },
@@ -149,6 +159,13 @@ export class ContextController {
               model: this.database.contextPermission,
               where: {
                 profil: profils
+              }
+            },
+            {
+              model: this.database.contextHidden,
+              required: false,
+              where: {
+                user: owner
               }
             }
           ],
@@ -175,6 +192,13 @@ export class ContextController {
               where: {
                 profil: profils
               }
+            },
+            {
+              model: this.database.contextHidden,
+              required: false,
+              where: {
+                user: owner
+              }
             }
           ],
           where: {
@@ -195,33 +219,29 @@ export class ContextController {
     const sharedPromises = repPromises[1] || [];
     const publicPromises = repPromises[2] || [];
 
-    const oursContexts = oursPromises.map(c => {
-      const plainC = c.get();
-      plainC.permission = TypePermission[TypePermission.write];
-      return ObjectUtils.removeNull(plainC);
-    });
-    const sharedContexts = sharedPromises.map(c => {
-      const plainC = c.get();
-
-      plainC.permission = TypePermission[TypePermission.read];
-      for (const cp of plainC['contextPermissions']) {
-        const typePerm: any = cp.typePermission;
-        if (typePerm === TypePermission[TypePermission.write]) {
-          plainC.permission = TypePermission[TypePermission.write];
-          break;
-        }
-      }
-
-      delete plainC['contextPermissions'];
-      return ObjectUtils.removeNull(plainC);
-    });
-    const publicContexts = publicPromises
+    const oursContexts = oursPromises
+      .filter(c => {
+        return showHidden || !c.dataValues.contextHidden.length;
+      })
       .map(c => {
-        const plainC: any = c.get();
-        if (!plainC.contextPermissions.length && plainC.owner !== 'admin') {
-          return;
-        }
+        const plainC = c.get();
+        plainC.permission = TypePermission[TypePermission.write];
+        plainC.hidden = !!c.contextHidden.length;
+
+        delete plainC['contextHidden'];
+        return ObjectUtils.removeNull(plainC);
+      });
+
+    const sharedContexts = sharedPromises
+      .filter(c => {
+        return showHidden || !c.dataValues.contextHidden.length;
+      })
+      .map(c => {
+        const plainC = c.get();
+
         plainC.permission = TypePermission[TypePermission.read];
+        plainC.hidden = !!c.contextHidden.length;
+
         for (const cp of plainC['contextPermissions']) {
           const typePerm: any = cp.typePermission;
           if (typePerm === TypePermission[TypePermission.write]) {
@@ -231,6 +251,33 @@ export class ContextController {
         }
 
         delete plainC['contextPermissions'];
+        delete plainC['contextHidden'];
+        return ObjectUtils.removeNull(plainC);
+      });
+
+    const publicContexts = publicPromises
+      .filter(c => {
+        return showHidden || !c.dataValues.contextHidden.length;
+      })
+      .map(c => {
+        const plainC: any = c.get();
+        if (!plainC.contextPermissions.length && plainC.owner !== 'admin') {
+          return;
+        }
+
+        plainC.permission = TypePermission[TypePermission.read];
+        plainC.hidden = !!c.contextHidden.length;
+
+        for (const cp of plainC['contextPermissions']) {
+          const typePerm: any = cp.typePermission;
+          if (typePerm === TypePermission[TypePermission.write]) {
+            plainC.permission = TypePermission[TypePermission.write];
+            break;
+          }
+        }
+
+        delete plainC['contextPermissions'];
+        delete plainC['contextHidden'];
         return ObjectUtils.removeNull(plainC);
       })
       .filter(c => c);

@@ -3,7 +3,6 @@ import * as Joi from 'joi';
 import { ToolValidator } from '../tool/tool.validator';
 import { LayerValidator } from '../layer/layer.validator';
 
-
 const JoiPlus = Joi.extend((joi: Joi.Root) => ({
   base: joi.array(),
   name: 'stringArray',
@@ -15,7 +14,6 @@ const JoiPlus = Joi.extend((joi: Joi.Root) => ({
     return value.split(delimiter).map(r => r.trim());
   }
 }));
-
 
 const createToolModel = ToolValidator.createModel;
 const updateToolModel = ToolValidator.updateModel.keys({ id: Joi.string() });
@@ -58,6 +56,7 @@ export class ContextValidator {
   );
 
   static getQuery = {
-    permission: JoiPlus.stringArray().items(Joi.string().regex(/^[\wÀ-ÿ\-\_']+$/, 'Alphanum latin'))
-  }
+    permission: JoiPlus.stringArray().items(Joi.string().regex(/^[\wÀ-ÿ\-\_']+$/, 'Alphanum latin')),
+    hidden: Joi.boolean()
+  };
 }
