@@ -11,11 +11,11 @@ export default function(server: Hapi.Server) {
 
   server.route({
     method: 'GET',
-    path: '/contexts/hiddens',
+    path: '/contexts/hidden',
     handler: contextHiddenController.get,
     options: {
-      tags: ['api', 'contexts', 'hiddens'],
-      description: 'Get all hiddens contexts.',
+      tags: ['api', 'contexts', 'hidden'],
+      description: 'Get all hidden contexts.',
       validate: {
         headers: UserValidator.authenticateValidator
       },
@@ -33,10 +33,10 @@ export default function(server: Hapi.Server) {
 
   server.route({
     method: 'GET',
-    path: '/contexts/{contextId}/hiddens',
+    path: '/contexts/{contextId}/hidden',
     handler: contextHiddenController.getById,
     options: {
-      tags: ['api', 'contexts', 'hiddens'],
+      tags: ['api', 'contexts', 'hidden'],
       description: 'Get hidden context',
       validate: {
         params: {
@@ -60,11 +60,11 @@ export default function(server: Hapi.Server) {
   });
 
   server.route({
-    method: 'DELETE',
+    method: 'POST',
     path: '/contexts/{contextId}/show',
     handler: contextHiddenController.show,
     options: {
-      tags: ['api', 'contexts', 'hiddens'],
+      tags: ['api', 'contexts', 'hidden'],
       description: 'Show a context',
       validate: {
         params: {
@@ -92,7 +92,7 @@ export default function(server: Hapi.Server) {
     path: '/contexts/{contextId}/hide',
     handler: contextHiddenController.hide,
     options: {
-      tags: ['api', 'contexts', 'hiddens'],
+      tags: ['api', 'contexts', 'hidden'],
       description: 'Hide a contex.',
       validate: {
         params: {

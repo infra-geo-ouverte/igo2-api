@@ -8,7 +8,7 @@ import { ContextHiddenInstance } from './index';
 export class ContextHidden {
   private database: IDatabase = database;
 
-  public async show(user: string, contextId: string): Promise<ContextHiddenInstance> {
+  public async hide(user: string, contextId: string): Promise<ContextHiddenInstance> {
     return await this.database.contextHidden
       .create({
         user,
@@ -24,7 +24,7 @@ export class ContextHidden {
       });
   }
 
-  public async hide(user: string, contextId: string): Promise<void> {
+  public async show(user: string, contextId: string): Promise<void> {
     return await this.database.contextHidden
       .destroy({
         where: {
