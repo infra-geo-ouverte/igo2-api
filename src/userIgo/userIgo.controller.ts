@@ -2,14 +2,18 @@ import * as Hapi from 'hapi';
 
 import { ObjectUtils, handleError } from '../utils';
 
+import { UserApi } from '../user';
+import { ProfilIgo } from '../profilIgo';
 import { UserIgo } from './userIgo';
 import { IUserIgo } from './userIgo.model';
 
 export class UserIgoController {
   private userIgo: UserIgo;
+  private profilIgo: ProfilIgo;
 
   constructor() {
     this.userIgo = new UserIgo();
+    this.profilIgo = new ProfilIgo();
   }
 
   public async create(request: Hapi.Request, h: Hapi.ResponseToolkit) {
@@ -46,9 +50,27 @@ export class UserIgoController {
     return h.response().code(204);
   }
 
-  public async get(request: Hapi.Request, _h: Hapi.ResponseToolkit) {
-    const userId = request.headers['x-consumer-custom-id'];
+  public async get(request: Hapi.Request, h: Hapi.ResponseToolkit) {
+    const userId = request.headers['x-consumer-id'];
+    const userCustomId = request.headers['x-consumer-custom-id'];
 
-    return await this.userIgo.get(userId).catch(handleError);
+    let user = await this.userIgo
+      .get(userCustomId)
+      .catch(e => {
+        if (e && e.output && e.output.statusCode === 404) {
+          return;
+        }
+        throw e;
+      })
+      .catch(handleError);
+
+    if (!user) {
+      const profils = (await UserApi.getProfils(userId).catch(() => [])) as string[];
+      const preferences = (await this.profilIgo.getProfilsPreference(profils).catch(() => [])) as string[];
+      const preference = preferences.reduce((acc, value) => Object.assign(acc, value), {});
+      user = { preference };
+    }
+
+    return h.response(user);
   }
 }

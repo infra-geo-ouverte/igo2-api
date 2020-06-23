@@ -64,4 +64,20 @@ export class ProfilIgo {
         return ObjectUtils.removeNull(profilIgo.get());
       });
   }
+
+  public async getProfilsPreference(profils: string[]): Promise<{ [key: string]: any }> {
+    return await this.database.profilIgo
+      .findAll({
+        where: {
+          preference: {
+            [this.database.sequelize.Op.ne]: null
+          },
+          name: profils
+        },
+        order: ['group', 'NULLS FIRST']
+      })
+      .then((profilsIgo: ProfilIgoInstance[]) => {
+        return profilsIgo.map(profil => profil.get().preference);
+      });
+  }
 }

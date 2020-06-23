@@ -41,6 +41,13 @@ export class ProfilIgoController {
     const profils: string[] = await UserApi.getProfils(id).catch(() => []);
     const user: UserInstance = await UserApi.getUser(username);
 
+    if (profils.includes('urgence') && !profils.includes('securite-civile')) {
+      const indexAcrigeo = profils.indexOf('acrigeo');
+      if (indexAcrigeo > -1) {
+        profils.splice(indexAcrigeo, 1);
+      }
+    }
+
     const profilIgo = (await this.profilIgo.get().catch(handleError)).filter(p => profils.includes(p.name));
 
     const regrProfils: IProfilIgoChilds[] = [
@@ -87,6 +94,24 @@ export class ProfilIgoController {
     const qRE = q ? new RegExp(q, 'gi') : undefined;
 
     const profils: string[] = await UserApi.getProfils(id).catch(() => []);
+
+    if (!profils.includes('GRAPP-URGENCE-ANALYSTE')) {
+      const indexUrgence = profils.indexOf('urgence');
+      if (indexUrgence > -1) {
+        profils.splice(indexUrgence, 1);
+      }
+    }
+    if (!profils.includes('GRAPP-VIG-PILOTE_COG')) {
+      const indexSC = profils.indexOf('securite-civile');
+      if (indexSC > -1) {
+        profils.splice(indexSC, 1);
+      }
+      const indexAcrigeo = profils.indexOf('acrigeo');
+      if (indexAcrigeo > -1) {
+        profils.splice(indexAcrigeo, 1);
+      }
+    }
+
     const profilsIgo = (await this.profilIgo.get().catch(handleError)).filter(
       p =>
         profils.includes(p.name) &&

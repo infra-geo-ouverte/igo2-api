@@ -10,12 +10,18 @@ export interface IProfilIgo {
   name: string;
   title: string;
   group?: string;
+  preference?: {
+    [key: string]: any;
+  };
 }
 
 export interface ProfilIgoInstance extends Sequelize.Instance<IProfilIgo> {
   name: string;
   title: string;
   group?: string;
+  preference?: {
+    [key: string]: any;
+  };
 }
 
 export interface ProfilIgoModel extends Sequelize.Model<ProfilIgoInstance, IProfilIgo> {}
@@ -35,6 +41,10 @@ export default function define(sequelize: Sequelize.Sequelize, DataTypes) {
       },
       group: {
         type: DataTypes.STRING(128),
+        allowNull: true
+      },
+      preference: {
+        type: DataTypes.JSON,
         allowNull: true
       }
     },
