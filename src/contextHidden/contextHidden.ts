@@ -64,6 +64,9 @@ export class ContextHidden {
         }
       })
       .then((contextHidden: ContextHiddenInstance) => {
+        if (!contextHidden) {
+          throw Boom.notFound();
+        }
         return ObjectUtils.removeNull(contextHidden.get());
       });
   }

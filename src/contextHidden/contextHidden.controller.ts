@@ -15,9 +15,12 @@ export class ContextHiddenController {
     const contextId = request.params['contextId'];
     const owner = request.headers['x-consumer-username'];
 
-    const res = await this.contextHidden.show(owner, contextId).catch(handleError);
+    await this.contextHidden.show(owner, contextId).catch(handleError);
 
-    return h.response(res).code(201);
+    return h.response({
+      contextId,
+      hidden: false
+    });
   }
 
   public async hide(request: Hapi.Request, h: Hapi.ResponseToolkit) {
@@ -26,7 +29,10 @@ export class ContextHiddenController {
 
     await this.contextHidden.hide(owner, contextId).catch(handleError);
 
-    return h.response().code(204);
+    return h.response({
+      contextId,
+      hidden: true
+    });
   }
 
   public async get(request: Hapi.Request, _h: Hapi.ResponseToolkit) {
