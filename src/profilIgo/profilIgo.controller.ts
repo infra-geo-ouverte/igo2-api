@@ -101,6 +101,14 @@ export class ProfilIgoController {
         profils.splice(indexUrgence, 1);
       }
     }
+
+    if (!profils.includes('GRAPP-CEGRIM-PIL')) {
+      const indexUrgence = profils.indexOf('cegrim');
+      if (indexUrgence > -1) {
+        profils.splice(indexUrgence, 1);
+      }
+    }
+
     if (!profils.includes('GRAPP-VIG-PILOTE_COG')) {
       const indexSC = profils.indexOf('securite-civile');
       if (indexSC > -1) {

@@ -46,7 +46,7 @@ export class ProfilIgo {
 
   public async get(): Promise<ProfilIgoInstance[]> {
     return await this.database.profilIgo
-      .findAll({ attributes: ['name', 'title', 'group'] })
+      .findAll({ attributes: ['name', 'title', 'group'], order: ['group'] })
       .then((profilsIgo: ProfilIgoInstance[]) => {
         return profilsIgo.map(profil => ObjectUtils.removeNull(profil.get()));
       });
