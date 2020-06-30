@@ -13,6 +13,7 @@ interface Map {
     center: [number, number];
     zoom: number;
     projection: string;
+    maxZoomOnExtent?: number;
   };
 }
 

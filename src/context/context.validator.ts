@@ -39,7 +39,8 @@ export class ContextValidator {
           .length(2)
           .items(Joi.number()),
         zoom: Joi.number(),
-        projection: Joi.string()
+        projection: Joi.string(),
+        maxZoomOnExtent: Joi.number()
       })
     }),
     layers: Joi.array().items(Joi.alternatives().try(createLayerModel, updateLayerModel)),
