@@ -71,7 +71,7 @@ export class ProfilIgo {
         where: {
           name: profils
         },
-        order: ['id', 'DESC']
+        order: [['id', 'DESC']]
       })
       .then((profilsIgo: ProfilIgoInstance[]) => {
         return profilsIgo.map(profil => profil.get());

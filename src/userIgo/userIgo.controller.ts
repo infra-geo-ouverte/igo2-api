@@ -58,7 +58,7 @@ export class UserIgoController {
       .get(userCustomId)
       .catch(e => {
         if (e && e.output && e.output.statusCode === 404) {
-          return {}
+          return {};
         }
         throw e;
       })
