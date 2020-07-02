@@ -54,11 +54,11 @@ export class UserIgoController {
     const userId = request.headers['x-consumer-id'];
     const userCustomId = request.headers['x-consumer-custom-id'];
 
-    let user = await this.userIgo
+    const user = await this.userIgo
       .get(userCustomId)
       .catch(e => {
         if (e && e.output && e.output.statusCode === 404) {
-          return;
+          return {}
         }
         throw e;
       })
@@ -66,12 +66,10 @@ export class UserIgoController {
 
     const profils = (await UserApi.getProfils(userId).catch(() => [])) as string[];
     const profilsIgo = (await this.profilIgo.getByProfils(profils).catch(() => [])) as ProfilIgoInstance[];
-    if (!user) {
-      const preference = profilsIgo.reduce((acc, value) => Object.assign(acc, value ? value.preference : {}), {});
-      user = { preference };
-    }
+    const preference: any = profilsIgo.reduce((acc, value) => Object.assign(acc, value ? value.preference : {}), {});
     const canShare = profilsIgo.find(p => p.canShare === true);
-    user.canShare = !!canShare;
+    preference.canShare = !!canShare;
+    user.preference = Object.assign(preference, user.preference);
 
     return h.response(user);
   }
