@@ -109,7 +109,11 @@ export class ProfilIgoController {
     }
 
     const canShareToProfils = [
-      ...profilIgo.reduce((accumulator, currentValue) => accumulator.concat(currentValue), [])
+      ...profilIgo.reduce(
+        (accumulator, currentValue) =>
+          accumulator.concat(currentValue.canShareToProfils ? currentValue.canShareToProfils : []),
+        []
+      )
     ];
 
     profilIgo = profilIgo
