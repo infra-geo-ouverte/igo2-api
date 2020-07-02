@@ -3,7 +3,7 @@ import * as Hapi from 'hapi';
 import { ObjectUtils, handleError } from '../utils';
 
 import { UserApi } from '../user';
-import { ProfilIgo } from '../profilIgo';
+import { ProfilIgo, ProfilIgoInstance } from '../profilIgo';
 import { UserIgo } from './userIgo';
 import { IUserIgo } from './userIgo.model';
 
@@ -64,12 +64,14 @@ export class UserIgoController {
       })
       .catch(handleError);
 
+    const profils = (await UserApi.getProfils(userId).catch(() => [])) as string[];
+    const profilsIgo = (await this.profilIgo.getByProfils(profils).catch(() => [])) as ProfilIgoInstance[];
     if (!user) {
-      const profils = (await UserApi.getProfils(userId).catch(() => [])) as string[];
-      const preferences = (await this.profilIgo.getProfilsPreference(profils).catch(() => [])) as string[];
-      const preference = preferences.reduce((acc, value) => Object.assign(acc, value), {});
+      const preference = profilsIgo.reduce((acc, value) => Object.assign(acc, value ? value.preference : {}), {});
       user = { preference };
     }
+    const canShare = profilsIgo.find(p => p.canShare === true);
+    user.canShare = !!canShare;
 
     return h.response(user);
   }

@@ -7,21 +7,31 @@ export interface IProfilIgoChilds {
 }
 
 export interface IProfilIgo {
+  id?: number;
   name: string;
   title: string;
   group?: string;
   preference?: {
     [key: string]: any;
   };
+  canShare?: boolean;
+  canShareToProfils?: number[];
+  canFilter?: boolean;
+  hasAcrigeo?: boolean;
 }
 
 export interface ProfilIgoInstance extends Sequelize.Instance<IProfilIgo> {
+  id?: number;
   name: string;
   title: string;
   group?: string;
   preference?: {
     [key: string]: any;
   };
+  canShare?: boolean;
+  canShareToProfils?: number[];
+  canFilter?: boolean;
+  hasAcrigeo?: boolean;
 }
 
 export interface ProfilIgoModel extends Sequelize.Model<ProfilIgoInstance, IProfilIgo> {}
@@ -30,10 +40,14 @@ export default function define(sequelize: Sequelize.Sequelize, DataTypes) {
   const profilIgo = sequelize.define<ProfilIgoModel, IProfilIgo>(
     'profilIgo',
     {
+      id: {
+        type: DataTypes.INTEGER,
+        primaryKey: true,
+        allowNull: false
+      },
       name: {
         type: DataTypes.STRING(128),
-        allowNull: false,
-        primaryKey: true
+        allowNull: false
       },
       title: {
         type: DataTypes.STRING(128),
@@ -45,6 +59,22 @@ export default function define(sequelize: Sequelize.Sequelize, DataTypes) {
       },
       preference: {
         type: DataTypes.JSON,
+        allowNull: true
+      },
+      canShare: {
+        type: DataTypes.BOOLEAN,
+        allowNull: true
+      },
+      canShareToProfils: {
+        type: DataTypes.ARRAY(DataTypes.INTEGER),
+        allowNull: true
+      },
+      canFilter: {
+        type: DataTypes.BOOLEAN,
+        allowNull: true
+      },
+      hasAcrigeo: {
+        type: DataTypes.BOOLEAN,
         allowNull: true
       }
     },

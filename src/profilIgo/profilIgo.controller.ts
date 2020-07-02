@@ -41,22 +41,27 @@ export class ProfilIgoController {
     const profils: string[] = await UserApi.getProfils(id).catch(() => []);
     const user: UserInstance = await UserApi.getUser(username);
 
-    if (profils.includes('urgence') && !profils.includes('securite-civile')) {
-      const indexAcrigeo = profils.indexOf('acrigeo');
-      if (indexAcrigeo > -1) {
-        profils.splice(indexAcrigeo, 1);
-      }
-    }
+    let profilIgo: IProfilIgo[] = (await this.profilIgo.get().catch(handleError)).filter(p => profils.includes(p.name));
 
-    const profilIgo = (await this.profilIgo.get().catch(handleError)).filter(p => profils.includes(p.name));
+    const hasAcrigeo = profilIgo.find(p => p.hasAcrigeo === true);
+    if (!hasAcrigeo) {
+      profilIgo = profilIgo.filter(p => p.name !== 'acrigeo');
+    }
+    profilIgo = profilIgo.filter(p => p.canFilter !== false);
 
     const regrProfils: IProfilIgoChilds[] = [
       {
         name: user.sourceId,
-        title: `${user.firstName} ${user.lastName}`
+        title: `Partagé à ${user.firstName} ${user.lastName}`
       }
     ]
-      .concat(profilIgo.filter(p => !p.group))
+      .concat(
+        profilIgo
+          .filter(p => !p.group)
+          .map(p => {
+            return { name: p.name, title: p.title };
+          })
+      )
       .concat([
         {
           name: 'public',
@@ -68,8 +73,9 @@ export class ProfilIgoController {
       .filter(p => p.group)
       .forEach(children => {
         const parent = regrProfils.find(p => p.name === children.group);
+        const c = { name: children.name, title: children.title };
         if (parent) {
-          parent.childs = (parent.childs ? parent.childs.concat([children]) : [children]) as IProfilIgo[];
+          parent.childs = (parent.childs ? parent.childs.concat([c]) : [c]) as IProfilIgo[];
         }
       });
 
@@ -95,44 +101,34 @@ export class ProfilIgoController {
 
     const profils: string[] = await UserApi.getProfils(id).catch(() => []);
 
-    if (!profils.includes('GRAPP-URGENCE-ANALYSTE')) {
-      const indexUrgence = profils.indexOf('urgence');
-      if (indexUrgence > -1) {
-        profils.splice(indexUrgence, 1);
-      }
+    let profilIgo: IProfilIgo[] = (await this.profilIgo.get().catch(handleError)).filter(p => profils.includes(p.name));
+
+    const canShare = profilIgo.find(p => p.canShare === true);
+    if (!canShare) {
+      return [];
     }
 
-    if (!profils.includes('GRAPP-CEGRIM-PIL')) {
-      const indexUrgence = profils.indexOf('cegrim');
-      if (indexUrgence > -1) {
-        profils.splice(indexUrgence, 1);
-      }
-    }
+    const canShareToProfils = [
+      ...profilIgo.reduce((accumulator, currentValue) => accumulator.concat(currentValue), [])
+    ];
 
-    if (!profils.includes('GRAPP-VIG-PILOTE_COG')) {
-      const indexSC = profils.indexOf('securite-civile');
-      if (indexSC > -1) {
-        profils.splice(indexSC, 1);
-      }
-      const indexAcrigeo = profils.indexOf('acrigeo');
-      if (indexAcrigeo > -1) {
-        profils.splice(indexAcrigeo, 1);
-      }
-    }
-
-    const profilsIgo = (await this.profilIgo.get().catch(handleError)).filter(
-      p =>
-        profils.includes(p.name) &&
-        (!q ||
-          p.name
-            .normalize('NFD')
-            .replace(/[\u0300-\u036f]/g, '')
-            .search(qRE) !== -1 ||
-          p.title
-            .normalize('NFD')
-            .replace(/[\u0300-\u036f]/g, '')
-            .search(qRE) !== -1)
-    );
+    profilIgo = profilIgo
+      .filter(
+        p =>
+          canShareToProfils.includes(p.id) &&
+          (!q ||
+            p.name
+              .normalize('NFD')
+              .replace(/[\u0300-\u036f]/g, '')
+              .search(qRE) !== -1 ||
+            p.title
+              .normalize('NFD')
+              .replace(/[\u0300-\u036f]/g, '')
+              .search(qRE) !== -1)
+      )
+      .map(p => {
+        return { name: p.name, title: p.title };
+      });
 
     const usersIgo = await UserApi.getAllUsers(request.query['limit'], q)
       .then((users: UserInstance[]) => {
@@ -145,6 +141,6 @@ export class ProfilIgoController {
       })
       .catch(() => []);
 
-    return profilsIgo.concat(usersIgo);
+    return profilIgo.concat(usersIgo);
   }
 }

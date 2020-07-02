@@ -45,11 +45,9 @@ export class ProfilIgo {
   }
 
   public async get(): Promise<ProfilIgoInstance[]> {
-    return await this.database.profilIgo
-      .findAll({ attributes: ['name', 'title', 'group'], order: ['group'] })
-      .then((profilsIgo: ProfilIgoInstance[]) => {
-        return profilsIgo.map(profil => ObjectUtils.removeNull(profil.get()));
-      });
+    return await this.database.profilIgo.findAll({ order: ['id'] }).then((profilsIgo: ProfilIgoInstance[]) => {
+      return profilsIgo.map(profil => ObjectUtils.removeNull(profil.get()));
+    });
   }
 
   public async getById(profilName: string): Promise<ProfilIgoInstance> {
@@ -67,19 +65,16 @@ export class ProfilIgo {
       });
   }
 
-  public async getProfilsPreference(profils: string[]): Promise<{ [key: string]: any }> {
+  public async getByProfils(profils: string[]): Promise<{ [key: string]: any }> {
     return await this.database.profilIgo
       .findAll({
         where: {
-          preference: {
-            [this.database.sequelize.Op.ne]: null
-          },
           name: profils
         },
-        order: ['group', 'NULLS FIRST']
+        order: ['id', 'DESC']
       })
       .then((profilsIgo: ProfilIgoInstance[]) => {
-        return profilsIgo.map(profil => profil.get().preference);
+        return profilsIgo.map(profil => profil.get());
       });
   }
 }
