@@ -5,20 +5,14 @@ import { ObjectUtils } from '../utils';
 import { UserApi } from '../user';
 import { ContextInstance, Scope } from '../context';
 
-import {
-  IContextPermission,
-  ContextPermissionInstance,
-  TypePermission
-} from './index';
+import { IContextPermission, ContextPermissionInstance, TypePermission } from './index';
 
 export class ContextPermission {
   private database: IDatabase = database;
 
   constructor() {}
 
-  public async create(
-    contextPermission: IContextPermission
-  ): Promise<ContextPermissionInstance[]> {
+  public async create(contextPermission: IContextPermission): Promise<ContextPermissionInstance[]> {
     const bulkData: IContextPermission[] = [];
 
     const profils = contextPermission.profil.split(/[,;]/);
@@ -47,10 +41,7 @@ export class ContextPermission {
       });
   }
 
-  public async update(
-    id: string,
-    contextPermission: IContextPermission
-  ): Promise<{ id: string }> {
+  public async update(id: string, contextPermission: IContextPermission): Promise<{ id: string }> {
     return await this.database.contextPermission
       .update(contextPermission, {
         where: {
@@ -90,6 +81,21 @@ export class ContextPermission {
       });
   }
 
+  public async getById(id: string): Promise<ContextPermissionInstance> {
+    return await this.database.contextPermission
+      .findOne({
+        where: {
+          id: id
+        }
+      })
+      .then((permission: ContextPermissionInstance) => {
+        if (!permission) {
+          throw Boom.notFound();
+        }
+        return ObjectUtils.removeNull(permission.get());
+      });
+  }
+
   public async getByContextId(contextId): Promise<ContextPermissionInstance[]> {
     return await this.database.contextPermission
       .findAll({
@@ -98,19 +104,14 @@ export class ContextPermission {
         }
       })
       .then((contextPermissions: ContextPermissionInstance[]) => {
-        const plainContextPermissions = contextPermissions.map(
-          contextPermission => {
-            return ObjectUtils.removeNull(contextPermission.get());
-          }
-        );
+        const plainContextPermissions = contextPermissions.map(contextPermission => {
+          return ObjectUtils.removeNull(contextPermission.get());
+        });
         return plainContextPermissions;
       });
   }
 
-  public async getPermission(
-    context: ContextInstance,
-    user?: string
-  ): Promise<TypePermission> {
+  public async getPermission(context: ContextInstance, user?: string): Promise<TypePermission> {
     if (user && context.owner === user) {
       return TypePermission.write;
     }
@@ -130,10 +131,7 @@ export class ContextPermission {
     return await this.getPermissionFromProfils(context, user);
   }
 
-  public async getPermissionByContextId(
-    contextId: string,
-    user?: string
-  ): Promise<TypePermission> {
+  public async getPermissionByContextId(contextId: string, user?: string): Promise<TypePermission> {
     let where: any = { id: contextId };
 
     if (isNaN(<number>(<any>contextId))) {
@@ -149,10 +147,7 @@ export class ContextPermission {
     return await this.getPermission(context, user);
   }
 
-  private async getPermissionFromProfils(
-    context: ContextInstance,
-    user?: string
-  ): Promise<TypePermission> {
+  private async getPermissionFromProfils(context: ContextInstance, user?: string): Promise<TypePermission> {
     const profils: string[] = await UserApi.getProfils(user).catch(() => {
       return [];
     });

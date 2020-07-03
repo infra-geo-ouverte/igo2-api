@@ -20,7 +20,7 @@ export default function(server: Hapi.Server) {
         params: {
           contextId: Joi.string().required()
         },
-        headers: ContextPermissionValidator.writePermission
+        headers: ContextPermissionValidator.readPermission
       },
       plugins: {
         'hapi-swagger': {
@@ -49,7 +49,7 @@ export default function(server: Hapi.Server) {
           id: Joi.string().required(),
           contextId: Joi.string().required()
         },
-        headers: ContextPermissionValidator.writePermission
+        headers: ContextPermissionValidator.readPermission
       },
       plugins: {
         'hapi-swagger': {

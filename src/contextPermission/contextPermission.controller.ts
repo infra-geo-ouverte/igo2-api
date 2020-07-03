@@ -4,6 +4,7 @@ import * as Boom from 'boom';
 import { handleError } from '../utils';
 import { UserApi } from '../user';
 import { IProfilIgo, ProfilIgo } from '../profilIgo';
+import { TypePermission } from './contextPermission.model';
 
 import { IContextPermission, ContextPermission } from './index';
 
@@ -36,6 +37,18 @@ export class ContextPermissionController {
 
   public async delete(request: Hapi.Request, h: Hapi.ResponseToolkit) {
     const id = request.params['id'];
+    const contextId = request.params['contextId'];
+    const typePerm = await this.contextPermission.getPermissionByContextId(
+      contextId,
+      request.headers['x-consumer-username']
+    );
+
+    if (typePerm !== TypePermission.write) {
+      const permissionToDelete = await this.contextPermission.getById(id).catch(handleError);
+      if (permissionToDelete.profil !== request.headers['x-consumer-username']) {
+        throw Boom.forbidden('Must have write permission for this context');
+      }
+    }
 
     await this.contextPermission.delete(id).catch(handleError);
 
@@ -45,7 +58,37 @@ export class ContextPermissionController {
   public async getByContextId(request: Hapi.Request, _h: Hapi.ResponseToolkit) {
     const contextId = request.params['contextId'];
 
-    return await this.contextPermission.getByContextId(contextId).catch(handleError);
+    const typePerm = await this.contextPermission.getPermissionByContextId(
+      contextId,
+      request.headers['x-consumer-username']
+    );
+    const profils: string[] = await UserApi.getProfils(
+      request.headers['x-consumer-id'],
+      request.headers['x-consumer-groups']
+    ).catch(() => []);
+    profils.push(request.headers['x-consumer-username']);
+
+    const permissions = (await this.contextPermission.getByContextId(contextId).catch(handleError))
+      .filter(p => {
+        return typePerm === TypePermission.write || profils.includes(p.profil);
+      })
+      .map(async p => {
+        const user = await UserApi.getUser(p.profil).then(u => (u ? u.get() : undefined));
+        if (user) {
+          p.profilTitle = user.firstName + ' ' + user.lastName;
+          return p;
+        }
+
+        const profil = await this.profilIgo.getById(p.profil).catch(e => undefined);
+        if (profil) {
+          p.profilTitle = profil.title;
+          return p;
+        }
+
+        return p;
+      });
+
+    return Promise.all(permissions);
   }
 
   private async verifyPermissions(request: Hapi.Request) {

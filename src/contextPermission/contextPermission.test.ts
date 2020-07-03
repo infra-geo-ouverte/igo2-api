@@ -546,7 +546,7 @@ const runTests = async () => {
     try {
       response = await server.inject(options);
       const result: any = response.result;
-      t.equal(result.message, 'Must have write permission for this context');
+      t.equal(result.message, 'Must have read permission for this context');
       t.equal(response.statusCode, 403);
     } catch (e) {
       console.error(response.result);
@@ -566,8 +566,8 @@ const runTests = async () => {
     try {
       response = await server.inject(options);
       const result: any = response.result;
-      t.equal(result.message, 'Must have write permission for this context');
-      t.equal(response.statusCode, 403);
+      t.equal(result.length, 0);
+      t.equal(response.statusCode, 200);
     } catch (e) {
       console.error(response.result);
       t.fail(e);
@@ -586,8 +586,8 @@ const runTests = async () => {
     try {
       response = await server.inject(options);
       const result: any = response.result;
-      t.equal(result.message, 'Must have write permission for this context');
-      t.equal(response.statusCode, 403);
+      t.equal(result.length, 0);
+      t.equal(response.statusCode, 200);
     } catch (e) {
       console.error(response.result);
       t.fail(e);
@@ -606,7 +606,7 @@ const runTests = async () => {
     try {
       response = await server.inject(options);
       const result: any = response.result;
-      t.equal(result.message, 'Must have write permission for this context');
+      t.equal(result.message, 'Must have read permission for this context');
       t.equal(response.statusCode, 403);
     } catch (e) {
       console.error(response.result);
