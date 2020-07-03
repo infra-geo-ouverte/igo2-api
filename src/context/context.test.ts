@@ -12,7 +12,34 @@ const user2Headers: any = testConfigs.user2Headers;
 const runTests = async () => {
   const server = await Server.init(serverConfigs);
 
-  test('POST /contexts - context 1 ', async t => {
+  test('POST /profils - another', async t => {
+    let response;
+    const options = {
+      method: 'POST',
+      url: '/profils',
+      headers: adminHeaders,
+      payload: {
+        id: 1,
+        name: 'another',
+        title: 'another',
+        canShare: true
+      }
+    };
+    try {
+      response = await server.inject(options);
+      const result: any = response.result;
+      t.equal(result.name, 'another');
+      t.equal(result.title, 'another');
+      t.equal(result.canShare, true);
+    } catch (e) {
+      console.error(response.result);
+      t.fail(e);
+    } finally {
+      t.end();
+    }
+  });
+
+  test('POST /contexts - context 1', async t => {
     let response;
     const options = {
       method: 'POST',

@@ -64,7 +64,9 @@ export class UserIgoController {
       })
       .catch(handleError);
 
-    const profils = (await UserApi.getProfils(userId).catch(() => [])) as string[];
+    const profils = (await UserApi.getProfils(userId, request.headers['x-consumer-groups']).catch(
+      () => []
+    )) as string[];
     const profilsIgo = (await this.profilIgo.getByProfils(profils).catch(() => [])) as ProfilIgoInstance[];
     const preference: any = profilsIgo.reduce((acc, value) => Object.assign(acc, value ? value.preference : {}), {});
     const canShare = profilsIgo.find(p => p.canShare === true);

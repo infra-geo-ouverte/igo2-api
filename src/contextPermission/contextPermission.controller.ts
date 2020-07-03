@@ -50,7 +50,7 @@ export class ContextPermissionController {
 
   private async verifyPermissions(request: Hapi.Request) {
     const id = request.headers['x-consumer-id'];
-    const profils: string[] = await UserApi.getProfils(id).catch(() => []);
+    const profils: string[] = await UserApi.getProfils(id, request.headers['x-consumer-groups']).catch(() => []);
 
     const profilIgo: IProfilIgo[] = (await this.profilIgo.get().catch(handleError)).filter(p =>
       profils.includes(p.name)
@@ -71,7 +71,7 @@ export class ContextPermissionController {
 
     const profilForbidden = profilIgo.filter(p => !canShareToProfils.includes(p.id)).map(p => p.name);
     const newContextPermission = request.payload as IContextPermission;
-    const profilsToAdd = newContextPermission.profil.split(/[,;]/);
+    const profilsToAdd = newContextPermission.profil ? newContextPermission.profil.split(/[,;]/) : [];
     for (let p of profilsToAdd) {
       p = p.trim();
       if (profilForbidden.includes(p)) {

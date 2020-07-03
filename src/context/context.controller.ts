@@ -120,7 +120,7 @@ export class ContextController {
     const permissions = request.query['permission'];
     const showHidden = request.query['hidden'];
 
-    let profils = (await UserApi.getProfils(id).catch(() => [])) as string[];
+    let profils = (await UserApi.getProfils(id, request.headers['x-consumer-groups']).catch(() => [])) as string[];
 
     if (owner) {
       profils.push(owner);

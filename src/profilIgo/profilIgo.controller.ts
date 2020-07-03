@@ -38,7 +38,7 @@ export class ProfilIgoController {
     const id = request.headers['x-consumer-id'];
     const username = request.headers['x-consumer-username'];
 
-    const profils: string[] = await UserApi.getProfils(id).catch(() => []);
+    const profils: string[] = await UserApi.getProfils(id, request.headers['x-consumer-groups']).catch(() => []);
     const user: UserInstance = await UserApi.getUser(username);
 
     let profilIgo: IProfilIgo[] = (await this.profilIgo.get().catch(handleError)).filter(p => profils.includes(p.name));
@@ -86,7 +86,7 @@ export class ProfilIgoController {
     const id = request.headers['x-consumer-id'];
     const profilName = (request.params as any).name;
 
-    const profils: string[] = await UserApi.getProfils(id).catch(() => []);
+    const profils: string[] = await UserApi.getProfils(id, request.headers['x-consumer-groups']).catch(() => []);
     if (!profils.includes(profilName)) {
       throw Boom.notFound();
     }
@@ -99,7 +99,7 @@ export class ProfilIgoController {
     const q = request.query['q'] ? request.query['q'].normalize('NFD').replace(/[\u0300-\u036f]/g, '') : undefined;
     const qRE = q ? new RegExp(q, 'gi') : undefined;
 
-    const profils: string[] = await UserApi.getProfils(id).catch(() => []);
+    const profils: string[] = await UserApi.getProfils(id, request.headers['x-consumer-groups']).catch(() => []);
 
     let profilIgo: IProfilIgo[] = (await this.profilIgo.get().catch(handleError)).filter(p => profils.includes(p.name));
 

@@ -118,7 +118,11 @@ export class UserApi {
     return found;
   }
 
-  static async getProfils(id: string): Promise<string[]> {
+  static async getProfils(id: string, profilsHeaders?: string): Promise<string[]> {
+    if (profilsHeaders) {
+      return profilsHeaders.split(', ');
+    }
+
     if (!id) {
       return [];
     }
