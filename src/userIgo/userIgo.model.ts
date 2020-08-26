@@ -34,8 +34,7 @@ export default function define(sequelize: Sequelize.Sequelize, DataTypes) {
         autoIncrement: true
       },
       defaultContextId: {
-        type: DataTypes.INTEGER,
-        allowNull: false
+        type: DataTypes.INTEGER
       },
       preference: {
         type: DataTypes.JSON
