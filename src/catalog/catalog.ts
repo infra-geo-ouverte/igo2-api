@@ -1,4 +1,5 @@
 import * as Boom from 'boom';
+import * as Sequelize from 'sequelize';
 
 import { IDatabase, database } from '../database';
 import { ObjectUtils } from '../utils';
@@ -47,57 +48,50 @@ export class Catalog {
   }
 
   public async get(user: string): Promise<CatalogInstance[]> {
-    const catalogs = await this.database.catalog.findAll({
-      order: ['order']
-    });
-
-    const plainCatalogs = catalogs.map(catalog =>
-      ObjectUtils.removeNull(catalog.get())
-    );
-
-    if (!plainCatalogs.length) {
-      return plainCatalogs;
-    }
-
-    const catalogsAllowed = [];
     const profils: string[] = await UserApi.getProfils(user).catch(() => {
       return [];
     });
     profils.push(user);
 
-    for (const c of plainCatalogs) {
-      const isAllowed = await UserApi.verifyPermissionByUrl(c.url, profils);
-      if (isAllowed) {
-        catalogsAllowed.push(c);
-      }
-    }
+    const catalogs = await this.database.catalog.findAll({
+      where: {
+        profils: {
+          [Sequelize.Op.or]: {
+            [Sequelize.Op.eq]: null,
+            [Sequelize.Op.contained] : profils
+          }
+        }
+      },
+      order: ['order']
+    });
 
-    return catalogsAllowed;
+    return catalogs.map(catalog =>
+      ObjectUtils.removeNull(catalog.get())
+    );
   }
 
   public async getById(id: string, user: string): Promise<CatalogInstance> {
+    const profils: string[] = await UserApi.getProfils(user).catch(() => {
+      return [];
+    });
+    profils.push(user);
+
     const catalog = await this.database.catalog.findOne({
       where: {
-        id: id
+        id: id,
+        profils: {
+          [Sequelize.Op.or]: {
+            [Sequelize.Op.eq]: null,
+            [Sequelize.Op.contained] : profils
+          }
+        }
       }
     });
 
     if (!catalog) {
       throw Boom.notFound();
     }
-    const catalogPlain = ObjectUtils.removeNull(catalog.get());
-    const profils: string[] = await UserApi.getProfils(user).catch(() => {
-      return [];
-    });
-    profils.push(user);
-    const isAllowed = await UserApi.verifyPermissionByUrl(
-      catalogPlain.url,
-      profils
-    );
 
-    if (!isAllowed) {
-      throw Boom.forbidden();
-    }
-    return catalogPlain;
+    return ObjectUtils.removeNull(catalog.get());
   }
 }

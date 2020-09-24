@@ -5,6 +5,7 @@ export class CatalogValidator {
     title: Joi.string(),
     url: Joi.string(),
     order: Joi.number().optional(),
+    profils: Joi.array().items(Joi.string().max(128)),
     options: Joi.object()
       .optional()
       .keys({
