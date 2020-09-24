@@ -1,3 +1,17 @@
+# [1.3.0](http://gitlab.forge.gouv.qc.ca/igo2/igo2-api/compare/1.2.0...1.3.0) (2020-09-24)
+
+
+### Bug Fixes
+
+* **catalog:** overlap permissions ([4a47b69](http://gitlab.forge.gouv.qc.ca/igo2/igo2-api/commit/4a47b69ada9624254e7b6777202009ec2aee6086))
+
+
+### Features
+
+* **catalog:** add permissions to catalogs ([cfc11e1](http://gitlab.forge.gouv.qc.ca/igo2/igo2-api/commit/cfc11e104e66f8e4cfd561c141ae17e5c673813b))
+
+
+
 # [1.2.0](http://gitlab.forge.gouv.qc.ca/igo2/igo2-api/compare/1.1.1...1.2.0) (2020-08-26)
 
 
