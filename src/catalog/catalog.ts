@@ -58,7 +58,7 @@ export class Catalog {
         profils: {
           [Sequelize.Op.or]: {
             [Sequelize.Op.eq]: null,
-            [Sequelize.Op.contained] : profils
+            [Sequelize.Op.overlap] : profils
           }
         }
       },
@@ -82,7 +82,7 @@ export class Catalog {
         profils: {
           [Sequelize.Op.or]: {
             [Sequelize.Op.eq]: null,
-            [Sequelize.Op.contained] : profils
+            [Sequelize.Op.overlap] : profils
           }
         }
       }

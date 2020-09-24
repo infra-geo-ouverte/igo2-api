@@ -46,7 +46,7 @@ export default function define(sequelize: Sequelize.Sequelize, DataTypes) {
         allowNull: false
       },
       zoom: {
-        type: DataTypes.INTEGER(2),
+        type: DataTypes.INTEGER,
         allowNull: false
       }
     },
