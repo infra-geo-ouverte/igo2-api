@@ -41,6 +41,36 @@ export default function(server: Hapi.Server) {
 
   server.route({
     method: 'GET',
+    path: '/layers/admin/options',
+    handler: layerController.getAdminOptions,
+    options: {
+      tags: ['api', 'layers'],
+      description: 'Get layers by source.',
+      validate: {
+        query: {
+          type: Joi.string().required(),
+          url: Joi.string(),
+          layers: Joi.string()
+        },
+        headers: UserValidator.adminValidator
+      },
+      plugins: {
+        'hapi-swagger': {
+          responses: {
+            '200': {
+              description: 'Layer founded.'
+            },
+            '404': {
+              description: 'Layer does not exists.'
+            }
+          }
+        }
+      }
+    }
+  });
+
+  server.route({
+    method: 'GET',
     path: '/layers/{id}',
     handler: layerController.getById,
     options: {
