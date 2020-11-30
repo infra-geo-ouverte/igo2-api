@@ -32,6 +32,7 @@ export interface IServerConfiguration {
   googleKey?: string;
   adminProfil?: string;
   localhost?: ILocalhostConfiguration;
+  wssApi?: string;
 }
 
 export interface IDatabaseConfiguration {

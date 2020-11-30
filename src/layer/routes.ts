@@ -12,7 +12,7 @@ export default function(server: Hapi.Server) {
   server.route({
     method: 'GET',
     path: '/layers/options',
-    handler: layerController.getBySource,
+    handler: layerController.getOptions,
     options: {
       tags: ['api', 'layers'],
       description: 'Get layers by source.',

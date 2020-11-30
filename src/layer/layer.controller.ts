@@ -1,9 +1,16 @@
 import * as Hapi from 'hapi';
+import * as URL from 'url';
+import * as https from 'https';
+import axios from 'axios';
+import * as Boom from 'boom';
 
+import * as Configs from '../configurations';
 import { handleError } from '../utils';
 
 import { Layer } from './layer';
 import { ILayer } from './layer.model';
+
+const ServerConfigs = Configs.getServerConfig();
 
 export class LayerController {
   private layer: Layer;
@@ -50,8 +57,39 @@ export class LayerController {
     return await this.layer.getBaseLayers().catch(handleError);
   }
 
-  public async getBySource(request: Hapi.Request, _h: Hapi.ResponseToolkit) {
+  public async getOptions(request: Hapi.Request, _h: Hapi.ResponseToolkit) {
     const query: any = request.query;
+
+    const localhost = ServerConfigs.localhost;
+    const hosts = localhost ? localhost.hosts : [];
+    const urlObj = URL.parse(query.url || '');
+    const url = urlObj && urlObj.hostname ? urlObj.protocol + '//' + urlObj.hostname : '';
+
+    let permission: any = {};
+    if (ServerConfigs.wssApi && (!url || hosts.indexOf(url) !== -1)) {
+      const theme = query.url.substring(
+        query.url.lastIndexOf('/') + 1,
+        query.url.lastIndexOf('.fcgi')
+      );
+      https.globalAgent.options.rejectUnauthorized = false;
+      permission = await axios.get(`${ServerConfigs.wssApi}layers/${query.layers}/allowed?theme=${theme}`, {
+        headers: request.headers
+      })
+      .then(p => p.data)
+      .catch(e => {
+        throw Boom.badImplementation(e);
+      });
+
+      if (query.type === 'wms') {
+        if (!permission.wmsAllowed) {
+          return {};
+        }
+      } else if (query.type === 'wfs') {
+        if (!permission.wfsAllowed) {
+          return {};
+        }
+      }
+    }
 
     return await this.layer
       .getBySource({
@@ -62,6 +100,23 @@ export class LayerController {
             layers: query.layers
           }
         }
+      })
+      .then(options => {
+        if (query.type === 'wms' && permission.wfsAllowed) {
+          options.layerOptions = Object.assign({
+            workspace: {
+              enabled: true
+            }
+          }, options.layerOptions);
+
+          options.sourceOptions = Object.assign({
+            urlWfs: options.url,
+            paramsWFS: {
+              featureTypes: options.layers
+            }
+          }, options.sourceOptions);
+        }
+        return options;
       })
       .catch(e => {
         if (e.isBoom && e.output.statusCode === 404) {
