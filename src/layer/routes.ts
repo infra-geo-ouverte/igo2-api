@@ -20,7 +20,8 @@ export default function(server: Hapi.Server) {
         query: {
           type: Joi.string().required(),
           url: Joi.string(),
-          layers: Joi.string()
+          layers: Joi.string(),
+          key: Joi.string()
         },
         headers: UserValidator.userValidator
       },
