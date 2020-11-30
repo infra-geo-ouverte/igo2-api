@@ -113,7 +113,7 @@ export class LayerController {
       }
     }
 
-    return await this.layer
+    const options = await this.layer
       .getBySource({
         sourceOptions: {
           type: query.type,
@@ -123,23 +123,6 @@ export class LayerController {
           }
         }
       })
-      .then(options => {
-        if (query.type === 'wms' && permission.wfsAllowed) {
-          options.layerOptions = Object.assign({
-            workspace: {
-              enabled: true
-            }
-          }, options.layerOptions);
-
-          options.sourceOptions = Object.assign({
-            urlWfs: options.url,
-            paramsWFS: {
-              featureTypes: options.layers
-            }
-          }, options.sourceOptions);
-        }
-        return options;
-      })
       .catch(e => {
         if (e.isBoom && e.output.statusCode === 404) {
           return {};
@@ -147,5 +130,22 @@ export class LayerController {
         throw e;
       })
       .catch(handleError);
+
+    if (query.type === 'wms' && permission.wfsAllowed) {
+      options.layerOptions = Object.assign({
+        workspace: {
+          enabled: true
+        }
+      }, options.layerOptions);
+
+      options.sourceOptions = Object.assign({
+        urlWfs: options.url,
+        paramsWFS: {
+          featureTypes: options.layers
+        }
+      }, options.sourceOptions);
+    }
+
+    return options;
   }
 }
