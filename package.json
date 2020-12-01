@@ -29,7 +29,8 @@
     "serve.coverage": "node_modules/live-server/live-server.js ./coverage/lcov-report/ --port=4210 --no-browser",
     "changelog": "conventional-changelog -p angular -i CHANGELOG.md -s -r 0",
     "version": "npm run changelog && git add -A CHANGELOG.md",
-    "postversion": "git push --follow-tags"
+    "postversion": "git push --follow-tags",
+    "migrate": "node build/bin/migration.js"
   },
   "repository": {
     "type": "git",
