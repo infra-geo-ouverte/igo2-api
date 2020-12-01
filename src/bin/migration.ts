@@ -64,7 +64,7 @@ const migrate = async () => {
     const query = `INSERT INTO layer VALUES (DEFAULT, '${rAdd[1]}', '${rAdd[2]}', '${rAdd[3]}', NULL,
       '${rAdd[5]}'::json, '${rAdd[6]}'::json, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)`;
     exec(
-      `PGPASSWORD="${password}" psql -h ${toHost} -U ${user} -c "${query.replace(/"/g, '\\"')}"`,
+      `PGPASSWORD="${password}" psql -h ${toHost} -U ${user} -c "${query.replace(/"/g, '\\"').replace(/'/g, "\\'")}"`,
       (err, stdout, stderr) => {
         if (err) {
           console.error(err);
@@ -79,7 +79,7 @@ const migrate = async () => {
     const query = `update layer set "layerOptions"='{}'::json, "sourceOptions"='{}'::json,
       "updatedAt"=CURRENT_TIMESTAMP where id='${rDelete[0]}'`;
     exec(
-      `PGPASSWORD="${password}" psql -h ${toHost} -U ${user} -c "${query.replace(/"/g, '\\"')}"`,
+      `PGPASSWORD="${password}" psql -h ${toHost} -U ${user} -c "${query.replace(/"/g, '\\"').replace(/'/g, "\\'")}"`,
       (err, stdout, stderr) => {
         if (err) {
           console.error(err);
@@ -94,7 +94,7 @@ const migrate = async () => {
     const query = `update layer set "layerOptions"='${rModify[5]}'::json, "sourceOptions"='${rModify[6]}'::json,
       "updatedAt"=CURRENT_TIMESTAMP where type='${rModify[1]}' and url='${rModify[2]}' and layers='${rModify[3]}'`;
     exec(
-      `PGPASSWORD="${password}" psql -h ${toHost} -U ${user} -c "${query.replace(/"/g, '\\"')}"`,
+      `PGPASSWORD="${password}" psql -h ${toHost} -U ${user} -c "${query.replace(/"/g, '\\"').replace(/'/g, "\\'")}"`,
       (err, stdout, stderr) => {
         if (err) {
           console.error(err);
