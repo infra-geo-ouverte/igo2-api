@@ -58,7 +58,7 @@ export default function define(sequelize: Sequelize.Sequelize, DataTypes) {
         allowNull: false
       },
       url: {
-        type: DataTypes.STRING(128)
+        type: DataTypes.STRING
       },
       layers: {
         type: DataTypes.STRING(128)
