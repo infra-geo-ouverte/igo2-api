@@ -25,10 +25,11 @@ const getRows = async (host, restreint): Promise<any> => {
     query += restreint ? ' and ' : ' where ';
     query += `layers = '${layerToMigrate}'`;
   }
+
+  const params = `--no-align -t --record-separator='#'`;
   return await new Promise((resolve, reject) => {
     exec(
-      `PGPASSWORD="${password}" psql -h ${host} -U ${user} --no-align -t --record-separator='#'
-      -c "${query.replace(/"/g, '\\"')}"`,
+      `PGPASSWORD="${password}" psql -h ${host} -U ${user} ${params} -c "${query.replace(/"/g, '\\"')}"`,
       (err, stdout, stderr) => {
         if (err) {
           return reject(err);
