@@ -74,7 +74,8 @@ const migrate = async () => {
         if (err) {
           console.error(err);
         } else {
-          console.log(`Les options du layer '${rAdd[3]}' ont été ajoutés`);
+          const name = rAdd[3] || rAdd[2];
+          console.log(`Les options du layer '${name}' ont été ajoutés`);
         }
       }
     );
@@ -89,7 +90,8 @@ const migrate = async () => {
         if (err) {
           console.error(err);
         } else {
-          console.log(`Les options du layer '${rDelete[3]}' ont été retirés`);
+          const name = rDelete[3] || rDelete[2];
+          console.log(`Les options du layer '${name}' ont été retirés`);
         }
       }
     );
@@ -105,7 +107,8 @@ const migrate = async () => {
         if (err) {
           console.error(err);
         } else {
-          console.log(`Les options du layer '${rModify[3]}' ont été modifiés`);
+          const name = rModify[3] || rModify[2];
+          console.log(`Les options du layer '${name}' ont été modifiés`);
         }
       }
     );
