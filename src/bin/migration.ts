@@ -34,7 +34,7 @@ const getRows = async (host, restreint): Promise<any> => {
         if (err) {
           return reject(err);
         }
-        resolve(stdout.replace(/\s\s+/g, ' ').split('#').map(r => r.split('|')));
+        resolve(stdout.replace(/\n/g, '').replace(/\s\s+/g, ' ').split('#').map(r => r.split('|')));
       }
     );
   });
