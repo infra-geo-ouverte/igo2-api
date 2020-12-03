@@ -2,9 +2,9 @@ import * as Configs from '../configurations';
 import { exec } from 'child_process';
 
 const args = process.argv.slice(2);
-const fromHost = args[0];
-const toHost = args[1];
-const layerToMigrate = args[2];
+const fromHost = args[1];
+const toHost = args[2];
+const layerToMigrate = args[3];
 
 if (!fromHost || !toHost) {
   console.error('Mauvaise commande: ');
@@ -17,7 +17,7 @@ const user =  dbConfig.username;
 const password = dbConfig.password;
 
 const getRows = async (host, restreint): Promise<any> => {
-  let query = `select * from layer`;
+  let query = `select id, type, url, layers, \\"layerOptions\\", \\"sourceOptions\\" from layer`;
   if (restreint) {
     query += ` where (\\"sourceOptions\\"::text != '{}'::text or \\"layerOptions\\"::text != '{}'::text)`;
   }
@@ -46,23 +46,25 @@ const migrate = async () => {
     toAdd: fromRows
       .filter(f => toRows.find(t => f[1] === t[1] && f[2] === t[2] && f[3] === t[3]) === undefined),
     toDelete: toRows
-      .filter(f => (f[5] !== '' && f[5] !== '{}') || (f[6] !== '' && f[6] !== '{}') )
+      .filter(f => (f[4] !== '' && f[4] !== '{}') || (f[5] !== '' && f[5] !== '{}') )
       .filter(f => fromRows.find(t => f[1] === t[1] && f[2] === t[2] && f[3] === t[3]) === undefined),
     toModify: fromRows
       .filter(f => {
         const toRow = toRows.find(t => f[1] === t[1] && f[2] === t[2] && f[3] === t[3]);
         if (!toRow) { return false; }
+        f[4] = f[4] === '' ? '{}' : f[4];
         f[5] = f[5] === '' ? '{}' : f[5];
-        f[6] = f[6] === '' ? '{}' : f[6];
+        toRow[4] = toRow[4] === '' ? '{}' : toRow[4];
         toRow[5] = toRow[5] === '' ? '{}' : toRow[5];
-        toRow[6] = toRow[6] === '' ? '{}' : toRow[6];
-        return f[5] !== toRow[5] || f[6] !== toRow[6];
+        return f[4] !== toRow[4] || f[5] !== toRow[5];
       })
   };
 
   for (const rAdd of diff.toAdd) {
-    const query = `INSERT INTO layer VALUES (DEFAULT, '${rAdd[1]}', '${rAdd[2]}', '${rAdd[3]}', NULL,
-      '${rAdd[5].replace(/'/g, `''`)}'::json, '${rAdd[6].replace(/'/g, `''`)}'::json,
+    const query = `INSERT INTO layer(id, type, url, layers, global,
+      \\"layerOptions\\", \\"sourceOptions\\", \\"createdAt\\", \\"updatedAt\\")
+      VALUES (DEFAULT, '${rAdd[1]}', '${rAdd[2]}', '${rAdd[3]}', NULL,
+      '${rAdd[4].replace(/'/g, `''`)}'::json, '${rAdd[5].replace(/'/g, `''`)}'::json,
       CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)`;
     exec(
       `PGPASSWORD="${password}" psql -h ${toHost} -U ${user} -c "${query.replace(/"/g, '\\"')}"`,
@@ -92,8 +94,8 @@ const migrate = async () => {
   }
 
   for (const rModify of diff.toModify) {
-    const query = `update layer set "layerOptions"='${rModify[5].replace(/'/g, `''`)}'::json,
-      "sourceOptions"='${rModify[6].replace(/'/g, `''`)}'::json,
+    const query = `update layer set "layerOptions"='${rModify[4].replace(/'/g, `''`)}'::json,
+      "sourceOptions"='${rModify[5].replace(/'/g, `''`)}'::json,
       "updatedAt"=CURRENT_TIMESTAMP where type='${rModify[1]}' and url='${rModify[2]}' and layers='${rModify[3]}'`;
     exec(
       `PGPASSWORD="${password}" psql -h ${toHost} -U ${user} -c "${query.replace(/"/g, '\\"')}"`,
