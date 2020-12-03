@@ -2,9 +2,9 @@ import * as Configs from '../configurations';
 import { exec } from 'child_process';
 
 const args = process.argv.slice(2);
-const fromHost = args[1];
-const toHost = args[2];
-const layerToMigrate = args[3];
+const fromHost = args[0];
+const toHost = args[1];
+const layerToMigrate = args[2];
 
 if (!fromHost || !toHost) {
   console.error('Mauvaise commande: ');
@@ -17,9 +17,9 @@ const user =  dbConfig.username;
 const password = dbConfig.password;
 
 const getRows = async (host, restreint): Promise<any> => {
-  let query = `select id, type, url, layers, \\"layerOptions\\", \\"sourceOptions\\" from layer`;
+  let query = `select id, type, url, layers, "layerOptions", "sourceOptions" from layer`;
   if (restreint) {
-    query += ` where (\\"sourceOptions\\"::text != '{}'::text or \\"layerOptions\\"::text != '{}'::text)`;
+    query += ` where ("sourceOptions"::text != '{}'::text or "layerOptions"::text != '{}'::text)`;
   }
   if (layerToMigrate) {
     query += restreint ? ' and ' : ' where ';
@@ -27,7 +27,8 @@ const getRows = async (host, restreint): Promise<any> => {
   }
   return await new Promise((resolve, reject) => {
     exec(
-      `PGPASSWORD="${password}" psql -h ${host} -U ${user} --no-align -t --record-separator='#' -c "${query}"`,
+      `PGPASSWORD="${password}" psql -h ${host} -U ${user} --no-align -t --record-separator='#'
+      -c "${query.replace(/"/g, '\\"')}"`,
       (err, stdout, stderr) => {
         if (err) {
           return reject(err);
@@ -62,7 +63,7 @@ const migrate = async () => {
 
   for (const rAdd of diff.toAdd) {
     const query = `INSERT INTO layer(id, type, url, layers, global,
-      \\"layerOptions\\", \\"sourceOptions\\", \\"createdAt\\", \\"updatedAt\\")
+      "layerOptions", "sourceOptions", "createdAt", "updatedAt")
       VALUES (DEFAULT, '${rAdd[1]}', '${rAdd[2]}', '${rAdd[3]}', NULL,
       '${rAdd[4].replace(/'/g, `''`)}'::json, '${rAdd[5].replace(/'/g, `''`)}'::json,
       CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)`;
@@ -72,7 +73,7 @@ const migrate = async () => {
         if (err) {
           console.error(err);
         } else {
-          console.log(`Layer '${rAdd[3]}' a été ajouté`);
+          console.log(`Les options du layer '${rAdd[3]}' ont été ajoutés`);
         }
       }
     );
@@ -87,7 +88,7 @@ const migrate = async () => {
         if (err) {
           console.error(err);
         } else {
-          console.log(`Layer '${rDelete[3]}' a été retiré`);
+          console.log(`Les options du layer '${rDelete[3]}' ont été retirés`);
         }
       }
     );
@@ -103,7 +104,7 @@ const migrate = async () => {
         if (err) {
           console.error(err);
         } else {
-          console.log(`Layer '${rModify[3]}' a été modifié`);
+          console.log(`Les options du layer '${rModify[3]}' ont été modifiés`);
         }
       }
     );
