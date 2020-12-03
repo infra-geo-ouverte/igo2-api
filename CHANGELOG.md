@@ -1,3 +1,7 @@
+# [1.5.0](http://gitlab.forge.gouv.qc.ca/igo2/igo2-api/compare/1.4.0...1.5.0) (2020-12-03)
+
+
+
 # [1.4.0](http://gitlab.forge.gouv.qc.ca/igo2/igo2-api/compare/1.3.0...1.4.0) (2020-12-03)
 
 
