@@ -66,7 +66,7 @@ const migrate = async () => {
     const query = `INSERT INTO layer(id, type, url, layers, global,
       "layerOptions", "sourceOptions", "createdAt", "updatedAt")
       VALUES (DEFAULT, '${rAdd[1]}', '${rAdd[2]}', '${rAdd[3]}', NULL,
-      '${rAdd[4].replace(/'/g, `''`)}'::json, '${rAdd[5].replace(/'/g, `''`)}'::json,
+      '${(rAdd[4] || '').replace(/'/g, `''`)}'::json, '${(rAdd[5] || '').replace(/'/g, `''`)}'::json,
       CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)`;
     exec(
       `PGPASSWORD="${password}" psql -h ${toHost} -U ${user} -c "${query.replace(/"/g, '\\"')}"`,
@@ -98,8 +98,8 @@ const migrate = async () => {
   }
 
   for (const rModify of diff.toModify) {
-    const query = `update layer set "layerOptions"='${rModify[4].replace(/'/g, `''`)}'::json,
-      "sourceOptions"='${rModify[5].replace(/'/g, `''`)}'::json,
+    const query = `update layer set "layerOptions"='${(rModify[4] || '').replace(/'/g, `''`)}'::json,
+      "sourceOptions"='${(rModify[5] || '').replace(/'/g, `''`)}'::json,
       "updatedAt"=CURRENT_TIMESTAMP where type='${rModify[1]}' and url='${rModify[2]}' and layers='${rModify[3]}'`;
     exec(
       `PGPASSWORD="${password}" psql -h ${toHost} -U ${user} -c "${query.replace(/"/g, '\\"')}"`,
