@@ -107,7 +107,8 @@ const migrate = async () => {
   for (const rModify of diff.toModify) {
     const query = `update layer set "layerOptions"='${(rModify[4] || '{}').replace(/'/g, `''`)}'::json,
       "sourceOptions"='${(rModify[5] || '{}').replace(/'/g, `''`)}'::json,
-      "updatedAt"=CURRENT_TIMESTAMP where type='${rModify[1]}' and url='${rModify[2]}' and LOWER(layers)=LOWER('${rModify[3]}')`;
+      "updatedAt"=CURRENT_TIMESTAMP
+      where type='${rModify[1]}' and url='${rModify[2]}' and LOWER(layers)=LOWER('${rModify[3]}')`;
     exec(
       `PGPASSWORD="${password}" psql -h ${toHost} -U ${user} -c "${query.replace(/"/g, '\\"')}"`,
       (err, stdout, stderr) => {
