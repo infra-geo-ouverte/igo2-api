@@ -23,7 +23,7 @@ const getRows = async (host, restreint): Promise<any> => {
   }
   if (layerToMigrate) {
     query += restreint ? ' and ' : ' where ';
-    query += `layers = '${layerToMigrate}'`;
+    query += `LOWER(layers) = LOWER('${layerToMigrate}')`;
   }
 
   const params = `--no-align -t --record-separator='#'`;
@@ -107,7 +107,7 @@ const migrate = async () => {
   for (const rModify of diff.toModify) {
     const query = `update layer set "layerOptions"='${(rModify[4] || '{}').replace(/'/g, `''`)}'::json,
       "sourceOptions"='${(rModify[5] || '{}').replace(/'/g, `''`)}'::json,
-      "updatedAt"=CURRENT_TIMESTAMP where type='${rModify[1]}' and url='${rModify[2]}' and layers='${rModify[3]}'`;
+      "updatedAt"=CURRENT_TIMESTAMP where type='${rModify[1]}' and url='${rModify[2]}' and LOWER(layers)=LOWER('${rModify[3]}')`;
     exec(
       `PGPASSWORD="${password}" psql -h ${toHost} -U ${user} -c "${query.replace(/"/g, '\\"')}"`,
       (err, stdout, stderr) => {
