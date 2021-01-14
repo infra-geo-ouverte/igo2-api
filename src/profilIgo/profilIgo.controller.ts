@@ -102,7 +102,7 @@ export class ProfilIgoController {
     const profils: string[] = await UserApi.getProfils(id, request.headers['x-consumer-groups']).catch(() => []);
 
     const allProfilsIgo = (await this.profilIgo.get().catch(handleError));
-    let profilIgoOfCurrentUser: IProfilIgo[] = allProfilsIgo.filter(p => profils.includes(p.name));
+    const profilIgoOfCurrentUser: IProfilIgo[] = allProfilsIgo.filter(p => profils.includes(p.name));
 
     const canShare = profilIgoOfCurrentUser.find(p => p.canShare === true);
     if (!canShare) {
