@@ -1,3 +1,20 @@
+## [1.5.1](http://gitlab.forge.gouv.qc.ca/igo2/igo2-api/compare/1.5.0...1.5.1) (2021-01-14)
+
+
+### Bug Fixes
+
+* **migration:** case insensitive ([4006ab8](http://gitlab.forge.gouv.qc.ca/igo2/igo2-api/commit/4006ab8f4266f54dc3e9d4010f54e4e08723c24f))
+* **migration:** fix when layerOptions is null ([7f41376](http://gitlab.forge.gouv.qc.ca/igo2/igo2-api/commit/7f41376ed3ff56b10b92a3e318d1d3fdd580f6b4))
+* **migration:** fix when layerOptions is null ([88d48aa](http://gitlab.forge.gouv.qc.ca/igo2/igo2-api/commit/88d48aa760b0cb1718b4e3c759e3b0d156cb0d50))
+* **migration:** remove \n at the end ([3937e6d](http://gitlab.forge.gouv.qc.ca/igo2/igo2-api/commit/3937e6d971bbd2ecf366edfc8c8e82cd5774ad4f))
+
+
+### Features
+
+* **profils:** can share even if not in the grapp ([2927e91](http://gitlab.forge.gouv.qc.ca/igo2/igo2-api/commit/2927e911fff6f3123b21494814b2d0c4a94a47d5))
+
+
+
 # [1.5.0](http://gitlab.forge.gouv.qc.ca/igo2/igo2-api/compare/1.4.0...1.5.0) (2020-12-03)
 
 
@@ -51,8 +68,8 @@
 * **contextHidden:** minor fixes ([f6ff507](http://gitlab.forge.gouv.qc.ca/igo2/igo2-api/commit/f6ff507fca4da9e7edb20ab6d4b9786fcd25d898))
 * **contextHidden:** post method ([af31f89](http://gitlab.forge.gouv.qc.ca/igo2/igo2-api/commit/af31f894137b8126f9e22cd8d9ec933c80265d52))
 * **hidden:** hiddens ! ([b3c9653](http://gitlab.forge.gouv.qc.ca/igo2/igo2-api/commit/b3c9653ea588d232d55d133ecb50d04d003bd468))
-* **profil:** can share ([e295124](http://gitlab.forge.gouv.qc.ca/igo2/igo2-api/commit/e295124089c6a103d487cb82d0bd957c9ba6e809))
 * **profil:** can share ([71f2e92](http://gitlab.forge.gouv.qc.ca/igo2/igo2-api/commit/71f2e929a3ccefada8c3dda9564d26e72dc65bad))
+* **profil:** can share ([e295124](http://gitlab.forge.gouv.qc.ca/igo2/igo2-api/commit/e295124089c6a103d487cb82d0bd957c9ba6e809))
 * **profil:** return profils only if you have same ([5f7c3a2](http://gitlab.forge.gouv.qc.ca/igo2/igo2-api/commit/5f7c3a203c23a7bee45e6452fb4954581d0de685))
 * **profilIgo:** get user by username ([d6b46c3](http://gitlab.forge.gouv.qc.ca/igo2/igo2-api/commit/d6b46c30fd3d33edf731c094955bf4f1c9150e3a))
 * **route:** allow unknown ([db87d5d](http://gitlab.forge.gouv.qc.ca/igo2/igo2-api/commit/db87d5dc5466759d8f8d8e1b81292a7c91fd85b7))
@@ -115,6 +132,7 @@
 
 ### Bug Fixes
 
+* lint ([bfae826](http://gitlab.forge.gouv.qc.ca/igo2/igo2-api/commit/bfae8269fed22f93b1635d40d6b6b266fa50cbc8))
 * **catalog:** sort ([a356ba5](http://gitlab.forge.gouv.qc.ca/igo2/igo2-api/commit/a356ba5ce401497c75d19021e26c7b59634fb5e8))
 * **context:** clone context now keep layer Options ([4f26fa3](http://gitlab.forge.gouv.qc.ca/igo2/igo2-api/commit/4f26fa31ab35adb0092aac4665d07f09026fcd02))
 * **context:** remove unused params ([14d074c](http://gitlab.forge.gouv.qc.ca/igo2/igo2-api/commit/14d074cc0e7ed4c95f9545cc5e7032a24ec203ee))
@@ -123,7 +141,6 @@
 * **layer:** param LAYERS is uppercase ([c8df656](http://gitlab.forge.gouv.qc.ca/igo2/igo2-api/commit/c8df656245dd579dcbd2f4990a0a72591a04f960))
 * **layer:** remove doublon ([a66b8b7](http://gitlab.forge.gouv.qc.ca/igo2/igo2-api/commit/a66b8b7d6047c94a00c10676ba4f4e8253ac6d0e))
 * **localhost:** remove domain when localhost ([5ceae57](http://gitlab.forge.gouv.qc.ca/igo2/igo2-api/commit/5ceae576d1710ffd53712717af1d4ca8db6a64cd))
-* lint ([bfae826](http://gitlab.forge.gouv.qc.ca/igo2/igo2-api/commit/bfae8269fed22f93b1635d40d6b6b266fa50cbc8))
 * **uniqueConstraintError:** remove fields comparaison ([c8d2a8b](http://gitlab.forge.gouv.qc.ca/igo2/igo2-api/commit/c8d2a8b72fea4f9b2dc6bf215148b2b6d163fedf))
 * **user:** failback to default context ([4b53f59](http://gitlab.forge.gouv.qc.ca/igo2/igo2-api/commit/4b53f59735de89137f93ae5aee87a3b360be947c))
 
