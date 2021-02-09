@@ -76,7 +76,7 @@ const migrate = async () => {
       '${(rAdd[4] || '{}').replace(/'/g, `''`)}'::json, '${(rAdd[5] || '{}').replace(/'/g, `''`)}'::json,
       CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)`;
     exec(
-      `PGPASSWORD="${password}" psql -h ${toHost} -U ${user} -c "${query.replace(/"/g, '\\"')}"`,
+      `PGPASSWORD="${password}" psql -h ${toHost} -U ${user} -c "${query.replace(/"/g, '\\"').replace(/\${/g, '\\${')}"`,
       (err, stdout, stderr) => {
         if (err) {
           console.error(err);
@@ -110,7 +110,7 @@ const migrate = async () => {
       "updatedAt"=CURRENT_TIMESTAMP
       where type='${rModify[1]}' and url='${rModify[2]}' and LOWER(layers)=LOWER('${rModify[3]}')`;
     exec(
-      `PGPASSWORD="${password}" psql -h ${toHost} -U ${user} -c "${query.replace(/"/g, '\\"')}"`,
+      `PGPASSWORD="${password}" psql -h ${toHost} -U ${user} -c "${query.replace(/"/g, '\\"').replace(/\${/g, '\\${')}"`,
       (err, stdout, stderr) => {
         if (err) {
           console.error(err);
