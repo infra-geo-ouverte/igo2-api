@@ -70,13 +70,14 @@ const migrate = async () => {
   };
 
   for (const rAdd of diff.toAdd) {
-    const query = `INSERT INTO layer(id, type, url, layers, global,
+    let query = `INSERT INTO layer(id, type, url, layers, global,
       "layerOptions", "sourceOptions", "createdAt", "updatedAt")
       VALUES (DEFAULT, '${rAdd[1]}', '${rAdd[2]}', '${rAdd[3]}', NULL,
       '${(rAdd[4] || '{}').replace(/'/g, `''`)}'::json, '${(rAdd[5] || '{}').replace(/'/g, `''`)}'::json,
       CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)`;
+    query = query.replace(/"/g, '\\"').replace(/\${/g, '\\${');
     exec(
-      `PGPASSWORD="${password}" psql -h ${toHost} -U ${user} -c "${query.replace(/"/g, '\\"').replace(/\${/g, '\\${')}"`,
+      `PGPASSWORD="${password}" psql -h ${toHost} -U ${user} -c "${query}"`,
       (err, stdout, stderr) => {
         if (err) {
           console.error(err);
@@ -89,10 +90,11 @@ const migrate = async () => {
   }
 
   for (const rDelete of diff.toDelete) {
-    const query = `update layer set "layerOptions"='{}'::json, "sourceOptions"='{}'::json,
+    let query = `update layer set "layerOptions"='{}'::json, "sourceOptions"='{}'::json,
       "updatedAt"=CURRENT_TIMESTAMP where id='${rDelete[0]}'`;
+    query = query.replace(/"/g, '\\"');
     exec(
-      `PGPASSWORD="${password}" psql -h ${toHost} -U ${user} -c "${query.replace(/"/g, '\\"')}"`,
+      `PGPASSWORD="${password}" psql -h ${toHost} -U ${user} -c "${query}"`,
       (err, stdout, stderr) => {
         if (err) {
           console.error(err);
@@ -105,12 +107,13 @@ const migrate = async () => {
   }
 
   for (const rModify of diff.toModify) {
-    const query = `update layer set "layerOptions"='${(rModify[4] || '{}').replace(/'/g, `''`)}'::json,
+    let query = `update layer set "layerOptions"='${(rModify[4] || '{}').replace(/'/g, `''`)}'::json,
       "sourceOptions"='${(rModify[5] || '{}').replace(/'/g, `''`)}'::json,
       "updatedAt"=CURRENT_TIMESTAMP
       where type='${rModify[1]}' and url='${rModify[2]}' and LOWER(layers)=LOWER('${rModify[3]}')`;
+    query = query.replace(/"/g, '\\"').replace(/\${/g, '\\${');
     exec(
-      `PGPASSWORD="${password}" psql -h ${toHost} -U ${user} -c "${query.replace(/"/g, '\\"').replace(/\${/g, '\\${')}"`,
+      `PGPASSWORD="${password}" psql -h ${toHost} -U ${user} -c "${query}"`,
       (err, stdout, stderr) => {
         if (err) {
           console.error(err);
