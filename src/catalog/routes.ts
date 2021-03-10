@@ -3,7 +3,7 @@ import * as Joi from 'joi';
 
 import { CatalogController } from './catalog.controller';
 import { CatalogValidator } from './catalog.validator';
-import { UserValidator } from '../user/user.validator';
+import { UserValidator } from '@igo2/base-api';
 
 export default function(server: Hapi.Server) {
   const catalogController = new CatalogController();

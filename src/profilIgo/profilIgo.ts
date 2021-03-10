@@ -1,7 +1,6 @@
 import * as Boom from 'boom';
 
-import { IDatabase, database } from '../database';
-import { ObjectUtils } from '../utils';
+import { IDatabase, database, ObjectUtils } from '@igo2/base-api';
 
 import { IProfilIgo, ProfilIgoInstance } from './profilIgo.model';
 
@@ -11,11 +10,11 @@ export class ProfilIgo {
   constructor() {}
 
   public async create(profilIgo: IProfilIgo): Promise<ProfilIgoInstance> {
-    return await this.database.profilIgo.create(profilIgo);
+    return await this.database.models.profilIgo.create(profilIgo);
   }
 
   public async update(profilName: string, profilIgo: IProfilIgo): Promise<{ name: string }> {
-    return await this.database.profilIgo
+    return await this.database.models.profilIgo
       .update(profilIgo, {
         where: {
           name: profilName
@@ -30,7 +29,7 @@ export class ProfilIgo {
   }
 
   public async delete(profilName: string): Promise<void> {
-    return await this.database.profilIgo
+    return await this.database.models.profilIgo
       .destroy({
         where: {
           name: profilName
@@ -45,13 +44,13 @@ export class ProfilIgo {
   }
 
   public async get(): Promise<ProfilIgoInstance[]> {
-    return await this.database.profilIgo.findAll({ order: ['id'] }).then((profilsIgo: ProfilIgoInstance[]) => {
+    return await this.database.models.profilIgo.findAll({ order: ['id'] }).then((profilsIgo: ProfilIgoInstance[]) => {
       return profilsIgo.map(profil => ObjectUtils.removeNull(profil.get()));
     });
   }
 
   public async getById(profilName: string): Promise<ProfilIgoInstance> {
-    return await this.database.profilIgo
+    return await this.database.models.profilIgo
       .findOne({
         where: {
           name: profilName
@@ -66,7 +65,7 @@ export class ProfilIgo {
   }
 
   public async getByProfils(profils: string[]): Promise<{ [key: string]: any }> {
-    return await this.database.profilIgo
+    return await this.database.models.profilIgo
       .findAll({
         where: {
           name: profils

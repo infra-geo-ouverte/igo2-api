@@ -22,7 +22,7 @@ gulp.task('tslint', () => {
     .pipe(
       tslint({
         formatter: 'prose',
-        program: require('tslint').Linter.createProgram('./src/tsconfig.json')
+        program: require('tslint').Linter.createProgram('./tsconfig.json')
       })
     )
     .pipe(tslint.report());

@@ -4,12 +4,10 @@ import * as Sequelize from 'sequelize';
 import * as URL from 'url';
 import * as Boom from 'boom';
 
-import * as Configs from '../configurations';
-import { ObjectUtils } from '../utils';
-import { IDatabase, database } from '../database';
+import { Config, ObjectUtils, IDatabase, database } from '@igo2/base-api';
 import { UserInstance } from './user.model';
 
-const ServerConfigs = Configs.getServerConfig();
+const ServerConfigs = Config.getServerConfig();
 
 export class UserApi {
   static database: IDatabase = database;
@@ -143,7 +141,7 @@ export class UserApi {
   }
 
   static async getUser(username: string): Promise<UserInstance> {
-    return await UserApi.database.user
+    return await UserApi.database.models.user
       .findOne({
         where: {
           sourceId: username
@@ -174,7 +172,7 @@ export class UserApi {
 
     opts.limit = limit;
 
-    return await UserApi.database.user.findAll(opts).then((users: UserInstance[]) => {
+    return await UserApi.database.models.user.findAll(opts).then((users: UserInstance[]) => {
       return users.map(u => ObjectUtils.removeNull(u.get()));
     });
   }

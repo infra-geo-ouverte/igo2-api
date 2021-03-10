@@ -1,8 +1,8 @@
 import * as Hapi from 'hapi';
 import * as Boom from 'boom';
 
-import { IDatabase, database } from '../database';
-import { ObjectUtils, uuid, handleError } from '../utils';
+import { IDatabase, database, ObjectUtils, uuid } from '@igo2/base-api';
+import { handleError } from '../utils';
 
 import { UserApi } from '../user';
 import { UserIgo, IUserIgo } from '../userIgo';
@@ -131,10 +131,10 @@ export class ContextController {
     const promises = [];
     if (owner && !isAnonyme) {
       promises.push(
-        this.database.context.findAll({
+        this.database.models.context.findAll({
           include: [
             {
-              model: this.database.contextHidden,
+              model: this.database.models.contextHidden,
               required: false,
               where: {
                 user: owner
@@ -153,16 +153,16 @@ export class ContextController {
 
     if (profils && profils.length) {
       promises.push(
-        this.database.context.findAll({
+        this.database.models.context.findAll({
           include: [
             {
-              model: this.database.contextPermission,
+              model: this.database.models.contextPermission,
               where: {
                 profil: profils
               }
             },
             {
-              model: this.database.contextHidden,
+              model: this.database.models.contextHidden,
               required: false,
               where: {
                 user: owner
@@ -184,17 +184,17 @@ export class ContextController {
 
     if (!permissions || permissions.includes('public')) {
       promises.push(
-        this.database.context.findAll({
+        this.database.models.context.findAll({
           include: [
             {
-              model: this.database.contextPermission,
+              model: this.database.models.contextPermission,
               required: false,
               where: {
                 profil: profils
               }
             },
             {
-              model: this.database.contextHidden,
+              model: this.database.models.contextHidden,
               required: false,
               where: {
                 user: owner

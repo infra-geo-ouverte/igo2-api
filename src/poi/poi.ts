@@ -1,7 +1,6 @@
 import * as Boom from 'boom';
 
-import { IDatabase, database } from '../database';
-import { ObjectUtils } from '../utils';
+import { IDatabase, database, ObjectUtils } from '@igo2/base-api';
 
 import { IPOI, POIInstance } from './poi.model';
 
@@ -11,7 +10,7 @@ export class POI {
   constructor() {}
 
   public async create(poi: IPOI): Promise<POIInstance> {
-    return await this.database.poi.create(poi);
+    return await this.database.models.poi.create(poi);
   }
 
   public async update(
@@ -19,7 +18,7 @@ export class POI {
     userId: string,
     poi: IPOI
   ): Promise<{ id: string }> {
-    return await this.database.poi
+    return await this.database.models.poi
       .update(poi, {
         where: {
           id: id,
@@ -35,7 +34,7 @@ export class POI {
   }
 
   public async delete(id: string, userId: string): Promise<void> {
-    return await this.database.poi
+    return await this.database.models.poi
       .destroy({
         where: {
           id: id,
@@ -51,7 +50,7 @@ export class POI {
   }
 
   public async get(userId: string): Promise<POIInstance[]> {
-    return await this.database.poi
+    return await this.database.models.poi
       .findAll({
         where: {
           userId: userId
@@ -64,7 +63,7 @@ export class POI {
   }
 
   public async getById(id: string, userId: string): Promise<POIInstance> {
-    return await this.database.poi
+    return await this.database.models.poi
       .findOne({
         where: {
           id: id,

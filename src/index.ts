@@ -1,20 +1,6 @@
-import * as Server from './server';
-import * as Configs from './configurations';
+import { Config, Server } from '@igo2/base-api';
 
-console.log(`Running enviroment ${process.env.NODE_ENV || 'dev'}`);
+Config.readConfig(__dirname, `configurations/config.${process.env.NODE_ENV || 'dev'}.json`);
 
 // Starting Application Server
-const serverConfigs = Configs.getServerConfig();
-
-const start = async () => {
-  const server = await Server.init(serverConfigs);
-  await server.start();
-  console.log(`Server running at: ${server.info.uri}`);
-};
-
-process.on('unhandledRejection', err => {
-  console.log(err);
-  process.exit(1);
-});
-
-start();
+Server.start();

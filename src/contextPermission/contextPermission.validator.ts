@@ -1,7 +1,7 @@
 import * as Joi from 'joi';
 import * as Boom from 'boom';
 
-import { UserValidator } from '../user/user.validator';
+import { UserValidator } from '@igo2/base-api';
 
 import { TypePermission } from './contextPermission.model';
 import { ContextPermission } from './contextPermission';

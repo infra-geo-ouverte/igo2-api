@@ -4,13 +4,13 @@ import * as https from 'https';
 import axios from 'axios';
 import * as Boom from 'boom';
 
-import * as Configs from '../configurations';
+import { Config} from '@igo2/base-api';
 import { handleError } from '../utils';
 
 import { Layer } from './layer';
 import { ILayer } from './layer.model';
 
-const ServerConfigs = Configs.getServerConfig();
+const ServerConfigs = Config.getServerConfig();
 
 export class LayerController {
   private layer: Layer;

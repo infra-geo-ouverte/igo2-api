@@ -1,7 +1,6 @@
 import * as Boom from 'boom';
 
-import { IDatabase, database } from '../database';
-import { ObjectUtils } from '../utils';
+import { IDatabase, database, ObjectUtils } from '@igo2/base-api';
 
 import { IUserIgo, UserIgoInstance } from './userIgo.model';
 
@@ -11,14 +10,14 @@ export class UserIgo {
   constructor() {}
 
   public async create(userIgo: IUserIgo): Promise<UserIgoInstance> {
-    return await this.database.userIgo.create(userIgo);
+    return await this.database.models.userIgo.create(userIgo);
   }
 
   public async update(
     userId: string,
     userIgo: IUserIgo
   ): Promise<{ userId: string }> {
-    return await this.database.userIgo
+    return await this.database.models.userIgo
       .update(userIgo, {
         where: {
           userId: userId
@@ -33,7 +32,7 @@ export class UserIgo {
   }
 
   public async delete(userId: string): Promise<void> {
-    return await this.database.userIgo
+    return await this.database.models.userIgo
       .destroy({
         where: {
           userId: userId
@@ -48,7 +47,7 @@ export class UserIgo {
   }
 
   public async get(userId: string): Promise<UserIgoInstance> {
-    return await this.database.userIgo
+    return await this.database.models.userIgo
       .findOne({
         where: {
           userId: userId

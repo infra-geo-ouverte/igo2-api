@@ -4,7 +4,7 @@ import * as Joi from 'joi';
 import { ContextController } from './context.controller';
 import { ContextValidator } from './context.validator';
 import { ContextPermissionValidator } from '../contextPermission';
-import { UserValidator } from '../user/user.validator';
+import { UserValidator } from '@igo2/base-api';
 
 export default function(server: Hapi.Server) {
   const contextController = new ContextController();

@@ -1,7 +1,6 @@
 import * as Boom from 'boom';
 
-import { IDatabase, database } from '../database';
-import { ObjectUtils } from '../utils';
+import { IDatabase, database, ObjectUtils } from '@igo2/base-api';
 
 import { Layer, ILayer } from '../layer';
 import { ILayerContext, LayerContextInstance } from './layerContext.model';
@@ -15,7 +14,7 @@ export class LayerContext {
   public async create(
     layerContext: ILayerContext
   ): Promise<LayerContextInstance> {
-    return await this.database.layerContext
+    return await this.database.models.layerContext
       .create(layerContext)
       .catch(error => {
         if (error.name === 'SequelizeUniqueConstraintError') {
@@ -35,7 +34,7 @@ export class LayerContext {
     layerId: string,
     layerContext: ILayerContext
   ): Promise<ILayerContext> {
-    return await this.database.layerContext
+    return await this.database.models.layerContext
       .update(layerContext, {
         where: {
           layerId: layerId,
@@ -54,7 +53,7 @@ export class LayerContext {
   }
 
   public async delete(contextId: string, layerId: string): Promise<void> {
-    return await this.database.layerContext
+    return await this.database.models.layerContext
       .destroy({
         where: {
           layerId: layerId,
@@ -70,7 +69,7 @@ export class LayerContext {
   }
 
   public async deleteByContextId(contextId: string): Promise<void> {
-    return await this.database.layerContext
+    return await this.database.models.layerContext
       .destroy({
         where: {
           contextId: contextId
@@ -87,7 +86,7 @@ export class LayerContext {
   public async getByContextId(
     contextId: string
   ): Promise<LayerContextInstance[]> {
-    return await this.database.layerContext
+    return await this.database.models.layerContext
       .findAll({
         where: {
           contextId: contextId
@@ -106,7 +105,7 @@ export class LayerContext {
     contextId: string,
     layerId: string
   ): Promise<LayerContextInstance> {
-    return await this.database.layerContext
+    return await this.database.models.layerContext
       .findOne({
         where: {
           layerId: layerId,

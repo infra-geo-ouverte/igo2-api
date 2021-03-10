@@ -3,7 +3,7 @@ import * as Joi from 'joi';
 
 import { LayerController } from './layer.controller';
 import { LayerValidator } from './layer.validator';
-import { UserValidator } from '../user/user.validator';
+import { UserValidator } from '@igo2/base-api';
 
 export default function(server: Hapi.Server) {
   const layerController = new LayerController();
@@ -165,7 +165,7 @@ export default function(server: Hapi.Server) {
         },
         payload: LayerValidator.updateModel,
         headers: UserValidator.adminValidator
-      },
+      } as any,
       plugins: {
         'hapi-swagger': {
           responses: {

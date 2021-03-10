@@ -2,7 +2,7 @@ import * as Hapi from 'hapi';
 import * as Joi from 'joi';
 
 import { ContextHiddenController } from './contextHidden.controller';
-import { UserValidator } from '../user/user.validator';
+import { UserValidator } from '@igo2/base-api';
 
 export default function(server: Hapi.Server) {
   const contextHiddenController = new ContextHiddenController();

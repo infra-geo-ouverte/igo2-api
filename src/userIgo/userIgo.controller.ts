@@ -1,6 +1,7 @@
 import * as Hapi from 'hapi';
 
-import { ObjectUtils, handleError } from '../utils';
+import { ObjectUtils } from '@igo2/base-api';
+import { handleError } from '../utils';
 
 import { UserApi } from '../user';
 import { ProfilIgo, ProfilIgoInstance } from '../profilIgo';

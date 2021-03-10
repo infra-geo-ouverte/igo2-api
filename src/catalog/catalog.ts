@@ -1,8 +1,7 @@
 import * as Boom from 'boom';
 import * as Sequelize from 'sequelize';
 
-import { IDatabase, database } from '../database';
-import { ObjectUtils } from '../utils';
+import { IDatabase, database, ObjectUtils } from '@igo2/base-api';
 import { UserApi } from '../user';
 
 import { ICatalog, CatalogInstance } from './catalog.model';
@@ -13,11 +12,11 @@ export class Catalog {
   constructor() {}
 
   public async create(catalog: ICatalog): Promise<CatalogInstance> {
-    return await this.database.catalog.create(catalog);
+    return await this.database.models.catalog.create(catalog);
   }
 
   public async update(id: string, catalog: ICatalog): Promise<{ id: string }> {
-    return await this.database.catalog
+    return await this.database.models.catalog
       .update(catalog, {
         where: {
           id: id
@@ -33,7 +32,7 @@ export class Catalog {
   }
 
   public async delete(id: string): Promise<void> {
-    return await this.database.catalog
+    return await this.database.models.catalog
       .destroy({
         where: {
           id: id
@@ -53,7 +52,7 @@ export class Catalog {
     });
     profils.push(user);
 
-    const catalogs = await this.database.catalog.findAll({
+    const catalogs = await this.database.models.catalog.findAll({
       where: {
         profils: {
           [Sequelize.Op.or]: {
@@ -76,7 +75,7 @@ export class Catalog {
     });
     profils.push(user);
 
-    const catalog = await this.database.catalog.findOne({
+    const catalog = await this.database.models.catalog.findOne({
       where: {
         id: id,
         profils: {

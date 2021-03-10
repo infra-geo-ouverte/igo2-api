@@ -3,7 +3,7 @@ import * as Joi from 'joi';
 
 import { ToolController } from './tool.controller';
 import { ToolValidator } from './tool.validator';
-import { UserValidator } from '../user/user.validator';
+import { UserValidator } from '@igo2/base-api';
 
 export default function(server: Hapi.Server) {
   const toolController = new ToolController();

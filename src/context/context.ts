@@ -1,7 +1,6 @@
 import * as Boom from 'boom';
 
-import { IDatabase, database } from '../database';
-import { ObjectUtils } from '../utils';
+import { IDatabase, database, ObjectUtils } from '@igo2/base-api';
 import { UserApi } from '../user';
 
 import { IContext, ContextInstance, ContextDetailed } from './context.model';
@@ -12,7 +11,7 @@ export class Context {
   constructor() {}
 
   public async create(context: IContext): Promise<ContextInstance> {
-    return await this.database.context.create(context).catch(error => {
+    return await this.database.models.context.create(context).catch(error => {
       if (error.name === 'SequelizeUniqueConstraintError') {
         const message = 'URI must be unique.';
         throw Boom.conflict(message);
@@ -23,7 +22,7 @@ export class Context {
   }
 
   public async update(id: string, context: IContext): Promise<{ id: string }> {
-    return await this.database.context
+    return await this.database.models.context
       .update(context, {
         where: {
           id: id
@@ -49,7 +48,7 @@ export class Context {
   }
 
   public async delete(id: string): Promise<void> {
-    return await this.database.context
+    return await this.database.models.context
       .destroy({
         where: {
           id: id
@@ -64,7 +63,7 @@ export class Context {
   }
 
   public async get(): Promise<ContextInstance[]> {
-    return await this.database.context
+    return await this.database.models.context
       .findAll()
       .then((contexts: ContextInstance[]) => {
         const plainContexts = contexts.map(context =>
@@ -82,10 +81,10 @@ export class Context {
   ): Promise<ContextDetailed> {
     const include = [];
     if (includeLayers) {
-      include.push(this.database.layer);
+      include.push(this.database.models.layer);
     }
     if (includeTools) {
-      include.push(this.database.tool);
+      include.push(this.database.models.tool);
     }
 
     let where: any = { id: id };
@@ -94,7 +93,7 @@ export class Context {
       where = { uri: id };
     }
 
-    const context = await this.database.context.findOne({
+    const context = await this.database.models.context.findOne({
       include: include,
       where: where
     });
@@ -105,14 +104,14 @@ export class Context {
 
     let globalTools;
     if (includeTools) {
-      globalTools = await this.database.tool.findAll({
+      globalTools = await this.database.models.tool.findAll({
         where: { global: true }
       });
     }
 
     let globalLayers;
     if (includeLayers) {
-      globalLayers = await this.database.layer.findAll({
+      globalLayers = await this.database.models.layer.findAll({
         where: { global: true }
       });
     }

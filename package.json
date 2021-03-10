@@ -9,8 +9,8 @@
     "ecosystem.config.js"
   ],
   "scripts": {
-    "tsc": "tsc --p src/",
-    "tsc-watch": "tsc --p src/ -w",
+    "tsc": "tsc",
+    "tsc-watch": "tsc -w",
     "start": "npm run build.dev && concurrently \"npm run tsc-watch\" \"nodemon --watch build build/index.js\"",
     "build.dev": "rimraf build && gulp build",
     "serve.dev": "node build/index.js",
@@ -38,31 +38,24 @@
   },
   "homepage": "https://gitlab.forge.gouv.qc.ca/igo2/igo2-api#readme",
   "dependencies": {
+    "@igo2/base-api": "^0.1.4",
     "axios": "^0.18.0",
     "boom": "^7.2.0",
-    "elastic-apm-node": "^2.15.0",
-    "good": "^8.1.1",
-    "good-console": "^7.1.0",
     "hapi": "^17.4.0",
     "hapi-swagger": "^9.1.1",
     "inert": "^5.1.0",
     "joi": "^13.2.0",
     "natives": "^1.1.6",
-    "nconf": "^0.10.0",
-    "path": "^0.12.7",
-    "pg": "7.4.3",
     "request": "^2.85.0",
     "sequelize": "^4.37.6",
-    "vision": "^5.3.2",
-    "xss": "^0.3.8"
+    "vision": "^5.3.2"
   },
   "devDependencies": {
     "@types/boom": "7.2.0",
     "@types/hapi": "^17.0.11",
     "@types/joi": "^13.0.8",
     "@types/jsonwebtoken": "^7.2.7",
-    "@types/nconf": "0.0.37",
-    "@types/node": "^9.6.9",
+    "@types/node": "^11.13.4",
     "@types/sequelize": "^4.27.16",
     "@types/tape": "^4.2.32",
     "concurrently": "^3.5.1",
@@ -81,9 +74,9 @@
     "tap-spec": "^4.1.1",
     "tape": "^4.9.1",
     "tslint": "^5.9.1",
-    "typescript": "^2.7.2"
+    "typescript": "^3.5.2"
   },
   "engines": {
-    "node": ">=8.0.0"
+    "node": ">=10.0.0"
   }
 }

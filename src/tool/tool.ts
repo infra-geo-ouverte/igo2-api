@@ -1,7 +1,6 @@
 import * as Boom from 'boom';
 
-import { IDatabase, database } from '../database';
-import { ObjectUtils } from '../utils';
+import { IDatabase, database, ObjectUtils } from '@igo2/base-api';
 
 import { ITool, ToolInstance } from './tool.model';
 
@@ -11,7 +10,7 @@ export class Tool {
   constructor() {}
 
   public async create(tool: ITool): Promise<ToolInstance> {
-    return await this.database.tool.create(tool).catch(error => {
+    return await this.database.models.tool.create(tool).catch(error => {
       if (error.name === 'SequelizeUniqueConstraintError') {
         const message = 'The pair contextId and toolId must be unique.';
         throw Boom.conflict(message);
@@ -22,7 +21,7 @@ export class Tool {
   }
 
   public async update(id: string, tool: ITool): Promise<{ id: string }> {
-    return await this.database.tool
+    return await this.database.models.tool
       .update(tool, {
         where: {
           id: id
@@ -37,7 +36,7 @@ export class Tool {
   }
 
   public async delete(id: string): Promise<void> {
-    return await this.database.tool
+    return await this.database.models.tool
       .destroy({
         where: {
           id: id
@@ -52,14 +51,14 @@ export class Tool {
   }
 
   public async get(): Promise<ToolInstance[]> {
-    return await this.database.tool.findAll().then((tools: ToolInstance[]) => {
+    return await this.database.models.tool.findAll().then((tools: ToolInstance[]) => {
       const plainTools = tools.map(tool => ObjectUtils.removeNull(tool.get()));
       return plainTools;
     });
   }
 
   public async getById(id: string): Promise<ToolInstance> {
-    return await this.database.tool
+    return await this.database.models.tool
       .findOne({
         where: {
           id: id

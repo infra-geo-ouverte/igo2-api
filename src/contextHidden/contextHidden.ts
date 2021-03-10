@@ -1,7 +1,6 @@
 import * as Boom from 'boom';
 
-import { IDatabase, database } from '../database';
-import { ObjectUtils } from '../utils';
+import { IDatabase, database, ObjectUtils } from '@igo2/base-api';
 
 import { ContextHiddenInstance } from './index';
 
@@ -9,7 +8,7 @@ export class ContextHidden {
   private database: IDatabase = database;
 
   public async hide(user: string, contextId: string): Promise<ContextHiddenInstance> {
-    return await this.database.contextHidden
+    return await this.database.models.contextHidden
       .create({
         user,
         contextId
@@ -25,7 +24,7 @@ export class ContextHidden {
   }
 
   public async show(user: string, contextId: string): Promise<void> {
-    return await this.database.contextHidden
+    return await this.database.models.contextHidden
       .destroy({
         where: {
           user,
@@ -41,7 +40,7 @@ export class ContextHidden {
   }
 
   public async get(user: string): Promise<ContextHiddenInstance[]> {
-    return await this.database.contextHidden
+    return await this.database.models.contextHidden
       .findAll({
         where: {
           user
@@ -56,7 +55,7 @@ export class ContextHidden {
   }
 
   public async getById(user: string, contextId: string): Promise<ContextHiddenInstance> {
-    return await this.database.contextHidden
+    return await this.database.models.contextHidden
       .findOne({
         where: {
           user,

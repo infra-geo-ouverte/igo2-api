@@ -1,7 +1,6 @@
 import * as Boom from 'boom';
 
-import { IDatabase, database } from '../database';
-import { ObjectUtils } from '../utils';
+import { IDatabase, database, ObjectUtils } from '@igo2/base-api';
 
 import { IToolContext, ToolContextInstance } from './toolContext.model';
 
@@ -11,7 +10,7 @@ export class ToolContext {
   constructor() {}
 
   public async create(toolContext: IToolContext): Promise<ToolContextInstance> {
-    return await this.database.toolContext.create(toolContext).catch(error => {
+    return await this.database.models.toolContext.create(toolContext).catch(error => {
       if (error.name === 'SequelizeUniqueConstraintError') {
         const message = 'The pair contextId and toolId must be unique.';
         throw Boom.conflict(message);
@@ -30,7 +29,7 @@ export class ToolContext {
     toolId: string,
     toolContext: IToolContext
   ): Promise<IToolContext> {
-    return await this.database.toolContext
+    return await this.database.models.toolContext
       .update(toolContext, {
         where: {
           toolId: toolId,
@@ -49,7 +48,7 @@ export class ToolContext {
   }
 
   public async delete(contextId: string, toolId: string): Promise<void> {
-    return await this.database.toolContext
+    return await this.database.models.toolContext
       .destroy({
         where: {
           toolId: toolId,
@@ -65,7 +64,7 @@ export class ToolContext {
   }
 
   public async deleteByContextId(contextId: string): Promise<void> {
-    return await this.database.toolContext
+    return await this.database.models.toolContext
       .destroy({
         where: {
           contextId: contextId
@@ -82,7 +81,7 @@ export class ToolContext {
   public async getByContextId(
     contextId: string
   ): Promise<ToolContextInstance[]> {
-    return await this.database.toolContext
+    return await this.database.models.toolContext
       .findAll({
         where: {
           contextId: contextId
@@ -100,7 +99,7 @@ export class ToolContext {
     contextId: string,
     toolId: string
   ): Promise<ToolContextInstance> {
-    return await this.database.toolContext
+    return await this.database.models.toolContext
       .findOne({
         where: {
           toolId: toolId,

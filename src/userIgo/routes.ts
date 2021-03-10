@@ -2,7 +2,7 @@ import * as Hapi from 'hapi';
 
 import { UserIgoController } from './userIgo.controller';
 import { UserIgoValidator } from './userIgo.validator';
-import { UserValidator } from '../user/user.validator';
+import { UserValidator } from '@igo2/base-api';
 
 export default function(server: Hapi.Server) {
   const userIgoController = new UserIgoController();

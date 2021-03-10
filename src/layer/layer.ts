@@ -1,15 +1,12 @@
 import * as Boom from 'boom';
 import * as URL from 'url';
 
-import * as Configs from '../configurations';
-
-import { IDatabase, database } from '../database';
-import { ObjectUtils } from '../utils';
+import { IDatabase, database, ObjectUtils, Config } from '@igo2/base-api';
 import { UserApi } from '../user';
 
 import { ILayer, LayerInstance } from './layer.model';
 
-const ServerConfigs = Configs.getServerConfig();
+const ServerConfigs = Config.getServerConfig();
 
 export class Layer {
   private database: IDatabase = database;
@@ -25,7 +22,7 @@ export class Layer {
       layer.url = urlObj.path;
     }
 
-    return await this.database.layer.create(layer);
+    return await this.database.models.layer.create(layer);
   }
 
   public async update(id: string, layer: ILayer): Promise<{ id: string }> {
@@ -37,7 +34,7 @@ export class Layer {
       layer.url = urlObj.path;
     }
 
-    return await this.database.layer
+    return await this.database.models.layer
       .update(layer, {
         where: {
           id: id
@@ -52,7 +49,7 @@ export class Layer {
   }
 
   public async delete(id: string): Promise<void> {
-    return await this.database.layer
+    return await this.database.models.layer
       .destroy({
         where: {
           id: id
@@ -67,7 +64,7 @@ export class Layer {
   }
 
   public async get(): Promise<LayerInstance[]> {
-    return await this.database.layer
+    return await this.database.models.layer
       .findAll()
       .then((layers: LayerInstance[]) => {
         const plainLayers = layers.map(layer =>
@@ -79,7 +76,7 @@ export class Layer {
   }
 
   public async getBaseLayers(): Promise<LayerInstance[]> {
-    return await this.database.layer
+    return await this.database.models.layer
       .findAll({
         where: {
           layerOptions: {
@@ -102,7 +99,7 @@ export class Layer {
   }
 
   public async getById(id: string, user: string): Promise<LayerInstance> {
-    const layer = await this.database.layer.findOne({
+    const layer = await this.database.models.layer.findOne({
       where: {
         id: id
       }
@@ -148,7 +145,7 @@ export class Layer {
       ]
     };
 
-    return await this.database.layer
+    return await this.database.models.layer
       .findOne({
         where: where
       })

@@ -1,7 +1,6 @@
 import * as Boom from 'boom';
 
-import { IDatabase, database } from '../database';
-import { ObjectUtils } from '../utils';
+import { IDatabase, database, ObjectUtils } from '@igo2/base-api';
 import { UserApi } from '../user';
 import { ContextInstance, Scope } from '../context';
 
@@ -27,7 +26,7 @@ export class ContextPermission {
       }
     }
 
-    return await this.database.contextPermission
+    return await this.database.models.contextPermission
       .bulkCreate(bulkData, {
         individualHooks: true
       })
@@ -42,7 +41,7 @@ export class ContextPermission {
   }
 
   public async update(id: string, contextPermission: IContextPermission): Promise<{ id: string }> {
-    return await this.database.contextPermission
+    return await this.database.models.contextPermission
       .update(contextPermission, {
         where: {
           id: id
@@ -67,7 +66,7 @@ export class ContextPermission {
   }
 
   public async delete(id: string): Promise<void> {
-    return await this.database.contextPermission
+    return await this.database.models.contextPermission
       .destroy({
         where: {
           id: id
@@ -82,7 +81,7 @@ export class ContextPermission {
   }
 
   public async getById(id: string): Promise<ContextPermissionInstance> {
-    return await this.database.contextPermission
+    return await this.database.models.contextPermission
       .findOne({
         where: {
           id: id
@@ -97,7 +96,7 @@ export class ContextPermission {
   }
 
   public async getByContextId(contextId): Promise<ContextPermissionInstance[]> {
-    return await this.database.contextPermission
+    return await this.database.models.contextPermission
       .findAll({
         where: {
           contextId: contextId
@@ -137,7 +136,7 @@ export class ContextPermission {
     if (isNaN(<number>(<any>contextId))) {
       where = { uri: contextId };
     }
-    const context = await this.database.context.findOne({
+    const context = await this.database.models.context.findOne({
       where: where
     });
 
@@ -154,10 +153,10 @@ export class ContextPermission {
     if (user) {
       profils.push(user);
     }
-    const contextFound: any = await this.database.context.findAll({
+    const contextFound: any = await this.database.models.context.findAll({
       include: [
         {
-          model: this.database.contextPermission,
+          model: this.database.models.contextPermission,
           where: {
             profil: profils
           }

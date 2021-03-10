@@ -3,7 +3,7 @@ import * as Joi from 'joi';
 
 import { POIController } from './poi.controller';
 import { POIValidator } from './poi.validator';
-import { UserValidator } from '../user/user.validator';
+import { UserValidator } from '@igo2/base-api';
 
 export default function(server: Hapi.Server) {
   const poiController = new POIController();

@@ -1,4 +1,4 @@
-import * as Configs from '../configurations';
+import { Config, IPostgresConfiguration } from '@igo2/base-api';
 import { exec } from 'child_process';
 
 const args = process.argv.slice(2);
@@ -12,7 +12,8 @@ if (!fromHost || !toHost) {
   process.exit(1);
 }
 
-const dbConfig = Configs.getDatabaseConfig() as Configs.IPostgresConfiguration;
+Config.readConfig(__dirname, `../configurations/config.${process.env.NODE_ENV || 'dev'}.json`);
+const dbConfig = Config.getDatabaseConfig() as IPostgresConfiguration;
 const user =  dbConfig.username;
 const password = dbConfig.password;
 

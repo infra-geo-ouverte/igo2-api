@@ -3,7 +3,7 @@ import * as Joi from 'joi';
 
 import { ProfilIgoController } from './profilIgo.controller';
 import { ProfilIgoValidator } from './profilIgo.validator';
-import { UserValidator } from '../user/user.validator';
+import { UserValidator } from '@igo2/base-api';
 
 export default function(server: Hapi.Server) {
   const profilIgoController = new ProfilIgoController();
