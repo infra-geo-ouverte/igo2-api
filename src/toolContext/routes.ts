@@ -1,4 +1,4 @@
-import * as Hapi from 'hapi';
+import * as Hapi from '@hapi/hapi';
 import * as Joi from 'joi';
 
 import { ToolContextController } from './toolContext.controller';
@@ -25,10 +25,10 @@ export default function(server: Hapi.Server) {
       plugins: {
         'hapi-swagger': {
           responses: {
-            '200': {
+            200: {
               description: 'Tools founded.'
             },
-            '404': {
+            404: {
               description: 'Context does not exists.'
             }
           }
@@ -54,10 +54,10 @@ export default function(server: Hapi.Server) {
       plugins: {
         'hapi-swagger': {
           responses: {
-            '200': {
+            200: {
               description: 'ToolContext founded.'
             },
-            '404': {
+            404: {
               description: 'ToolContext does not exists.'
             }
           }
@@ -83,10 +83,10 @@ export default function(server: Hapi.Server) {
       plugins: {
         'hapi-swagger': {
           responses: {
-            '204': {
+            204: {
               description: 'Deleted ToolContext.'
             },
-            '404': {
+            404: {
               description: 'ToolContext does not exists.'
             }
           }
@@ -113,10 +113,10 @@ export default function(server: Hapi.Server) {
       plugins: {
         'hapi-swagger': {
           responses: {
-            '200': {
+            200: {
               description: 'Deleted ToolContext.'
             },
-            '404': {
+            404: {
               description: 'ToolContext does not exists.'
             }
           }
@@ -142,7 +142,7 @@ export default function(server: Hapi.Server) {
       plugins: {
         'hapi-swagger': {
           responses: {
-            '201': {
+            201: {
               description: 'Created ToolContext.'
             }
           }

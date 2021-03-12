@@ -1,4 +1,4 @@
-import * as Hapi from 'hapi';
+import * as Hapi from '@hapi/hapi';
 import * as Joi from 'joi';
 
 import { LayerController } from './layer.controller';
@@ -28,10 +28,10 @@ export default function(server: Hapi.Server) {
       plugins: {
         'hapi-swagger': {
           responses: {
-            '200': {
+            200: {
               description: 'Layer founded.'
             },
-            '404': {
+            404: {
               description: 'Layer does not exists.'
             }
           }
@@ -58,10 +58,10 @@ export default function(server: Hapi.Server) {
       plugins: {
         'hapi-swagger': {
           responses: {
-            '200': {
+            200: {
               description: 'Layer founded.'
             },
-            '404': {
+            404: {
               description: 'Layer does not exists.'
             }
           }
@@ -86,10 +86,10 @@ export default function(server: Hapi.Server) {
       plugins: {
         'hapi-swagger': {
           responses: {
-            '200': {
+            200: {
               description: 'Layer founded.'
             },
-            '404': {
+            404: {
               description: 'Layer does not exists.'
             }
           }
@@ -140,10 +140,10 @@ export default function(server: Hapi.Server) {
       plugins: {
         'hapi-swagger': {
           responses: {
-            '204': {
+            204: {
               description: 'Deleted Layer.'
             },
-            '404': {
+            404: {
               description: 'Layer does not exists.'
             }
           }
@@ -169,10 +169,10 @@ export default function(server: Hapi.Server) {
       plugins: {
         'hapi-swagger': {
           responses: {
-            '200': {
+            200: {
               description: 'Deleted Layer.'
             },
-            '404': {
+            404: {
               description: 'Layer does not exists.'
             }
           }
@@ -195,7 +195,7 @@ export default function(server: Hapi.Server) {
       plugins: {
         'hapi-swagger': {
           responses: {
-            '201': {
+            201: {
               description: 'Created Layer.'
             }
           }

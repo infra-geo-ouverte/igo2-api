@@ -1,4 +1,4 @@
-import * as Hapi from 'hapi';
+import * as Hapi from '@hapi/hapi';
 import * as Joi from 'joi';
 
 import { ContextPermissionController } from './contextPermission.controller';
@@ -25,10 +25,10 @@ export default function(server: Hapi.Server) {
       plugins: {
         'hapi-swagger': {
           responses: {
-            '200': {
+            200: {
               description: 'permissions founded.'
             },
-            '404': {
+            404: {
               description: 'Permission does not exists.'
             }
           }
@@ -54,10 +54,10 @@ export default function(server: Hapi.Server) {
       plugins: {
         'hapi-swagger': {
           responses: {
-            '204': {
+            204: {
               description: 'Deleted ContextPermission.'
             },
-            '404': {
+            404: {
               description: 'ContextPermission does not exists.'
             }
           }
@@ -84,10 +84,10 @@ export default function(server: Hapi.Server) {
       plugins: {
         'hapi-swagger': {
           responses: {
-            '200': {
+            200: {
               description: 'Deleted ContextPermission.'
             },
-            '404': {
+            404: {
               description: 'ContextPermission does not exists.'
             }
           }
@@ -113,7 +113,7 @@ export default function(server: Hapi.Server) {
       plugins: {
         'hapi-swagger': {
           responses: {
-            '201': {
+            201: {
               description: 'Created ContextPermission.'
             }
           }

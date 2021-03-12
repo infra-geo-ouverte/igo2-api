@@ -1,12 +1,12 @@
-import * as Hapi from 'hapi';
+import * as Hapi from '@hapi/hapi';
 import * as Joi from 'joi';
 
-import { POIController } from './poi.controller';
-import { POIValidator } from './poi.validator';
+import { PoiController } from './poi.controller';
+import { PoiValidator } from './poi.validator';
 import { UserValidator } from '@igo2/base-api';
 
 export default function(server: Hapi.Server) {
-  const poiController = new POIController();
+  const poiController = new PoiController();
   server.bind(poiController);
 
   server.route({
@@ -25,11 +25,11 @@ export default function(server: Hapi.Server) {
       plugins: {
         'hapi-swagger': {
           responses: {
-            '200': {
-              description: 'POI founded.'
+            200: {
+              description: 'Poi founded.'
             },
-            '404': {
-              description: 'POI does not exists.'
+            404: {
+              description: 'Poi does not exists.'
             }
           }
         }
@@ -66,11 +66,11 @@ export default function(server: Hapi.Server) {
       plugins: {
         'hapi-swagger': {
           responses: {
-            '204': {
-              description: 'Deleted POI.'
+            204: {
+              description: 'Deleted Poi.'
             },
-            '404': {
-              description: 'POI does not exists.'
+            404: {
+              description: 'Poi does not exists.'
             }
           }
         }
@@ -89,17 +89,17 @@ export default function(server: Hapi.Server) {
         params: {
           id: Joi.string().required()
         },
-        payload: POIValidator.updateModel,
+        payload: PoiValidator.updateModel,
         headers: UserValidator.authenticateValidator
       },
       plugins: {
         'hapi-swagger': {
           responses: {
-            '200': {
-              description: 'Deleted POI.'
+            200: {
+              description: 'Deleted Poi.'
             },
-            '404': {
-              description: 'POI does not exists.'
+            404: {
+              description: 'Poi does not exists.'
             }
           }
         }
@@ -115,14 +115,14 @@ export default function(server: Hapi.Server) {
       tags: ['api', 'pois'],
       description: 'Create a poi.',
       validate: {
-        payload: POIValidator.createModel,
+        payload: PoiValidator.createModel,
         headers: UserValidator.authenticateValidator
       },
       plugins: {
         'hapi-swagger': {
           responses: {
-            '201': {
-              description: 'Created POI.'
+            201: {
+              description: 'Created Poi.'
             }
           }
         }

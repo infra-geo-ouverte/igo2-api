@@ -1,10 +1,10 @@
 import * as Joi from 'joi';
-import * as Boom from 'boom';
+import * as Boom from '@hapi/boom';
 
 import { UserValidator } from '@igo2/base-api';
 
-import { TypePermission } from './contextPermission.model';
-import { ContextPermission } from './contextPermission';
+import { TypePermission } from './contextPermission.interface';
+import { ContextPermissionService } from './contextPermission.service';
 
 export class ContextPermissionValidator {
   static createModel = Joi.object().keys({
@@ -18,50 +18,54 @@ export class ContextPermissionValidator {
   });
 
   static writePermission = async (value, options) => {
-    const valid = Joi.validate(value, UserValidator.notAnonymousValidator);
+    const valid = UserValidator.notAnonymousValidator.validate(value);
 
     if (valid.error) {
       throw Boom.unauthorized('Must be authenticated');
     }
 
     const owner = value['x-consumer-username'];
-    const contextId = options.context.params['contextId'];
-    const contextPermission = new ContextPermission();
-    const permission = await contextPermission.getPermissionByContextId(
-      contextId,
-      owner
-    );
-
+    const contextId = options.context.params.contextId;
+    const contextPermissionService = new ContextPermissionService();
+    const permission = await contextPermissionService.getPermissionByContextId(contextId, owner);
+    console.log(permission);
+    console.log(owner);
     if (permission !== TypePermission.write) {
+      console.log('nonnn');
       throw Boom.forbidden('Must have write permission for this context');
     }
+
+    return new Promise((resolve) => {
+      resolve(value);
+    });
   };
 
   static readPermission = async (value, options) => {
-    const valid = Joi.validate(value, UserValidator.userValidator);
+    const valid = UserValidator.notAnonymousValidator.validate(value);
 
     if (valid.error) {
       throw Boom.unauthorized('Must be authenticated');
     }
     const owner = value['x-consumer-username'];
-    const contextId = options.context.params['contextId'];
-    const contextPermission = new ContextPermission();
-    const permission = await contextPermission.getPermissionByContextId(
-      contextId,
-      owner
-    );
+    const contextId = options.context.params.contextId;
+    const contextPermissionService = new ContextPermissionService();
+    const permission = await contextPermissionService.getPermissionByContextId(contextId, owner);
 
     if (!permission) {
       throw Boom.forbidden('Must have read permission for this context');
     }
+
+    return new Promise((resolve) => {
+      resolve(value);
+    });
   };
 
   static authenticatedAndReadPermission = async (value, options) => {
-    const valid = Joi.validate(value, UserValidator.notAnonymousValidator);
+    const valid = UserValidator.notAnonymousValidator.validate(value);
     if (valid.error) {
       throw Boom.unauthorized('Must be authenticated');
     }
 
-    await ContextPermissionValidator.readPermission(value, options);
+    return await ContextPermissionValidator.readPermission(value, options);
   };
 }

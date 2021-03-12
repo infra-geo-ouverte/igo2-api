@@ -1,4 +1,4 @@
-import * as Hapi from 'hapi';
+import * as Hapi from '@hapi/hapi';
 import * as Joi from 'joi';
 
 import { ProfilIgoController } from './profilIgo.controller';
@@ -75,10 +75,10 @@ export default function(server: Hapi.Server) {
       plugins: {
         'hapi-swagger': {
           responses: {
-            '204': {
+            204: {
               description: 'Deleted Profil Igo.'
             },
-            '404': {
+            404: {
               description: 'Profil Igo does not exists.'
             }
           }
@@ -104,10 +104,10 @@ export default function(server: Hapi.Server) {
       plugins: {
         'hapi-swagger': {
           responses: {
-            '200': {
+            200: {
               description: 'Deleted Profil Igo.'
             },
-            '404': {
+            404: {
               description: 'Profil Igo does not exists.'
             }
           }
@@ -130,7 +130,7 @@ export default function(server: Hapi.Server) {
       plugins: {
         'hapi-swagger': {
           responses: {
-            '201': {
+            201: {
               description: 'Created profil Igo.'
             }
           }

@@ -1,52 +1,52 @@
-import * as Hapi from 'hapi';
+import * as Hapi from '@hapi/hapi';
 
 import { handleError } from '../utils';
 
-import { POI } from './poi';
-import { IPOI } from './poi.model';
+import { PoiService } from './poi.service';
+import { IPoi } from './poi.interface';
 
-export class POIController {
-  private poi: POI;
+export class PoiController {
+  private poiService: PoiService;
 
   constructor() {
-    this.poi = new POI();
+    this.poiService = new PoiService();
   }
 
   public async create(request: Hapi.Request, h: Hapi.ResponseToolkit) {
-    const poiToCreate: IPOI = request.payload as IPOI;
+    const poiToCreate: IPoi = request.payload as IPoi;
     poiToCreate.userId = request.headers['x-consumer-custom-id'];
 
-    const res = await this.poi.create(poiToCreate).catch(handleError);
+    const res = await this.poiService.create(poiToCreate).catch(handleError);
     return h.response(res).code(201);
   }
 
   public async update(request: Hapi.Request, _h: Hapi.ResponseToolkit) {
-    const id = request.params['id'];
+    const id = request.params.id;
     const userId = request.headers['x-consumer-custom-id'];
-    const poiToUpdate: IPOI = request.payload as IPOI;
+    const poiToUpdate: IPoi = request.payload as IPoi;
 
-    return await this.poi.update(id, userId, poiToUpdate).catch(handleError);
+    return await this.poiService.update(id, userId, poiToUpdate).catch(handleError);
   }
 
   public async delete(request: Hapi.Request, h: Hapi.ResponseToolkit) {
-    const id = request.params['id'];
+    const id = request.params.id;
     const userId = request.headers['x-consumer-custom-id'];
 
-    await this.poi.delete(id, userId).catch(handleError);
+    await this.poiService.delete(id, userId).catch(handleError);
 
     return h.response().code(204);
   }
 
   public async getById(request: Hapi.Request, _h: Hapi.ResponseToolkit) {
-    const id = request.params['id'];
+    const id = request.params.id;
     const userId = request.headers['x-consumer-custom-id'];
 
-    return await this.poi.getById(id, userId).catch(handleError);
+    return await this.poiService.getById(id, userId).catch(handleError);
   }
 
   public async get(request: Hapi.Request, _h: Hapi.ResponseToolkit) {
     const userId = request.headers['x-consumer-custom-id'];
 
-    return await this.poi.get(userId).catch(handleError);
+    return await this.poiService.get(userId).catch(handleError);
   }
 }

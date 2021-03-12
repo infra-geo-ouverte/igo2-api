@@ -1,27 +1,27 @@
-import * as Hapi from 'hapi';
+import * as Hapi from '@hapi/hapi';
 
 import { ObjectUtils } from '@igo2/base-api';
 import { handleError } from '../utils';
 
 import { UserApi } from '../user';
-import { ProfilIgo, ProfilIgoInstance } from '../profilIgo';
-import { UserIgo } from './userIgo';
-import { IUserIgo } from './userIgo.model';
+import { ProfilIgoService, ProfilIgo } from '../profilIgo';
+import { UserIgoService } from './userIgo.service';
+import { IUserIgo } from './userIgo.interface';
 
 export class UserIgoController {
-  private userIgo: UserIgo;
-  private profilIgo: ProfilIgo;
+  private userIgoService: UserIgoService;
+  private profilIgoService: ProfilIgoService;
 
   constructor() {
-    this.userIgo = new UserIgo();
-    this.profilIgo = new ProfilIgo();
+    this.userIgoService = new UserIgoService();
+    this.profilIgoService = new ProfilIgoService();
   }
 
   public async create(request: Hapi.Request, h: Hapi.ResponseToolkit) {
     const userIgoToCreate: IUserIgo = request.payload as IUserIgo;
     userIgoToCreate.userId = request.headers['x-consumer-custom-id'];
 
-    const res = await this.userIgo.create(userIgoToCreate).catch(handleError);
+    const res = await this.userIgoService.create(userIgoToCreate).catch(handleError);
     return h.response(res).code(201);
   }
 
@@ -29,15 +29,15 @@ export class UserIgoController {
     const userIgoToUpdate: IUserIgo = request.payload as IUserIgo;
 
     const userId = request.headers['x-consumer-custom-id'];
-    const userIGO = await this.userIgo.get(userId).catch(() => {});
+    const userIGO = await this.userIgoService.get(userId).catch(() => {});
 
     if (userIGO) {
       userIgoToUpdate.preference = ObjectUtils.removeUndefined(
         Object.assign({}, userIGO.preference, userIgoToUpdate.preference)
       );
-      return await this.userIgo.update(userId, userIgoToUpdate).catch(handleError);
+      return await this.userIgoService.update(userId, userIgoToUpdate).catch(handleError);
     } else {
-      return await this.userIgo
+      return await this.userIgoService
         .create(ObjectUtils.removeUndefined(Object.assign(userIgoToUpdate, { userId })))
         .catch(handleError);
     }
@@ -46,7 +46,7 @@ export class UserIgoController {
   public async delete(request: Hapi.Request, h: Hapi.ResponseToolkit) {
     const userId = request.headers['x-consumer-custom-id'];
 
-    await this.userIgo.delete(userId).catch(handleError);
+    await this.userIgoService.delete(userId).catch(handleError);
 
     return h.response().code(204);
   }
@@ -55,7 +55,7 @@ export class UserIgoController {
     const userId = request.headers['x-consumer-id'];
     const userCustomId = request.headers['x-consumer-custom-id'];
 
-    const user = await this.userIgo
+    const user = await this.userIgoService
       .get(userCustomId)
       .catch(e => {
         if (e && e.output && e.output.statusCode === 404) {
@@ -68,7 +68,7 @@ export class UserIgoController {
     const profils = (await UserApi.getProfils(userId, request.headers['x-consumer-groups']).catch(
       () => []
     )) as string[];
-    const profilsIgo = (await this.profilIgo.getByProfils(profils).catch(() => [])) as ProfilIgoInstance[];
+    const profilsIgo = (await this.profilIgoService.getByProfils(profils).catch(() => [])) as ProfilIgo[];
     const preference: any = profilsIgo.reduce((acc, value) => Object.assign(acc, value ? value.preference : {}), {});
     const canShare = profilsIgo.find(p => p.canShare === true);
     preference.canShare = !!canShare;

@@ -1,19 +1,18 @@
-import * as Boom from 'boom';
+import * as Boom from '@hapi/boom';
 import * as URL from 'url';
 
-import { IDatabase, database, ObjectUtils, Config } from '@igo2/base-api';
+import { ObjectUtils } from '@igo2/base-api';
+import { getServerConfig } from '../configurations';
 import { UserApi } from '../user';
 
-import { ILayer, LayerInstance } from './layer.model';
+import { ILayer } from './layer.interface';
+import { Layer } from './layer.model';
 
-const ServerConfigs = Config.getServerConfig();
+const ServerConfigs = getServerConfig();
 
-export class Layer {
-  private database: IDatabase = database;
+export class LayerService {
 
-  constructor() {}
-
-  public async create(layer: ILayer): Promise<LayerInstance> {
+  public async create(layer: ILayer): Promise<Layer> {
     const localhost = ServerConfigs.localhost;
     const hosts = localhost ? localhost.hosts : [];
     const urlObj = URL.parse(layer.url || '');
@@ -22,7 +21,7 @@ export class Layer {
       layer.url = urlObj.path;
     }
 
-    return await this.database.models.layer.create(layer);
+    return await Layer.create(layer);
   }
 
   public async update(id: string, layer: ILayer): Promise<{ id: string }> {
@@ -34,13 +33,13 @@ export class Layer {
       layer.url = urlObj.path;
     }
 
-    return await this.database.models.layer
+    return await Layer
       .update(layer, {
         where: {
           id: id
         }
       })
-      .then((count: [number, LayerInstance[]]) => {
+      .then((count: [number, Layer[]]) => {
         if (!count[0]) {
           throw Boom.notFound();
         }
@@ -49,7 +48,7 @@ export class Layer {
   }
 
   public async delete(id: string): Promise<void> {
-    return await this.database.models.layer
+    return await Layer
       .destroy({
         where: {
           id: id
@@ -63,10 +62,10 @@ export class Layer {
       });
   }
 
-  public async get(): Promise<LayerInstance[]> {
-    return await this.database.models.layer
+  public async get(): Promise<Layer[]> {
+    return await Layer
       .findAll()
-      .then((layers: LayerInstance[]) => {
+      .then((layers: Layer[]) => {
         const plainLayers = layers.map(layer =>
           ObjectUtils.removeNull(layer.get())
         );
@@ -75,8 +74,8 @@ export class Layer {
       });
   }
 
-  public async getBaseLayers(): Promise<LayerInstance[]> {
-    return await this.database.models.layer
+  public async getBaseLayers(): Promise<Layer[]> {
+    return await Layer
       .findAll({
         where: {
           layerOptions: {
@@ -84,7 +83,7 @@ export class Layer {
           }
         }
       })
-      .then((layers: LayerInstance[]) => {
+      .then((layers: Layer[]) => {
         const plainLayers = layers.map(layer => {
           const plainLayer = layer.get();
           Object.assign(plainLayer, plainLayer.layerOptions);
@@ -98,8 +97,8 @@ export class Layer {
       });
   }
 
-  public async getById(id: string, user: string): Promise<LayerInstance> {
-    const layer = await this.database.models.layer.findOne({
+  public async getById(id: string, user: string): Promise<Layer> {
+    const layer = await Layer.findOne({
       where: {
         id: id
       }
@@ -125,7 +124,7 @@ export class Layer {
     return layerPlain;
   }
 
-  public async getBySource(layer: ILayer): Promise<LayerInstance> {
+  public async getBySource(layer: ILayer): Promise<Layer> {
     const localhost = ServerConfigs.localhost;
     const hosts = localhost ? localhost.hosts : [];
     layer.sourceOptions = layer.sourceOptions || {};
@@ -145,11 +144,11 @@ export class Layer {
       ]
     };
 
-    return await this.database.models.layer
+    return await Layer
       .findOne({
         where: where
       })
-      .then((layerFound: LayerInstance) => {
+      .then((layerFound: Layer) => {
         if (!layerFound) {
           throw Boom.notFound();
         }

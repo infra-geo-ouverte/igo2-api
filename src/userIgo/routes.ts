@@ -1,10 +1,10 @@
-import * as Hapi from 'hapi';
+import * as Hapi from '@hapi/hapi';
 
 import { UserIgoController } from './userIgo.controller';
 import { UserIgoValidator } from './userIgo.validator';
 import { UserValidator } from '@igo2/base-api';
 
-export default function(server: Hapi.Server) {
+export default function (server: Hapi.Server) {
   const userIgoController = new UserIgoController();
   server.bind(userIgoController);
 
@@ -34,10 +34,10 @@ export default function(server: Hapi.Server) {
       plugins: {
         'hapi-swagger': {
           responses: {
-            '204': {
+            204: {
               description: 'Deleted User Igo.'
             },
-            '404': {
+            404: {
               description: 'User Igo does not exists.'
             }
           }
@@ -60,10 +60,10 @@ export default function(server: Hapi.Server) {
       plugins: {
         'hapi-swagger': {
           responses: {
-            '200': {
+            200: {
               description: 'Updated User Igo.'
             },
-            '404': {
+            404: {
               description: 'User Igo does not exists.'
             }
           }
@@ -86,7 +86,7 @@ export default function(server: Hapi.Server) {
       plugins: {
         'hapi-swagger': {
           responses: {
-            '201': {
+            201: {
               description: 'Created User Igo.'
             }
           }

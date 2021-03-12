@@ -1,4 +1,4 @@
-import * as Hapi from 'hapi';
+import * as Hapi from '@hapi/hapi';
 import * as Joi from 'joi';
 
 import { ContextController } from './context.controller';
@@ -23,10 +23,10 @@ export default function(server: Hapi.Server) {
       plugins: {
         'hapi-swagger': {
           responses: {
-            '200': {
+            200: {
               description: 'Context founded.'
             },
-            '404': {
+            404: {
               description: 'Context does not exists.'
             }
           }
@@ -51,7 +51,7 @@ export default function(server: Hapi.Server) {
       plugins: {
         'hapi-swagger': {
           responses: {
-            '201': {
+            201: {
               description: 'Default Context defined'
             }
           }
@@ -76,10 +76,10 @@ export default function(server: Hapi.Server) {
       plugins: {
         'hapi-swagger': {
           responses: {
-            '200': {
+            200: {
               description: 'Context founded.'
             },
-            '404': {
+            404: {
               description: 'Context does not exists.'
             }
           }
@@ -103,10 +103,10 @@ export default function(server: Hapi.Server) {
       plugins: {
         'hapi-swagger': {
           responses: {
-            '200': {
+            200: {
               description: 'Context founded.'
             },
-            '404': {
+            404: {
               description: 'Context does not exists.'
             }
           }
@@ -146,13 +146,13 @@ export default function(server: Hapi.Server) {
       plugins: {
         'hapi-swagger': {
           responses: {
-            '204': {
+            204: {
               description: 'Deleted Context.'
             },
-            '401': {
+            401: {
               description: 'Must be authenticated'
             },
-            '404': {
+            404: {
               description: 'Context does not exists.'
             }
           }
@@ -178,13 +178,13 @@ export default function(server: Hapi.Server) {
       plugins: {
         'hapi-swagger': {
           responses: {
-            '200': {
+            200: {
               description: 'Deleted Context.'
             },
-            '401': {
+            401: {
               description: 'Must be authenticated'
             },
-            '404': {
+            404: {
               description: 'Context does not exists.'
             }
           }
@@ -207,10 +207,10 @@ export default function(server: Hapi.Server) {
       plugins: {
         'hapi-swagger': {
           responses: {
-            '201': {
+            201: {
               description: 'Created Context.'
             },
-            '401': {
+            401: {
               description: 'Must be authenticated'
             }
           }
@@ -235,10 +235,10 @@ export default function(server: Hapi.Server) {
       plugins: {
         'hapi-swagger': {
           responses: {
-            '201': {
+            201: {
               description: 'Cloned context.'
             },
-            '401': {
+            401: {
               description: 'Must be authenticated'
             }
           }

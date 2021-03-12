@@ -1,21 +1,21 @@
-import * as Hapi from 'hapi';
-import * as Boom from 'boom';
+import * as Hapi from '@hapi/hapi';
+import * as Boom from '@hapi/boom';
 
 import { handleError } from '../utils';
-import { UserApi, UserInstance } from '../user';
-import { ProfilIgo } from './profilIgo';
-import { IProfilIgo, IProfilIgoChilds } from './profilIgo.model';
+import { UserApi, User } from '../user';
+import { ProfilIgoService } from './profilIgo.service';
+import { IProfilIgo, IProfilIgoChilds } from './profilIgo.interface';
 
 export class ProfilIgoController {
-  private profilIgo: ProfilIgo;
+  private profilIgoService: ProfilIgoService;
 
   constructor() {
-    this.profilIgo = new ProfilIgo();
+    this.profilIgoService = new ProfilIgoService();
   }
 
   public async create(request: Hapi.Request, h: Hapi.ResponseToolkit) {
     const profilIgoToCreate: IProfilIgo = request.payload as IProfilIgo;
-    const res = await this.profilIgo.create(profilIgoToCreate).catch(handleError);
+    const res = await this.profilIgoService.create(profilIgoToCreate).catch(handleError);
 
     return h.response(res).code(201);
   }
@@ -24,12 +24,12 @@ export class ProfilIgoController {
     const profilName = (request.params as any).name;
     const profilIgoToUpdate: IProfilIgo = request.payload as IProfilIgo;
 
-    return await this.profilIgo.update(profilName, profilIgoToUpdate).catch(handleError);
+    return await this.profilIgoService.update(profilName, profilIgoToUpdate).catch(handleError);
   }
 
   public async delete(request: Hapi.Request, h: Hapi.ResponseToolkit) {
     const profilName = (request.params as any).name;
-    await this.profilIgo.delete(profilName).catch(handleError);
+    await this.profilIgoService.delete(profilName).catch(handleError);
 
     return h.response().code(204);
   }
@@ -39,15 +39,17 @@ export class ProfilIgoController {
     const username = request.headers['x-consumer-username'];
 
     const profils: string[] = await UserApi.getProfils(id, request.headers['x-consumer-groups']).catch(() => []);
-    const user: UserInstance = await UserApi.getUser(username);
+    const user: User = await UserApi.getUser(username);
 
-    let profilIgo: IProfilIgo[] = (await this.profilIgo.get().catch(handleError)).filter(p => profils.includes(p.name));
+    let profilIgo: IProfilIgo[] = (await this.profilIgoService.get().catch(handleError)).filter((p) =>
+      profils.includes(p.name)
+    );
 
-    const hasAcrigeo = profilIgo.find(p => p.hasAcrigeo === true);
+    const hasAcrigeo = profilIgo.find((p) => p.hasAcrigeo === true);
     if (!hasAcrigeo) {
-      profilIgo = profilIgo.filter(p => p.name !== 'acrigeo');
+      profilIgo = profilIgo.filter((p) => p.name !== 'acrigeo');
     }
-    profilIgo = profilIgo.filter(p => p.canFilter !== false);
+    profilIgo = profilIgo.filter((p) => p.canFilter !== false);
 
     const regrProfils: IProfilIgoChilds[] = [
       {
@@ -57,8 +59,8 @@ export class ProfilIgoController {
     ]
       .concat(
         profilIgo
-          .filter(p => !p.group)
-          .map(p => {
+          .filter((p) => !p.group)
+          .map((p) => {
             return { name: p.name, title: p.title };
           })
       )
@@ -70,9 +72,9 @@ export class ProfilIgoController {
       ]);
 
     profilIgo
-      .filter(p => p.group)
-      .forEach(children => {
-        const parent = regrProfils.find(p => p.name === children.group);
+      .filter((p) => p.group)
+      .forEach((children) => {
+        const parent = regrProfils.find((p) => p.name === children.group);
         const c = { name: children.name, title: children.title };
         if (parent) {
           parent.childs = (parent.childs ? parent.childs.concat([c]) : [c]) as IProfilIgo[];
@@ -91,20 +93,20 @@ export class ProfilIgoController {
       throw Boom.notFound();
     }
 
-    return await this.profilIgo.getById(profilName).catch(handleError);
+    return await this.profilIgoService.getById(profilName).catch(handleError);
   }
 
   public async getProfilsAndUsers(request: Hapi.Request, _h: Hapi.ResponseToolkit) {
     const id = request.headers['x-consumer-id'];
-    const q = request.query['q'] ? request.query['q'].normalize('NFD').replace(/[\u0300-\u036f]/g, '') : undefined;
+    const q = request.query.q ? request.query.q.normalize('NFD').replace(/[\u0300-\u036f]/g, '') : undefined;
     const qRE = q ? new RegExp(q, 'gi') : undefined;
 
     const profils: string[] = await UserApi.getProfils(id, request.headers['x-consumer-groups']).catch(() => []);
 
-    const allProfilsIgo = (await this.profilIgo.get().catch(handleError));
-    const profilIgoOfCurrentUser: IProfilIgo[] = allProfilsIgo.filter(p => profils.includes(p.name));
+    const allProfilsIgo = await this.profilIgoService.get().catch(handleError);
+    const profilIgoOfCurrentUser: IProfilIgo[] = allProfilsIgo.filter((p) => profils.includes(p.name));
 
-    const canShare = profilIgoOfCurrentUser.find(p => p.canShare === true);
+    const canShare = profilIgoOfCurrentUser.find((p) => p.canShare === true);
     if (!canShare) {
       return [];
     }
@@ -119,7 +121,7 @@ export class ProfilIgoController {
 
     const profilIgo = allProfilsIgo
       .filter(
-        p =>
+        (p) =>
           canShareToProfils.includes(p.id) &&
           (!q ||
             p.name
@@ -131,13 +133,13 @@ export class ProfilIgoController {
               .replace(/[\u0300-\u036f]/g, '')
               .search(qRE) !== -1)
       )
-      .map(p => {
+      .map((p) => {
         return { name: p.name, title: p.title };
       });
 
-    const usersIgo = await UserApi.getAllUsers(request.query['limit'], q)
-      .then((users: UserInstance[]) => {
-        return users.map(u => {
+    const usersIgo = await UserApi.getAllUsers(request.query.limit, q)
+      .then((users: User[]) => {
+        return users.map((u) => {
           return {
             name: u.sourceId,
             title: u.firstName && u.lastName ? u.firstName + ' ' + u.lastName : u.sourceId

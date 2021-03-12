@@ -1,6 +1,6 @@
 import * as Joi from 'joi';
 
-export class POIValidator {
+export class PoiValidator {
   static updateModel = Joi.object().keys({
     title: Joi.string(),
     x: Joi.number(),
@@ -8,7 +8,7 @@ export class POIValidator {
     zoom: Joi.number()
   });
 
-  static createModel = POIValidator.updateModel.concat(
+  static createModel = PoiValidator.updateModel.concat(
     Joi.object().keys({
       title: Joi.required(),
       x: Joi.required(),

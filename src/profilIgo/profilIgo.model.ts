@@ -1,90 +1,50 @@
-import * as Sequelize from 'sequelize';
+import { Table, Column, Model, AllowNull, PrimaryKey, DataType } from 'sequelize-typescript';
 
-export interface IProfilIgoChilds {
+import { IProfilIgo } from './profilIgo.interface';
+
+@Table({
+  tableName: 'profil_igo',
+  timestamps: false
+})
+export class ProfilIgo extends Model<IProfilIgo> {
+
+  @PrimaryKey
+  @AllowNull(false)
+  @Column
+  id: number;
+
+  @AllowNull(false)
+  @Column({type: DataType.STRING(128)})
   name: string;
+
+  @AllowNull(false)
+  @Column({type: DataType.STRING(128)})
   title: string;
-  childs?: IProfilIgo[];
-}
 
-export interface IProfilIgo {
-  id?: number;
-  name: string;
-  title: string;
-  group?: string;
-  preference?: {
-    [key: string]: any;
-  };
-  canShare?: boolean;
-  canShareToProfils?: number[];
-  canFilter?: boolean;
-  hasAcrigeo?: boolean;
-}
+  @Column({type: DataType.STRING(128)})
+  group: string;
 
-export interface ProfilIgoInstance extends Sequelize.Instance<IProfilIgo> {
-  id?: number;
-  name: string;
-  title: string;
-  group?: string;
-  preference?: {
-    [key: string]: any;
-  };
-  canShare?: boolean;
-  canShareToProfils?: number[];
-  canFilter?: boolean;
-  hasAcrigeo?: boolean;
-}
+  @Column({type: DataType.JSON})
+  preference: { [key: string]: any };
 
-export interface ProfilIgoModel extends Sequelize.Model<ProfilIgoInstance, IProfilIgo> {}
+  @Column
+  canShare: boolean;
 
-export default function define(sequelize: Sequelize.Sequelize, DataTypes) {
-  const profilIgo = sequelize.define<ProfilIgoModel, IProfilIgo>(
-    'profilIgo',
-    {
-      id: {
-        type: DataTypes.INTEGER,
-        primaryKey: true,
-        allowNull: false
-      },
-      name: {
-        type: DataTypes.STRING(128),
-        allowNull: false
-      },
-      title: {
-        type: DataTypes.STRING(128),
-        allowNull: false
-      },
-      group: {
-        type: DataTypes.STRING(128),
-        allowNull: true
-      },
-      preference: {
-        type: DataTypes.JSON,
-        allowNull: true
-      },
-      canShare: {
-        type: DataTypes.BOOLEAN,
-        allowNull: true
-      },
-      canShareToProfils: {
-        type: DataTypes.ARRAY(DataTypes.INTEGER),
-        allowNull: true
-      },
-      canFilter: {
-        type: DataTypes.BOOLEAN,
-        allowNull: true
-      },
-      hasAcrigeo: {
-        type: DataTypes.BOOLEAN,
-        allowNull: true
-      }
-    },
-    {
-      tableName: 'profil_igo',
-      timestamps: false
-    }
-  );
+  @Column(DataType.STRING)
+  get canShareToProfils(): number[] {
+    const canShareToProfils: string = this.getDataValue('canShareToProfils') as any;
+    return canShareToProfils ? canShareToProfils.split(',').map(p => Number(p)) : [];
+  }
 
-  profilIgo.sync();
+  set canShareToProfils(value: number[]) {
+    const canShareToProfils: any = value.join(',');
+    this.setDataValue('canShareToProfils', canShareToProfils);
+  }
 
-  return profilIgo;
+
+  @Column
+  canFilter: boolean;
+
+  @Column
+  hasAcrigeo: boolean;
 }

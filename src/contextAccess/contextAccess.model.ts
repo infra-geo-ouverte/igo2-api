@@ -1,67 +1,39 @@
-import * as Sequelize from 'sequelize';
+import {
+  Table,
+  Column,
+  Model,
+  AllowNull,
+  PrimaryKey,
+  Index,
+  AutoIncrement,
+  UpdatedAt,
+  ForeignKey
+} from 'sequelize-typescript';
 
-export interface IContextAccess {
-  id?: string;
-  contextId: string;
-  calls: number;
-}
+import { IContextAccess } from './contextAccess.interface';
+import { Context } from '../context/context.model';
 
-export interface ContextAccessInstance
-  extends Sequelize.Instance<IContextAccess> {
-  id?: string;
+@Table({
+  tableName: 'context_access',
+  timestamps: true,
+  updatedAt: 'accessedAt'
+})
+export class ContextAccess extends Model<IContextAccess> {
+  @PrimaryKey
+  @AutoIncrement
+  @AllowNull(false)
+  @Column
+  id: number;
+
+  @Index
+  @ForeignKey(() => Context)
+  @AllowNull(false)
+  @Column
+  contextId: number;
+
+  @Column
   calls: number;
-  createdAt: Date;
+
+  @UpdatedAt
   accessedAt: Date;
-
-  contextId: string;
-}
-
-export interface ContextAccessModel
-  extends Sequelize.Model<ContextAccessInstance, IContextAccess> {}
-
-export default function define(sequelize: Sequelize.Sequelize, DataTypes) {
-  const contextAccess = sequelize.define<
-    ContextAccessModel,
-    IContextAccess
-  >(
-    'contextAccess',
-    {
-      id: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
-        primaryKey: true,
-        autoIncrement: true
-      },
-      contextId: {
-        type: DataTypes.INTEGER
-      },
-      calls: {
-        type: DataTypes.INTEGER
-      }
-    },
-    {
-      indexes: [
-        {
-          unique: true,
-          fields: ['contextId']
-        },
-      ],
-      tableName: 'context_access',
-      timestamps: true,
-      updatedAt: 'accessedAt'
-    }
-  );
-
-  const context = sequelize.models['context'];
-
-  context.hasMany(contextAccess, {
-    foreignKey: {
-      name: 'contextId',
-      allowNull: false
-    }
-  });
-
-  contextAccess.sync();
-
-  return contextAccess;
 }

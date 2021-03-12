@@ -1,66 +1,66 @@
-import * as Hapi from 'hapi';
+import * as Hapi from '@hapi/hapi';
 import * as URL from 'url';
 import * as https from 'https';
 import axios from 'axios';
-import * as Boom from 'boom';
+import * as Boom from '@hapi/boom';
 
-import { Config} from '@igo2/base-api';
+import { getServerConfig } from '../configurations';
 import { handleError } from '../utils';
 
-import { Layer } from './layer';
-import { ILayer } from './layer.model';
+import { LayerService } from './layer.service';
+import { ILayer } from './layer.interface';
 
-const ServerConfigs = Config.getServerConfig();
+const ServerConfigs = getServerConfig();
 
 export class LayerController {
-  private layer: Layer;
+  private layerService: LayerService;
 
   constructor() {
-    this.layer = new Layer();
+    this.layerService = new LayerService();
   }
 
   public async create(request: Hapi.Request, h: Hapi.ResponseToolkit) {
     const layerToCreate: ILayer = request.payload as ILayer;
 
-    const res = await this.layer.create(layerToCreate).catch(handleError);
+    const res = await this.layerService.create(layerToCreate).catch(handleError);
 
     return h.response(res).code(201);
   }
 
   public async update(request: Hapi.Request, _h: Hapi.ResponseToolkit) {
-    const id = request.params['id'];
+    const id = request.params.id;
     const layerToUpdate: ILayer = request.payload as ILayer;
 
-    return await this.layer.update(id, layerToUpdate).catch(handleError);
+    return await this.layerService.update(id, layerToUpdate).catch(handleError);
   }
 
   public async delete(request: Hapi.Request, h: Hapi.ResponseToolkit) {
-    const id = request.params['id'];
+    const id = request.params.id;
 
-    await this.layer.delete(id).catch(handleError);
+    await this.layerService.delete(id).catch(handleError);
 
     return h.response().code(204);
   }
 
   public async getById(request: Hapi.Request, _h: Hapi.ResponseToolkit) {
-    const id = request.params['id'];
+    const id = request.params.id;
     const user = request.headers['x-consumer-username'];
 
-    return await this.layer.getById(id, user).catch(handleError);
+    return await this.layerService.getById(id, user).catch(handleError);
   }
 
   public async get(_request: Hapi.Request, _h: Hapi.ResponseToolkit) {
-    return await this.layer.get().catch(handleError);
+    return await this.layerService.get().catch(handleError);
   }
 
   public async getBaseLayers(_request: Hapi.Request, _h: Hapi.ResponseToolkit) {
-    return await this.layer.getBaseLayers().catch(handleError);
+    return await this.layerService.getBaseLayers().catch(handleError);
   }
 
   public async getAdminOptions(request: Hapi.Request, _h: Hapi.ResponseToolkit) {
     const query: any = request.query;
 
-    return await this.layer
+    return await this.layerService
       .getBySource({
         sourceOptions: {
           type: query.type,
@@ -70,7 +70,7 @@ export class LayerController {
           }
         }
       })
-      .catch(e => {
+      .catch((e) => {
         if (e.isBoom && e.output.statusCode === 404) {
           return {};
         }
@@ -89,18 +89,16 @@ export class LayerController {
 
     let permission: any = {};
     if (ServerConfigs.wssApi && (!url || hosts.indexOf(url) !== -1)) {
-      const theme = query.url.substring(
-        query.url.lastIndexOf('/') + 1,
-        query.url.lastIndexOf('.fcgi')
-      );
+      const theme = query.url.substring(query.url.lastIndexOf('/') + 1, query.url.lastIndexOf('.fcgi'));
       https.globalAgent.options.rejectUnauthorized = false;
-      permission = await axios.get(`${ServerConfigs.wssApi}layers/${query.layers}/allowed?theme=${theme}`, {
-        headers: request.headers
-      })
-      .then(p => p.data)
-      .catch(e => {
-        throw Boom.badImplementation(e);
-      });
+      permission = await axios
+        .get(`${ServerConfigs.wssApi}layers/${query.layers}/allowed?theme=${theme}`, {
+          headers: request.headers
+        })
+        .then((p) => p.data)
+        .catch((e) => {
+          throw Boom.badImplementation(e);
+        });
 
       if (query.type === 'wms') {
         if (!permission.wmsAllowed) {
@@ -113,7 +111,7 @@ export class LayerController {
       }
     }
 
-    const options = await this.layer
+    const options = await this.layerService
       .getBySource({
         sourceOptions: {
           type: query.type,
@@ -123,7 +121,7 @@ export class LayerController {
           }
         }
       })
-      .catch(e => {
+      .catch((e) => {
         if (e.isBoom && e.output.statusCode === 404) {
           return {};
         }
@@ -132,18 +130,24 @@ export class LayerController {
       .catch(handleError);
 
     if (query.type === 'wms' && permission.wfsAllowed) {
-      options.layerOptions = Object.assign({
-        workspace: {
-          enabled: true
-        }
-      }, options.layerOptions);
+      options.layerOptions = Object.assign(
+        {
+          workspace: {
+            enabled: true
+          }
+        },
+        options.layerOptions
+      );
 
-      options.sourceOptions = Object.assign({
-        urlWfs: options.url,
-        paramsWFS: {
-          featureTypes: options.layers
-        }
-      }, options.sourceOptions);
+      options.sourceOptions = Object.assign(
+        {
+          urlWfs: options.url,
+          paramsWFS: {
+            featureTypes: options.layers
+          }
+        },
+        options.sourceOptions
+      );
     }
 
     return options;

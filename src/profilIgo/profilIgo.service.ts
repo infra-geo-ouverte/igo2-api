@@ -1,26 +1,24 @@
-import * as Boom from 'boom';
+import * as Boom from '@hapi/boom';
 
-import { IDatabase, database, ObjectUtils } from '@igo2/base-api';
+import { ObjectUtils } from '@igo2/base-api';
 
-import { IProfilIgo, ProfilIgoInstance } from './profilIgo.model';
+import { IProfilIgo } from './profilIgo.interface';
+import { ProfilIgo } from './profilIgo.model';
 
-export class ProfilIgo {
-  private database: IDatabase = database;
+export class ProfilIgoService {
 
-  constructor() {}
-
-  public async create(profilIgo: IProfilIgo): Promise<ProfilIgoInstance> {
-    return await this.database.models.profilIgo.create(profilIgo);
+  public async create(profilIgo: IProfilIgo): Promise<ProfilIgo> {
+    return await ProfilIgo.create(profilIgo);
   }
 
   public async update(profilName: string, profilIgo: IProfilIgo): Promise<{ name: string }> {
-    return await this.database.models.profilIgo
+    return await ProfilIgo
       .update(profilIgo, {
         where: {
           name: profilName
         }
       })
-      .then((count: [number, ProfilIgoInstance[]]) => {
+      .then((count: [number, ProfilIgo[]]) => {
         if (!count[0]) {
           throw Boom.notFound();
         }
@@ -29,7 +27,7 @@ export class ProfilIgo {
   }
 
   public async delete(profilName: string): Promise<void> {
-    return await this.database.models.profilIgo
+    return await ProfilIgo
       .destroy({
         where: {
           name: profilName
@@ -43,20 +41,20 @@ export class ProfilIgo {
       });
   }
 
-  public async get(): Promise<ProfilIgoInstance[]> {
-    return await this.database.models.profilIgo.findAll({ order: ['id'] }).then((profilsIgo: ProfilIgoInstance[]) => {
+  public async get(): Promise<ProfilIgo[]> {
+    return await ProfilIgo.findAll({ order: ['id'] }).then((profilsIgo: ProfilIgo[]) => {
       return profilsIgo.map(profil => ObjectUtils.removeNull(profil.get()));
     });
   }
 
-  public async getById(profilName: string): Promise<ProfilIgoInstance> {
-    return await this.database.models.profilIgo
+  public async getById(profilName: string): Promise<ProfilIgo> {
+    return await ProfilIgo
       .findOne({
         where: {
           name: profilName
         }
       })
-      .then((profilIgo: ProfilIgoInstance) => {
+      .then((profilIgo: ProfilIgo) => {
         if (!profilIgo) {
           throw Boom.notFound();
         }
@@ -65,14 +63,14 @@ export class ProfilIgo {
   }
 
   public async getByProfils(profils: string[]): Promise<{ [key: string]: any }> {
-    return await this.database.models.profilIgo
+    return await ProfilIgo
       .findAll({
         where: {
           name: profils
         },
         order: [['id', 'DESC']]
       })
-      .then((profilsIgo: ProfilIgoInstance[]) => {
+      .then((profilsIgo: ProfilIgo[]) => {
         return profilsIgo.map(profil => profil.get());
       });
   }

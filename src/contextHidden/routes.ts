@@ -1,4 +1,4 @@
-import * as Hapi from 'hapi';
+import * as Hapi from '@hapi/hapi';
 import * as Joi from 'joi';
 
 import { ContextHiddenController } from './contextHidden.controller';
@@ -22,7 +22,7 @@ export default function(server: Hapi.Server) {
       plugins: {
         'hapi-swagger': {
           responses: {
-            '200': {
+            200: {
               description: 'Hidden contexts founded.'
             }
           }
@@ -47,10 +47,10 @@ export default function(server: Hapi.Server) {
       plugins: {
         'hapi-swagger': {
           responses: {
-            '200': {
+            200: {
               description: 'Hidden context founded.'
             },
-            '404': {
+            404: {
               description: 'Context is not hidden.'
             }
           }
@@ -75,10 +75,10 @@ export default function(server: Hapi.Server) {
       plugins: {
         'hapi-swagger': {
           responses: {
-            '204': {
+            204: {
               description: 'Context is now shown'
             },
-            '404': {
+            404: {
               description: 'Context is not hidden'
             }
           }
@@ -103,7 +103,7 @@ export default function(server: Hapi.Server) {
       plugins: {
         'hapi-swagger': {
           responses: {
-            '201': {
+            201: {
               description: 'Context hidden'
             }
           }

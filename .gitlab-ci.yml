@@ -19,8 +19,10 @@ variables:
 install:
   stage: install
   script:
+    - nvm use
     - npm install
   only:
+    - next
     - dev
     - preprod
     - tags
@@ -28,18 +30,22 @@ install:
 test:
   stage: test
   script:
+    - nvm use
     - npm run test
   only:
+    - next
     - dev
     - preprod
 
 build:
   stage: build
   script:
+    - nvm use
     - npm run build.prod
   dependencies:
     - install
   only:
+    - next
     - dev
     - preprod
     - tags
@@ -48,7 +54,7 @@ replace:
   stage: replace
   script:
     - >
-      if [ "$CI_COMMIT_REF_NAME" == "dev" ]; then
+      if [ "$CI_COMMIT_REF_NAME" == "dev" ] || [ "$CI_COMMIT_REF_NAME" == "next" ]; then
         ServerAPM=https://spssogl20d.sso.msp.gouv.qc.ca
         ServerGeo=https://testgeoegl.msp.gouv.qc.ca
         ServerRITM=http://beta.geomsp.qc
@@ -67,6 +73,7 @@ replace:
   dependencies:
     - build
   only:
+    - next
     - dev
     - preprod
     - tags
@@ -80,6 +87,7 @@ pack:
   dependencies:
     - replace
   only:
+    - next
     - dev
     - preprod
     - tags
@@ -94,10 +102,17 @@ deploy:
   stage: deploy
   environment: ${CI_COMMIT_REF_NAME}
   script:
-    - synchro_envgitlab.sh ./${ARCHIVE_NAME}.tgz /srv/geomatique/apps/igo2-api ${CI_COMMIT_REF_NAME} -c -r
+    - >
+      if [ "$CI_COMMIT_REF_NAME" == "next" ]; then
+        env=dev
+      else
+        env=${CI_COMMIT_REF_NAME}
+      fi
+    - synchro_envgitlab.sh ./${ARCHIVE_NAME}.tgz /srv/geomatique/apps/igo2-api ${env} -c -r
   dependencies:
     - pack
   only:
+    - next
     - dev
     - preprod
 

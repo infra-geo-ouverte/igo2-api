@@ -1,19 +1,8 @@
 import * as Joi from 'joi';
 
+import { JoiPlus } from '@igo2/base-api';
 import { ToolValidator } from '../tool/tool.validator';
 import { LayerValidator } from '../layer/layer.validator';
-
-const JoiPlus = Joi.extend((joi: Joi.Root) => ({
-  base: joi.array(),
-  name: 'stringArray',
-  coerce: (value: any, _state: Joi.State, _options: Joi.ObjectSchema) => {
-    if (typeof value !== 'string') {
-      return value;
-    }
-    const delimiter = value.search(';') === -1 ? ',' : ';';
-    return value.split(delimiter).map(r => r.trim());
-  }
-}));
 
 const createToolModel = ToolValidator.createModel;
 const updateToolModel = ToolValidator.updateModel.keys({ id: Joi.string() });

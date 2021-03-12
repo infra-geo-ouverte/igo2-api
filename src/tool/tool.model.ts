@@ -1,78 +1,42 @@
-import * as Sequelize from 'sequelize';
+import { Table, Column, Model, AllowNull, PrimaryKey, Unique,
+   AutoIncrement, DataType } from 'sequelize-typescript';
+import { ITool } from './tool.interface';
 
-export interface ITool {
-  id?: string;
+@Table({
+  tableName: 'tool',
+  timestamps: true
+})
+export class Tool extends Model<ITool> {
+
+  @PrimaryKey
+  @AutoIncrement
+  @AllowNull(false)
+  @Column
+  id: number;
+
+  @Unique
+  @AllowNull(true)
+  @Column({type: DataType.STRING(64)})
   name: string;
-  title?: string;
-  tooltip?: string;
-  icon?: string;
-  inToolbar?: boolean;
-  global?: boolean;
-  order?: number;
-  options?: { [key: string]: any };
-}
 
-export interface ToolInstance extends Sequelize.Instance<ITool> {
-  id: string;
-  createdAt: Date;
-  updatedAt: Date;
+  @Column({type: DataType.STRING(64)})
+  title: string;
 
-  name: string;
-  title?: string;
-  tooltip?: string;
-  icon?: string;
-  inToolbar?: boolean;
-  global?: boolean;
-  order?: number;
-  options?: { [key: string]: any };
-}
+  @Column({type: DataType.STRING(128)})
+  tooltip: string;
 
-export interface ToolModel extends Sequelize.Model<ToolInstance, ITool> {}
+  @Column({type: DataType.STRING(128)})
+  icon: string;
 
-export default function define(sequelize: Sequelize.Sequelize, DataTypes) {
-  const tool = sequelize.define<ToolModel, ITool>(
-    'tool',
-    {
-      id: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
-        primaryKey: true,
-        autoIncrement: true
-      },
-      name: {
-        type: DataTypes.STRING(64),
-        allowNull: false,
-        unique: true
-      },
-      title: {
-        type: DataTypes.STRING(64)
-      },
-      tooltip: {
-        type: DataTypes.STRING(128)
-      },
-      icon: {
-        type: DataTypes.STRING(128)
-      },
-      inToolbar: {
-        type: DataTypes.BOOLEAN
-      },
-      global: {
-        type: DataTypes.BOOLEAN
-      },
-      order: {
-        type: DataTypes.INTEGER
-      },
-      options: {
-        type: DataTypes.JSON
-      }
-    },
-    {
-      tableName: 'tool',
-      timestamps: true
-    }
-  );
+  @Column
+  inToolbar: boolean;
 
-  tool.sync();
+  @Column
+  global: boolean;
 
-  return tool;
+  @Column
+  order: number;
+
+  @Column({type: DataType.JSON})
+  options: { [key: string]: any };
 }

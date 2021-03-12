@@ -1,97 +1,47 @@
-import * as Sequelize from 'sequelize';
+import {
+  Table,
+  Column,
+  Model,
+  AllowNull,
+  PrimaryKey,
+  Index,
+  AutoIncrement,
+  DataType,
+  ForeignKey
+} from 'sequelize-typescript';
 
-import { SourceOptions, LayerOptions } from '../layer';
+import { ILayerContext } from './layerContext.interface';
+import { Context } from '../context/context.model';
+import { Layer } from '../layer/layer.model';
 
-export interface ILayerContext {
-  id?: string;
-  layerId?: string;
-  contextId?: string;
-  layerOptions?: LayerOptions;
-  sourceOptions?: SourceOptions;
-}
+@Table({
+  tableName: 'layer_context',
+  timestamps: true
+})
+export class LayerContext extends Model<ILayerContext> {
+  @PrimaryKey
+  @AutoIncrement
+  @AllowNull(false)
+  @Column
+  id: number;
 
-export interface LayerContextInstance
-  extends Sequelize.Instance<ILayerContext> {
-  id: string;
-  createdAt: Date;
-  updatedAt: Date;
+  @Column({ type: DataType.JSON })
+  layerOptions: { [key: string]: any };
 
-  layerId: string;
-  contextId: string;
-  layerOptions?: LayerOptions;
-  sourceOptions?: SourceOptions;
-}
+  @Column({ type: DataType.JSON })
+  sourceOptions: { [key: string]: any };
 
-export interface LayerContextModel
-  extends Sequelize.Model<LayerContextInstance, ILayerContext> {}
+  @Index({ name: 'tool_context_contextId_layerId', unique: true })
+  @Index
+  @ForeignKey(() => Context)
+  @AllowNull(false)
+  @Column
+  contextId: number;
 
-export default function define(sequelize: Sequelize.Sequelize, DataTypes) {
-  const layerContext = sequelize.define<LayerContextModel, ILayerContext>(
-    'layerContext',
-    {
-      id: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
-        primaryKey: true,
-        autoIncrement: true
-      },
-      layerOptions: {
-        type: DataTypes.JSON
-      },
-      sourceOptions: {
-        type: DataTypes.JSON
-      },
-      contextId: {
-        type: DataTypes.INTEGER
-      },
-      layerId: {
-        type: DataTypes.INTEGER
-      }
-    },
-    {
-      indexes: [
-        {
-          unique: true,
-          fields: ['contextId', 'layerId']
-        },
-        {
-          fields: ['contextId']
-        },
-        {
-          fields: ['layerId']
-        }
-      ],
-      tableName: 'layer_context',
-      timestamps: true
-    }
-  );
-
-  const layer = sequelize.models['layer'];
-  const context = sequelize.models['context'];
-
-  layer.belongsToMany(context, {
-    through: {
-      model: layerContext,
-      unique: false
-    },
-    foreignKey: {
-      name: 'layerId',
-      allowNull: false
-    }
-  });
-
-  context.belongsToMany(layer, {
-    through: {
-      model: layerContext,
-      unique: false
-    },
-    foreignKey: {
-      name: 'contextId',
-      allowNull: false
-    }
-  });
-
-  layerContext.sync();
-
-  return layerContext;
+  @Index({ name: 'tool_context_contextId_layerId', unique: true })
+  @Index
+  @ForeignKey(() => Layer)
+  @AllowNull(false)
+  @Column
+  layerId: number;
 }

@@ -1,4 +1,4 @@
-import * as Hapi from 'hapi';
+import * as Hapi from '@hapi/hapi';
 import * as Joi from 'joi';
 
 import { CatalogController } from './catalog.controller';
@@ -25,10 +25,10 @@ export default function(server: Hapi.Server) {
       plugins: {
         'hapi-swagger': {
           responses: {
-            '200': {
+            200: {
               description: 'Catalog founded.'
             },
-            '404': {
+            404: {
               description: 'Catalog does not exists.'
             }
           }
@@ -66,10 +66,10 @@ export default function(server: Hapi.Server) {
       plugins: {
         'hapi-swagger': {
           responses: {
-            '204': {
+            204: {
               description: 'Deleted Catalog.'
             },
-            '404': {
+            404: {
               description: 'Catalog does not exists.'
             }
           }
@@ -95,10 +95,10 @@ export default function(server: Hapi.Server) {
       plugins: {
         'hapi-swagger': {
           responses: {
-            '200': {
+            200: {
               description: 'Deleted Catalog.'
             },
-            '404': {
+            404: {
               description: 'Catalog does not exists.'
             }
           }
@@ -121,7 +121,7 @@ export default function(server: Hapi.Server) {
       plugins: {
         'hapi-swagger': {
           responses: {
-            '201': {
+            201: {
               description: 'Created Catalog.'
             }
           }

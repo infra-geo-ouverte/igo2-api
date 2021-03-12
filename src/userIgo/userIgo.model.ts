@@ -1,78 +1,30 @@
-import * as Sequelize from 'sequelize';
+import { Table, Column, Model, AllowNull, PrimaryKey, Index, ForeignKey,
+   AutoIncrement, DataType } from 'sequelize-typescript';
 
-export interface IUserIgo {
-  id?: string;
-  userId?: string;
-  defaultContextId?: string;
-  preference?: {
-    [key: string]: any;
-  };
-}
+import { User } from '../user/user.model';
+import { IUserIgo } from './userIgo.interface';
 
-export interface UserIgoInstance extends Sequelize.Instance<IUserIgo> {
-  id: string;
-  createdAt: Date;
-  updatedAt: Date;
+@Table({
+  tableName: 'user_igo',
+  timestamps: true
+})
+export class UserIgo extends Model<IUserIgo> {
 
-  userId: string;
-  defaultContextId: string;
-  preference: {
-    [key: string]: any;
-  };
-}
+  @PrimaryKey
+  @AutoIncrement
+  @AllowNull(false)
+  @Column
+  id: number;
 
-export interface UserIgoModel extends Sequelize.Model<UserIgoInstance, IUserIgo> {}
+  @Column
+  defaultContextId: number;
 
-export default function define(sequelize: Sequelize.Sequelize, DataTypes) {
-  const userIgo = sequelize.define<UserIgoModel, IUserIgo>(
-    'userIgo',
-    {
-      id: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
-        primaryKey: true,
-        autoIncrement: true
-      },
-      defaultContextId: {
-        type: DataTypes.INTEGER
-      },
-      preference: {
-        type: DataTypes.JSON
-      }
-    },
-    {
-      indexes: [
-        {
-          fields: ['userId']
-        }
-      ],
-      tableName: 'user_igo',
-      timestamps: true
-    }
-  );
+  @Column({type: DataType.JSON})
+  preference: { [key: string]: any };
 
-  const user = sequelize.models['user'];
-  // const context = sequelize.models['context'];
-
-  user.hasOne(userIgo, {
-    foreignKey: {
-      name: 'userId',
-      allowNull: false
-    }
-  });
-
-  // context.belongsToMany(user, {
-  //   through: {
-  //     model: userIgo,
-  //     unique: false
-  //   },
-  //   foreignKey: {
-  //     name: 'defaultContextId',
-  //     allowNull: false
-  //   }
-  // });
-
-  userIgo.sync();
-
-  return userIgo;
+  @Index
+  @AllowNull(false)
+  @ForeignKey(() => User)
+  @Column
+  userId: number;
 }

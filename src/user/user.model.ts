@@ -1,65 +1,36 @@
-import * as Sequelize from 'sequelize';
+import { Table, Column, Model, AllowNull, PrimaryKey,
+   AutoIncrement, UpdatedAt, DataType } from 'sequelize-typescript';
+import { IUser } from './user.interface';
 
-export interface IUser {
-  id?: number;
-  source: string;
-  sourceId: string;
-  email?: string;
-  firstName?: string;
-  lastName?: string;
-}
+@Table({
+  tableName: 'user',
+  timestamps: true,
+  updatedAt: 'loginAt'
+})
+export class User extends Model<IUser> {
 
-export interface UserInstance extends Sequelize.Instance<IUser> {
+  @PrimaryKey
+  @AutoIncrement
+  @AllowNull(false)
+  @Column
   id: number;
+
+  @AllowNull(false)
+  @Column({type: DataType.STRING(64)})
   source: string;
+
+  @Column({type: DataType.STRING(64)})
   sourceId: string;
-  email?: string;
-  firstName?: string;
-  lastName?: string;
-  createdAt: Date;
-  updatedAt: Date;
-}
 
-export interface UserModel extends Sequelize.Model<UserInstance, IUser> {}
+  @Column({type: DataType.STRING(64)})
+  firstName: string;
 
-export default function define(sequelize: Sequelize.Sequelize, DataTypes) {
-  const user = sequelize.define<UserModel, IUser>(
-    'user',
-    {
-      id: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
-        primaryKey: true,
-        autoIncrement: true
-      },
-      source: {
-        type: DataTypes.STRING(64),
-        allowNull: false
-      },
-      sourceId: {
-        type: DataTypes.STRING(64),
-        allowNull: false
-      },
-      firstName: {
-        type: DataTypes.STRING(64)
-      },
-      lastName: {
-        type: DataTypes.STRING(64)
-      },
-      email: {
-        type: DataTypes.STRING(128),
-        allowNull: true,
-        unique: true
-      }
-    },
-    {
-      tableName: 'user',
-      timestamps: true,
-      updatedAt: 'loginAt'
-    }
-  );
+  @Column({type: DataType.STRING(64)})
+  lastName: string;
 
-  user.sync();
+  @Column({type: DataType.STRING(128)})
+  email: string;
 
-  return user;
+  @UpdatedAt
+  loginAt: Date;
 }

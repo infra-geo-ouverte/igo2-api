@@ -2,15 +2,15 @@ import axios from 'axios';
 import * as Sequelize from 'sequelize';
 
 import * as URL from 'url';
-import * as Boom from 'boom';
+import * as Boom from '@hapi/boom';
 
-import { Config, ObjectUtils, IDatabase, database } from '@igo2/base-api';
-import { UserInstance } from './user.model';
+import { getServerConfig } from '../configurations';
+import { ObjectUtils } from '@igo2/base-api';
+import { User } from './user.model';
 
-const ServerConfigs = Config.getServerConfig();
+const ServerConfigs = getServerConfig();
 
 export class UserApi {
-  static database: IDatabase = database;
 
   static async getRoutes() {
     const res = await axios.get(`${ServerConfigs.userApi}/routes`).catch(e => {
@@ -140,19 +140,19 @@ export class UserApi {
     return profils;
   }
 
-  static async getUser(username: string): Promise<UserInstance> {
-    return await UserApi.database.models.user
+  static async getUser(username: string): Promise<User> {
+    return await User
       .findOne({
         where: {
           sourceId: username
         }
       })
-      .then((user: UserInstance) => {
+      .then((user: User) => {
         return user;
       });
   }
 
-  static async getAllUsers(limit: number = 10, filter?: string): Promise<UserInstance[]> {
+  static async getAllUsers(limit: number = 10, filter?: string): Promise<User[]> {
     const opts: any = filter
       ? {
           where: {
@@ -172,7 +172,7 @@ export class UserApi {
 
     opts.limit = limit;
 
-    return await UserApi.database.models.user.findAll(opts).then((users: UserInstance[]) => {
+    return await User.findAll(opts).then((users: User[]) => {
       return users.map(u => ObjectUtils.removeNull(u.get()));
     });
   }

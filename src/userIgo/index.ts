@@ -1,4 +1,4 @@
-import * as Hapi from 'hapi';
+import * as Hapi from '@hapi/hapi';
 import Routes from './routes';
 
 export function init(server: Hapi.Server) {
@@ -6,4 +6,5 @@ export function init(server: Hapi.Server) {
 }
 
 export * from './userIgo.model';
-export * from './userIgo';
+export * from './userIgo.interface';
+export * from './userIgo.service';

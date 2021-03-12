@@ -1,64 +1,64 @@
-import * as Hapi from 'hapi';
-import * as Boom from 'boom';
+import * as Hapi from '@hapi/hapi';
+import * as Boom from '@hapi/boom';
 
 import { handleError } from '../utils';
 import { UserApi } from '../user';
-import { IProfilIgo, ProfilIgo } from '../profilIgo';
-import { TypePermission } from './contextPermission.model';
+import { IProfilIgo, ProfilIgoService } from '../profilIgo';
+import { TypePermission } from './contextPermission.interface';
 
-import { IContextPermission, ContextPermission } from './index';
+import { IContextPermission, ContextPermissionService } from './index';
 
 export class ContextPermissionController {
-  private contextPermission: ContextPermission;
-  private profilIgo: ProfilIgo;
+  private contextPermissionService: ContextPermissionService;
+  private profilIgoService: ProfilIgoService;
 
   constructor() {
-    this.contextPermission = new ContextPermission();
-    this.profilIgo = new ProfilIgo();
+    this.contextPermissionService = new ContextPermissionService();
+    this.profilIgoService = new ProfilIgoService();
   }
 
   public async create(request: Hapi.Request, h: Hapi.ResponseToolkit) {
     await this.verifyPermissions(request);
     const newContextPermission = request.payload as IContextPermission;
-    newContextPermission['contextId'] = request.params['contextId'];
+    newContextPermission.contextId = request.params.contextId;
 
-    const res = await this.contextPermission.create(newContextPermission).catch(handleError);
+    const res = await this.contextPermissionService.create(newContextPermission).catch(handleError);
 
     return h.response(res).code(201);
   }
 
   public async update(request: Hapi.Request, _h: Hapi.ResponseToolkit) {
     await this.verifyPermissions(request);
-    const id = request.params['id'];
+    const id = request.params.id;
     const newContextPermission = request.payload as IContextPermission;
 
-    return await this.contextPermission.update(id, newContextPermission).catch(handleError);
+    return await this.contextPermissionService.update(id, newContextPermission).catch(handleError);
   }
 
   public async delete(request: Hapi.Request, h: Hapi.ResponseToolkit) {
-    const id = request.params['id'];
-    const contextId = request.params['contextId'];
-    const typePerm = await this.contextPermission.getPermissionByContextId(
+    const id = request.params.id;
+    const contextId = request.params.contextId;
+    const typePerm = await this.contextPermissionService.getPermissionByContextId(
       contextId,
       request.headers['x-consumer-username']
     );
 
     if (typePerm !== TypePermission.write) {
-      const permissionToDelete = await this.contextPermission.getById(id).catch(handleError);
+      const permissionToDelete = await this.contextPermissionService.getById(id).catch(handleError);
       if (permissionToDelete.profil !== request.headers['x-consumer-username']) {
         throw Boom.forbidden('Must have write permission for this context');
       }
     }
 
-    await this.contextPermission.delete(id).catch(handleError);
+    await this.contextPermissionService.delete(id).catch(handleError);
 
     return h.response().code(204);
   }
 
   public async getByContextId(request: Hapi.Request, _h: Hapi.ResponseToolkit) {
-    const contextId = request.params['contextId'];
+    const contextId = request.params.contextId;
 
-    const typePerm = await this.contextPermission.getPermissionByContextId(
+    const typePerm = await this.contextPermissionService.getPermissionByContextId(
       contextId,
       request.headers['x-consumer-username']
     );
@@ -68,18 +68,18 @@ export class ContextPermissionController {
     ).catch(() => []);
     profils.push(request.headers['x-consumer-username']);
 
-    const permissions = (await this.contextPermission.getByContextId(contextId).catch(handleError))
-      .filter(p => {
+    const permissions = (await this.contextPermissionService.getByContextId(contextId).catch(handleError))
+      .filter((p) => {
         return typePerm === TypePermission.write || profils.includes(p.profil);
       })
-      .map(async p => {
-        const user = await UserApi.getUser(p.profil).then(u => (u ? u.get() : undefined));
+      .map(async (p) => {
+        const user = await UserApi.getUser(p.profil).then((u) => (u ? u.get() : undefined));
         if (user) {
           p.profilTitle = user.firstName + ' ' + user.lastName;
           return p;
         }
 
-        const profil = await this.profilIgo.getById(p.profil).catch(e => undefined);
+        const profil = await this.profilIgoService.getById(p.profil).catch((e) => undefined);
         if (profil) {
           p.profilTitle = profil.title;
           return p;
@@ -95,11 +95,11 @@ export class ContextPermissionController {
     const id = request.headers['x-consumer-id'];
     const profils: string[] = await UserApi.getProfils(id, request.headers['x-consumer-groups']).catch(() => []);
 
-    const profilIgo: IProfilIgo[] = (await this.profilIgo.get().catch(handleError)).filter(p =>
+    const profilIgo: IProfilIgo[] = (await this.profilIgoService.get().catch(handleError)).filter((p) =>
       profils.includes(p.name)
     );
 
-    const canShare = profilIgo.find(p => p.canShare === true);
+    const canShare = profilIgo.find((p) => p.canShare === true);
     if (!canShare) {
       throw Boom.forbidden('You can not share a context');
     }
@@ -112,7 +112,7 @@ export class ContextPermissionController {
       )
     ];
 
-    const profilForbidden = profilIgo.filter(p => !canShareToProfils.includes(p.id)).map(p => p.name);
+    const profilForbidden = profilIgo.filter((p) => !canShareToProfils.includes(p.id)).map((p) => p.name);
     const newContextPermission = request.payload as IContextPermission;
     const profilsToAdd = newContextPermission.profil ? newContextPermission.profil.split(/[,;]/) : [];
     for (let p of profilsToAdd) {

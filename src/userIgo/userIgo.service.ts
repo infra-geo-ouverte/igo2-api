@@ -1,29 +1,27 @@
-import * as Boom from 'boom';
+import * as Boom from '@hapi/boom';
 
-import { IDatabase, database, ObjectUtils } from '@igo2/base-api';
+import { ObjectUtils } from '@igo2/base-api';
 
-import { IUserIgo, UserIgoInstance } from './userIgo.model';
+import { IUserIgo } from './userIgo.interface';
+import { UserIgo } from './userIgo.model';
 
-export class UserIgo {
-  private database: IDatabase = database;
+export class UserIgoService {
 
-  constructor() {}
-
-  public async create(userIgo: IUserIgo): Promise<UserIgoInstance> {
-    return await this.database.models.userIgo.create(userIgo);
+  public async create(userIgo: IUserIgo): Promise<UserIgo> {
+    return await UserIgo.create(userIgo);
   }
 
   public async update(
     userId: string,
     userIgo: IUserIgo
   ): Promise<{ userId: string }> {
-    return await this.database.models.userIgo
+    return await UserIgo
       .update(userIgo, {
         where: {
           userId: userId
         }
       })
-      .then((count: [number, UserIgoInstance[]]) => {
+      .then((count: [number, UserIgo[]]) => {
         if (!count[0]) {
           throw Boom.notFound();
         }
@@ -32,7 +30,7 @@ export class UserIgo {
   }
 
   public async delete(userId: string): Promise<void> {
-    return await this.database.models.userIgo
+    return await UserIgo
       .destroy({
         where: {
           userId: userId
@@ -46,14 +44,14 @@ export class UserIgo {
       });
   }
 
-  public async get(userId: string): Promise<UserIgoInstance> {
-    return await this.database.models.userIgo
+  public async get(userId: string): Promise<UserIgo> {
+    return await UserIgo
       .findOne({
         where: {
           userId: userId
         }
       })
-      .then((userIgo: UserIgoInstance) => {
+      .then((userIgo: UserIgo) => {
         if (!userIgo) {
           throw Boom.notFound();
         }

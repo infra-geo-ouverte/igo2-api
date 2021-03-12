@@ -1,69 +1,40 @@
-import * as Sequelize from 'sequelize';
+import { Table, Column, Model, AllowNull, PrimaryKey, AutoIncrement, DataType } from 'sequelize-typescript';
+import { ICatalog } from './catalog.interface';
 
-export interface ICatalogOptions {
-  regFilters: string[];
-}
+@Table({
+  tableName: 'catalog',
+  timestamps: true
+})
+export class Catalog extends Model<ICatalog> {
 
-export interface ICatalog {
-  id?: string;
+  @PrimaryKey
+  @AutoIncrement
+  @AllowNull(false)
+  @Column
+  id: number;
+
+  @AllowNull(false)
+  @Column({type: DataType.STRING(64)})
   title: string;
-  url: string;
-  options?: ICatalogOptions;
-  order?: number;
-  profils?: string;
-}
 
-export interface CatalogInstance extends Sequelize.Instance<ICatalog> {
-  id: string;
-  createdAt: Date;
-  updatedAt: Date;
-
-  title: string;
+  @AllowNull(false)
+  @Column({type: DataType.STRING(128)})
   url: string;
-  options: ICatalogOptions;
+
+  @Column({type: DataType.JSON})
+  type: { [key: string]: any };
+
+  @Column
   order: number;
-  profils?: string;
-}
 
-export interface CatalogModel
-  extends Sequelize.Model<CatalogInstance, ICatalog> {}
+  @Column(DataType.STRING)
+  get profils(): string[] {
+    const profils: string = this.getDataValue('profils') as any;
+    return profils ? profils.split(',') : [];
+  }
 
-export default function define(sequelize: Sequelize.Sequelize, DataTypes) {
-  const catalog = sequelize.define<CatalogModel, ICatalog>(
-    'catalog',
-    {
-      id: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
-        primaryKey: true,
-        autoIncrement: true
-      },
-      title: {
-        type: DataTypes.STRING(64),
-        allowNull: false
-      },
-      url: {
-        type: DataTypes.STRING(128),
-        allowNull: false
-      },
-      options: {
-        type: DataTypes.JSON
-      },
-      order: {
-        type: DataTypes.INTEGER
-      },
-      profils: {
-        type: DataTypes.ARRAY(DataTypes.STRING(128)),
-        allowNull: true
-      }
-    },
-    {
-      tableName: 'catalog',
-      timestamps: true
-    }
-  );
-
-  catalog.sync();
-
-  return catalog;
+  set profils(value: string[]) {
+    const profils: any = value.join(',');
+    this.setDataValue('profils', profils);
+  }
 }

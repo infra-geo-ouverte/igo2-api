@@ -1,31 +1,29 @@
-import * as Boom from 'boom';
+import * as Boom from '@hapi/boom';
 
-import { IDatabase, database, ObjectUtils } from '@igo2/base-api';
+import { ObjectUtils } from '@igo2/base-api';
 
-import { IPOI, POIInstance } from './poi.model';
+import { IPoi } from './poi.interface';
+import { Poi } from './poi.model';
 
-export class POI {
-  private database: IDatabase = database;
+export class PoiService {
 
-  constructor() {}
-
-  public async create(poi: IPOI): Promise<POIInstance> {
-    return await this.database.models.poi.create(poi);
+  public async create(poi: IPoi): Promise<Poi> {
+    return await Poi.create(poi);
   }
 
   public async update(
     id: string,
     userId: string,
-    poi: IPOI
+    poi: IPoi
   ): Promise<{ id: string }> {
-    return await this.database.models.poi
+    return await Poi
       .update(poi, {
         where: {
           id: id,
           userId: userId
         }
       })
-      .then((count: [number, POIInstance[]]) => {
+      .then((count: [number, Poi[]]) => {
         if (!count[0]) {
           throw Boom.notFound();
         }
@@ -34,7 +32,7 @@ export class POI {
   }
 
   public async delete(id: string, userId: string): Promise<void> {
-    return await this.database.models.poi
+    return await Poi
       .destroy({
         where: {
           id: id,
@@ -49,28 +47,28 @@ export class POI {
       });
   }
 
-  public async get(userId: string): Promise<POIInstance[]> {
-    return await this.database.models.poi
+  public async get(userId: string): Promise<Poi[]> {
+    return await Poi
       .findAll({
         where: {
           userId: userId
         }
       })
-      .then((pois: POIInstance[]) => {
-        const plainPOIs = pois.map(poi => ObjectUtils.removeNull(poi.get()));
-        return plainPOIs;
+      .then((pois: Poi[]) => {
+        const plainPois = pois.map(poi => ObjectUtils.removeNull(poi.get()));
+        return plainPois;
       });
   }
 
-  public async getById(id: string, userId: string): Promise<POIInstance> {
-    return await this.database.models.poi
+  public async getById(id: string, userId: string): Promise<Poi> {
+    return await Poi
       .findOne({
         where: {
           id: id,
           userId: userId
         }
       })
-      .then((poi: POIInstance) => {
+      .then((poi: Poi) => {
         if (!poi) {
           throw Boom.notFound();
         }

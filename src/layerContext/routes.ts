@@ -1,4 +1,4 @@
-import * as Hapi from 'hapi';
+import * as Hapi from '@hapi/hapi';
 import * as Joi from 'joi';
 
 import { LayerContextController } from './layerContext.controller';
@@ -25,10 +25,10 @@ export default function(server: Hapi.Server) {
       plugins: {
         'hapi-swagger': {
           responses: {
-            '200': {
+            200: {
               description: 'Layers founded.'
             },
-            '404': {
+            404: {
               description: 'Context does not exists.'
             }
           }
@@ -54,10 +54,10 @@ export default function(server: Hapi.Server) {
       plugins: {
         'hapi-swagger': {
           responses: {
-            '200': {
+            200: {
               description: 'LayerContext founded.'
             },
-            '404': {
+            404: {
               description: 'LayerContext does not exists.'
             }
           }
@@ -83,10 +83,10 @@ export default function(server: Hapi.Server) {
       plugins: {
         'hapi-swagger': {
           responses: {
-            '204': {
+            204: {
               description: 'Deleted LayerContext.'
             },
-            '404': {
+            404: {
               description: 'LayerContext does not exists.'
             }
           }
@@ -113,10 +113,10 @@ export default function(server: Hapi.Server) {
       plugins: {
         'hapi-swagger': {
           responses: {
-            '200': {
+            200: {
               description: 'Deleted LayerContext.'
             },
-            '404': {
+            404: {
               description: 'LayerContext does not exists.'
             }
           }
@@ -139,7 +139,7 @@ export default function(server: Hapi.Server) {
       plugins: {
         'hapi-swagger': {
           responses: {
-            '201': {
+            201: {
               description: 'Created LayerContext.'
             }
           }

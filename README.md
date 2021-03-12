@@ -1,4 +1,4 @@
-Require: node >=v8.0.0 & npm >=5.0.0
+Require: node >=v12.0.0
 
 ```bash
 $ git clone https://gitlab.forge.gouv.qc.ca/igo2/igo2-api.git

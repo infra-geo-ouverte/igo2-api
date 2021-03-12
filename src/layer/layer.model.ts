@@ -1,92 +1,40 @@
-import * as Sequelize from 'sequelize';
+import { Table, Column, Model, AllowNull, PrimaryKey, Index,
+   AutoIncrement, DataType } from 'sequelize-typescript';
 
-export interface SourceOptions {
-  version?: string;
-  params?: { [key: string]: any };
-  [key: string]: any;
-}
+import { ILayer } from './layer.interface';
 
-export interface LayerOptions {
-  title?: string;
-  baseLayer?: boolean;
-  opacity?: number;
-  visible?: boolean;
-  extent?: [number, number, number, number];
-  zIndex?: number;
-  minResolution?: number;
-  maxResolution?: number;
-  [key: string]: any;
-}
+@Table({
+  tableName: 'layer',
+  timestamps: true
+})
+export class Layer extends Model<ILayer> {
 
-export interface ILayer {
-  id?: string;
-  type?: string;
-  url?: string;
-  layers?: string;
-  global?: boolean;
-  layerOptions?: LayerOptions;
-  sourceOptions?: SourceOptions;
-}
+  @PrimaryKey
+  @AutoIncrement
+  @AllowNull(false)
+  @Column
+  id: number;
 
-export interface LayerInstance extends Sequelize.Instance<ILayer> {
-  id: string;
-  createdAt: Date;
-  updatedAt: Date;
-
+  @Index({name: 'layer_type_url_layers', unique: true})
+  @AllowNull(false)
+  @Column({type: DataType.STRING(16)})
   type: string;
-  url?: string;
-  layers?: string;
-  global?: boolean;
-  layerOptions?: LayerOptions;
-  sourceOptions?: SourceOptions;
-}
 
-export interface LayerModel extends Sequelize.Model<LayerInstance, ILayer> {}
+  @Index({name: 'layer_type_url_layers', unique: true})
+  @Column
+  url: string;
 
-export default function define(sequelize: Sequelize.Sequelize, DataTypes) {
-  const layer = sequelize.define<LayerModel, ILayer>(
-    'layer',
-    {
-      id: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
-        primaryKey: true,
-        autoIncrement: true
-      },
-      type: {
-        type: DataTypes.STRING(16),
-        allowNull: false
-      },
-      url: {
-        type: DataTypes.STRING
-      },
-      layers: {
-        type: DataTypes.STRING(128)
-      },
-      global: {
-        type: DataTypes.BOOLEAN
-      },
-      layerOptions: {
-        type: DataTypes.JSON
-      },
-      sourceOptions: {
-        type: DataTypes.JSON
-      }
-    },
-    {
-      tableName: 'layer',
-      timestamps: true,
-      indexes: [{
-        unique: true,
-        fields: ['type', 'url', 'layers']
-      }, {
-        unique: false,
-        fields: ['global']
-      }]
-    }
-  );
+  @Index({name: 'layer_type_url_layers', unique: true})
+  @Column({type: DataType.STRING(128)})
+  layers: string;
 
-  layer.sync();
+  @Index({unique: false})
+  @Column
+  global: boolean;
 
-  return layer;
+  @Column({type: DataType.JSON})
+  layerOptions: { [key: string]: any };
+
+  @Column({type: DataType.JSON})
+  sourceOptions: { [key: string]: any };
 }
