@@ -36,7 +36,7 @@
   },
   "homepage": "https://gitlab.forge.gouv.qc.ca/igo2/igo2-api#readme",
   "dependencies": {
-    "@igo2/base-api": "^1.0.8",
+    "@igo2/base-api": "^1.0.9",
     "axios": "^0.21.1",
     "tape": "^5.2.2"
   },
