@@ -8,4 +8,5 @@ export interface ITool {
   global?: boolean;
   order?: number;
   options?: { [key: string]: any };
+  profils: string[];
 }

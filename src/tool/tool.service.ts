@@ -1,7 +1,7 @@
 import * as Boom from '@hapi/boom';
 
 import { ObjectUtils } from '@igo2/base-api';
-
+import { UserApi } from '../user';
 import { ITool } from './tool.interface';
 import { Tool } from './tool.model';
 
@@ -45,22 +45,35 @@ export class ToolService {
     });
   }
 
-  public async get(): Promise<Tool[]> {
+  public async get(user: string): Promise<Tool[]> {
+    const profils: string[] = await UserApi.getProfils(user).catch(() => {
+      return [];
+    });
+    profils.push(user);
+
     return await Tool.findAll().then((tools: Tool[]) => {
-      const plainTools = tools.map((tool) => ObjectUtils.removeNull(tool.get()));
+      const plainTools = tools.filter(t => {
+        return t.profils.length === 0 || t.profils.some(p => profils.includes(p));
+      }).map((tool) => ObjectUtils.removeNull(tool.get()));
       return plainTools;
     });
   }
 
-  public async getById(id: string): Promise<Tool> {
+  public async getById(id: string, user: string): Promise<Tool> {
+    const profils: string[] = await UserApi.getProfils(user).catch(() => {
+      return [];
+    });
+    profils.push(user);
+
     return await Tool.findOne({
       where: {
         id: id
       }
     }).then((tool: Tool) => {
-      if (!tool) {
+      if (!tool || (tool.profils && !tool.profils.some(p => profils.includes(p)))) {
         throw Boom.notFound();
       }
+
       return ObjectUtils.removeNull(tool.get());
     });
   }

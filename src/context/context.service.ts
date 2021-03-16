@@ -117,18 +117,25 @@ export class ContextService {
   }
 
   private async contextObjToPlainObj(context, user, globalTools?, globalLayers?): Promise<ContextDetailed> {
+    const profils: string[] = await UserApi.getProfils(user).catch(() => {
+      return [];
+    });
+    profils.push(user);
+
     let plain: any = context.get();
     plain.layers = [];
     plain.tools = [];
     plain.toolbar = [];
     const toolbar = [];
 
-    for (const tool of context.tools) {
+    for (const tool of context.tools.filter(t => {
+      return t.profils.length === 0 || t.profils.some(p => profils.includes(p));
+    })) {
       const plainTool = tool.get();
 
-      console.log(plainTool);
       plainTool.options = Object.assign({}, plainTool.options, plainTool.ToolContext.options);
       plainTool.ToolContext = null;
+      delete plainTool.profils;
 
       plain.tools.push(plainTool);
       if (plainTool.inToolbar) {
@@ -136,8 +143,11 @@ export class ContextService {
       }
     }
 
-    for (const tool of globalTools) {
+    for (const tool of globalTools.filter(t => {
+      return t.profils.length === 0 || t.profils.some(p => profils.includes(p));
+    })) {
       const plainTool = tool.get();
+      delete plainTool.profils;
       if (plain.tools.findIndex((t) => t.name === plainTool.name) === -1) {
         plain.tools.push(plainTool);
         if (plainTool.inToolbar) {
@@ -152,10 +162,6 @@ export class ContextService {
       return ObjectUtils.removeNull(plain);
     }
 
-    const profils: string[] = await UserApi.getProfils(user).catch(() => {
-      return [];
-    });
-    profils.push(user);
     const promises = [];
     const plainLayers = [];
 

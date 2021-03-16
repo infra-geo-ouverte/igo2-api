@@ -39,4 +39,15 @@ export class Tool extends Model<ITool> {
 
   @Column({type: DataType.JSON})
   options: { [key: string]: any };
+
+  @Column(DataType.STRING)
+  get profils(): string[] {
+    const profils: string = this.getDataValue('profils') as any;
+    return profils ? profils.split(',') : [];
+  }
+
+  set profils(value: string[]) {
+    const profils: any = value.join(',');
+    this.setDataValue('profils', profils);
+  }
 }

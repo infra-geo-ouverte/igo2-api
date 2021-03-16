@@ -15,7 +15,8 @@ export class ToolValidator {
     inToolbar: Joi.boolean(),
     global: Joi.boolean(),
     order: Joi.number(),
-    options: Joi.object()
+    options: Joi.object(),
+    profils: Joi.array().items(Joi.string().max(128))
   });
 
   static createModel = ToolValidator.updateModel.concat(

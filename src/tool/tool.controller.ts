@@ -36,11 +36,13 @@ export class ToolController {
 
   public async getById(request: Hapi.Request, _h: Hapi.ResponseToolkit) {
     const id = request.params.id;
+    const user = request.headers['x-consumer-username'];
 
-    return await this.toolService.getById(id).catch(handleError);
+    return await this.toolService.getById(id, user).catch(handleError);
   }
 
-  public async get(_request: Hapi.Request, _h: Hapi.ResponseToolkit) {
-    return await this.toolService.get().catch(handleError);
+  public async get(request: Hapi.Request, _h: Hapi.ResponseToolkit) {
+    const user = request.headers['x-consumer-username'];
+    return await this.toolService.get(user).catch(handleError);
   }
 }
