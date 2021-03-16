@@ -72,7 +72,7 @@ export class CatalogService {
       }
     });
 
-    if (!catalog || (catalog.profils && !catalog.profils.some(p => profils.includes(p)))) {
+    if (!catalog || (catalog.profils.length !== 0 && !catalog.profils.some(p => profils.includes(p)))) {
       throw Boom.notFound();
     }
 

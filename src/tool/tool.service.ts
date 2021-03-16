@@ -70,7 +70,7 @@ export class ToolService {
         id: id
       }
     }).then((tool: Tool) => {
-      if (!tool || (tool.profils && !tool.profils.some(p => profils.includes(p)))) {
+      if (!tool || (tool.profils.length !== 0 && !tool.profils.some(p => profils.includes(p)))) {
         throw Boom.notFound();
       }
 
