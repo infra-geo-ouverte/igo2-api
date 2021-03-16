@@ -22,7 +22,7 @@ export class Catalog extends Model<ICatalog> {
   url: string;
 
   @Column({type: DataType.JSON})
-  type: { [key: string]: any };
+  options: { [key: string]: any };
 
   @Column
   order: number;
