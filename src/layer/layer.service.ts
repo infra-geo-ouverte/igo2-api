@@ -1,5 +1,6 @@
 import * as Boom from '@hapi/boom';
 import * as URL from 'url';
+import { Op } from 'sequelize';
 
 import { ObjectUtils } from '@igo2/base-api';
 import { getServerConfig } from '../configurations';
@@ -134,7 +135,7 @@ export class LayerService {
       layer.sourceOptions.url = urlObj.path;
     }
     const where: any = {
-      $or: [
+      [Op.or]: [
         { id: layer.id },
         {
           type: layer.sourceOptions.type,
