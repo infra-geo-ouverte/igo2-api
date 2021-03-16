@@ -134,9 +134,9 @@ export class LayerService {
     if (url && hosts.indexOf(url) !== -1) {
       layer.sourceOptions.url = urlObj.path;
     }
+
     const where: any = {
       [Op.or]: [
-        { id: layer.id },
         {
           type: layer.sourceOptions.type,
           url: layer.sourceOptions.url || null,
@@ -144,6 +144,9 @@ export class LayerService {
         }
       ]
     };
+    if (layer.id) {
+      where[Op.or].unshift({ id: layer.id });
+    }
 
     return await Layer
       .findOne({
