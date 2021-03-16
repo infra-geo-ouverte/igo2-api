@@ -74,6 +74,13 @@ export class UserIgoController {
     preference.canShare = !!canShare;
     user.preference = Object.assign(preference, user.preference);
 
+    user.guides = profilsIgo.reduce((acc, value) => {
+      if (value.guide) {
+        acc.push(value.guide);
+      }
+      return [...new Set(acc)];
+    }, []);
+
     return h.response(user);
   }
 }

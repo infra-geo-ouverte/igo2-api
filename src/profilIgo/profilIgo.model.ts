@@ -41,10 +41,12 @@ export class ProfilIgo extends Model<IProfilIgo> {
     this.setDataValue('canShareToProfils', canShareToProfils);
   }
 
-
   @Column
   canFilter: boolean;
 
   @Column
   hasAcrigeo: boolean;
+
+  @Column
+  guide: string;
 }
