@@ -17,6 +17,7 @@ export default function(server: Hapi.Server) {
     options: {
       tags: ['api', 'contexts'],
       description: 'Get default context.',
+      cache: false,
       validate: {
         headers: UserValidator.authenticateValidator
       },
@@ -67,6 +68,7 @@ export default function(server: Hapi.Server) {
     options: {
       tags: ['api', 'contexts'],
       description: 'Get context by id.',
+      cache: false,
       validate: {
         params: {
           contextId: Joi.string().required()
@@ -95,6 +97,7 @@ export default function(server: Hapi.Server) {
     options: {
       tags: ['api', 'tools', 'layers', 'contexts'],
       description: 'Get details of context by context id.',
+      cache: false,
       validate: {
         params: {
           contextId: Joi.string().required()
@@ -123,6 +126,7 @@ export default function(server: Hapi.Server) {
       auth: false,
       tags: ['api', 'contexts'],
       description: 'Get all contexts.',
+      cache: false,
       validate: {
         headers: UserValidator.userValidator,
         query: ContextValidator.getQuery

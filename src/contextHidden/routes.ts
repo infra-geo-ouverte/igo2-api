@@ -16,6 +16,7 @@ export default function(server: Hapi.Server) {
     options: {
       tags: ['api', 'contexts', 'hidden'],
       description: 'Get all hidden contexts.',
+      cache: false,
       validate: {
         headers: UserValidator.authenticateValidator
       },
@@ -38,6 +39,7 @@ export default function(server: Hapi.Server) {
     options: {
       tags: ['api', 'contexts', 'hidden'],
       description: 'Get hidden context',
+      cache: false,
       validate: {
         params: {
           contextId: Joi.string().required()

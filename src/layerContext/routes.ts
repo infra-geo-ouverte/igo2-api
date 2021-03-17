@@ -16,6 +16,7 @@ export default function(server: Hapi.Server) {
     options: {
       tags: ['api', 'layerContext', 'layers', 'contexts'],
       description: 'Get layers by context id.',
+      cache: false,
       validate: {
         params: {
           contextId: Joi.string().required()
@@ -44,6 +45,7 @@ export default function(server: Hapi.Server) {
     options: {
       tags: ['api', 'layerContext'],
       description: 'Get layerContext by id.',
+      cache: false,
       validate: {
         params: {
           layerId: Joi.string().required(),

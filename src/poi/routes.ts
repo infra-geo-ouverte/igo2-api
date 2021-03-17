@@ -16,6 +16,7 @@ export default function(server: Hapi.Server) {
     options: {
       tags: ['api', 'pois'],
       description: 'Get pois by id.',
+      cache: false,
       validate: {
         params: {
           id: Joi.string().required()
@@ -44,6 +45,7 @@ export default function(server: Hapi.Server) {
     options: {
       tags: ['api', 'pois'],
       description: 'Get all pois.',
+      cache: false,
       validate: {
         headers: UserValidator.authenticateValidator
       }

@@ -16,6 +16,7 @@ export default function(server: Hapi.Server) {
     options: {
       tags: ['api', 'layers'],
       description: 'Get layers by source.',
+      cache: false,
       validate: {
         query: {
           type: Joi.string().required(),
@@ -47,6 +48,7 @@ export default function(server: Hapi.Server) {
     options: {
       tags: ['api', 'layers'],
       description: 'Get layers by source.',
+      cache: false,
       validate: {
         query: {
           type: Joi.string().required(),
@@ -77,6 +79,7 @@ export default function(server: Hapi.Server) {
     options: {
       tags: ['api', 'layers'],
       description: 'Get layers by id.',
+      cache: false,
       validate: {
         params: {
           id: Joi.string().required()
@@ -105,6 +108,7 @@ export default function(server: Hapi.Server) {
     options: {
       tags: ['api', 'layers'],
       description: 'Get all layers.',
+      cache: false,
       validate: {
         headers: UserValidator.adminValidator
       }
@@ -118,6 +122,7 @@ export default function(server: Hapi.Server) {
     options: {
       tags: ['api', 'layers'],
       description: 'Get base layers.',
+      cache: false,
       validate: {
         headers: UserValidator.userValidator
       }

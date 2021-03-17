@@ -16,6 +16,7 @@ export default function(server: Hapi.Server) {
     options: {
       tags: ['api', 'tools'],
       description: 'Get tools by id.',
+      cache: false,
       validate: {
         params: {
           id: Joi.string().required()
@@ -44,6 +45,7 @@ export default function(server: Hapi.Server) {
     options: {
       tags: ['api', 'tools'],
       description: 'Get all tools.',
+      cache: false,
       validate: {
         headers: UserValidator.authenticateValidator
       }

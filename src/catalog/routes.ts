@@ -16,6 +16,7 @@ export default function(server: Hapi.Server) {
     options: {
       tags: ['api', 'catalogs'],
       description: 'Get catalogs by id.',
+      cache: false,
       validate: {
         params: {
           id: Joi.string().required()
@@ -44,6 +45,7 @@ export default function(server: Hapi.Server) {
     options: {
       tags: ['api', 'catalogs'],
       description: 'Get all catalogs.',
+      cache: false,
       validate: {
         headers: UserValidator.userValidator
       }

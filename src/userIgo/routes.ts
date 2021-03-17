@@ -15,6 +15,7 @@ export default function (server: Hapi.Server) {
     options: {
       tags: ['api', 'userIgo'],
       description: 'Get user Igo.',
+      cache: false,
       validate: {
         headers: UserValidator.authenticateValidator
       }

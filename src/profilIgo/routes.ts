@@ -15,6 +15,7 @@ export default function(server: Hapi.Server) {
     handler: profilIgoController.getProfilsAndUsers,
     options: {
       tags: ['api', 'ProfilIgo'],
+      cache: false,
       validate: {
         headers: UserValidator.authenticateValidator,
         query: {
@@ -37,6 +38,7 @@ export default function(server: Hapi.Server) {
     options: {
       tags: ['api', 'ProfilIgo'],
       description: 'Get all profils Igo.',
+      cache: false,
       validate: {
         headers: UserValidator.authenticateValidator
       }
@@ -50,6 +52,7 @@ export default function(server: Hapi.Server) {
     options: {
       tags: ['api', 'ProfilIgo'],
       description: 'Get Profil Igo.',
+      cache: false,
       validate: {
         params: {
           name: Joi.string().required()

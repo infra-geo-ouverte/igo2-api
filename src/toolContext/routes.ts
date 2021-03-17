@@ -16,6 +16,7 @@ export default function(server: Hapi.Server) {
     options: {
       tags: ['api', 'toolContext', 'tools', 'contexts'],
       description: 'Get tools by context id.',
+      cache: false,
       validate: {
         params: {
           contextId: Joi.string().required()
@@ -44,6 +45,7 @@ export default function(server: Hapi.Server) {
     options: {
       tags: ['api', 'toolContext'],
       description: 'Get toolContext by id.',
+      cache: false,
       validate: {
         params: {
           toolId: Joi.string().required(),

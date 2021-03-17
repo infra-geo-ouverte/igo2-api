@@ -16,6 +16,7 @@ export default function(server: Hapi.Server) {
     options: {
       tags: ['api', 'contextsPermissions', 'contexts', 'permissions'],
       description: 'Get permissions by contexts id.',
+      cache: false,
       validate: {
         params: {
           contextId: Joi.string().required()
