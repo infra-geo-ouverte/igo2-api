@@ -27,7 +27,7 @@ export class UserIgoController {
 
   public async update(request: Hapi.Request, _h: Hapi.ResponseToolkit) {
     const userIgoToUpdate: IUserIgo = request.payload as IUserIgo;
-    const mergePreference = request.query.mergePreference || true;
+    const mergePreference = request.query.mergePreference === undefined ? true : request.query.mergePreference;
 
     const userId = request.headers['x-consumer-custom-id'];
     const userIGO = await this.userIgoService.get(userId).catch(() => {});
