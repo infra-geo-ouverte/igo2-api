@@ -1,4 +1,5 @@
 import * as Hapi from '@hapi/hapi';
+import * as Joi from 'joi';
 
 import { UserIgoController } from './userIgo.controller';
 import { UserIgoValidator } from './userIgo.validator';
@@ -56,6 +57,9 @@ export default function (server: Hapi.Server) {
       description: 'Update user Igo by id.',
       validate: {
         payload: UserIgoValidator.updateModel,
+        query: {
+          mergePreference: Joi.bool()
+        },
         headers: UserValidator.authenticateValidator
       },
       plugins: {

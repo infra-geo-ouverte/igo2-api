@@ -27,14 +27,16 @@ export class UserIgoController {
 
   public async update(request: Hapi.Request, _h: Hapi.ResponseToolkit) {
     const userIgoToUpdate: IUserIgo = request.payload as IUserIgo;
+    const mergePreference = request.query.mergePreference || true;
 
     const userId = request.headers['x-consumer-custom-id'];
     const userIGO = await this.userIgoService.get(userId).catch(() => {});
 
     if (userIGO) {
-      userIgoToUpdate.preference = ObjectUtils.removeUndefined(
-        Object.assign({}, userIGO.preference, userIgoToUpdate.preference)
-      );
+      if (mergePreference) {
+          userIgoToUpdate.preference = Object.assign({}, userIGO.preference, userIgoToUpdate.preference);
+      }
+      userIgoToUpdate.preference = ObjectUtils.removeUndefined(userIgoToUpdate.preference);
       return await this.userIgoService.update(userId, userIgoToUpdate).catch(handleError);
     } else {
       return await this.userIgoService
