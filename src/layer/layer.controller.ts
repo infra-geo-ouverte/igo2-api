@@ -7,6 +7,7 @@ import * as Boom from '@hapi/boom';
 import { getServerConfig } from '../configurations';
 import { handleError } from '../utils';
 
+import { UserApi } from '../user/api';
 import { LayerService } from './layer.service';
 import { ILayer } from './layer.interface';
 
@@ -88,7 +89,7 @@ export class LayerController {
     const url = urlObj && urlObj.hostname ? urlObj.protocol + '//' + urlObj.hostname : '';
 
     let permission: any = {};
-    if (ServerConfigs.wssApi && (!url || hosts.indexOf(url) !== -1)) {
+    if (ServerConfigs.wssApi && (!url || hosts.indexOf(url) !== -1) && UserApi.isInBasePath(urlObj.pathname)) {
       const theme = query.url.substring(query.url.lastIndexOf('/') + 1, query.url.lastIndexOf('.fcgi'));
       https.globalAgent.options.rejectUnauthorized = false;
       permission = await axios
