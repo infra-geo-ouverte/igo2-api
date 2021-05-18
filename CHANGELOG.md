@@ -1,3 +1,29 @@
+# [1.6.0](http://gitlab.forge.gouv.qc.ca/igo2/igo2-api/compare/1.5.1...1.6.0) (2021-05-18)
+
+
+### Bug Fixes
+
+* disabled cache ([c7d7410](http://gitlab.forge.gouv.qc.ca/igo2/igo2-api/commit/c7d741098b5fa28fe20743317912fc6b797b9645))
+* upgrade igo2 ([33c757f](http://gitlab.forge.gouv.qc.ca/igo2/igo2-api/commit/33c757fe224e5e1590fe709b486a051963cac25d))
+* **catalog:** bad column name ([824f50b](http://gitlab.forge.gouv.qc.ca/igo2/igo2-api/commit/824f50b93926451829de2cf0d5bfef008286dfee))
+* **layer:** getBySource without id ([a2c271e](http://gitlab.forge.gouv.qc.ca/igo2/igo2-api/commit/a2c271eb9f4d16cd5c7f4e96d390ef7ff2e241b5))
+* **migration:** options with ${} is now correctly migrate ([4c7de60](http://gitlab.forge.gouv.qc.ca/igo2/igo2-api/commit/4c7de60ed343754112a1b27526f331edc1f0c740))
+* **migration:** use node prod ([13a4317](http://gitlab.forge.gouv.qc.ca/igo2/igo2-api/commit/13a43172ceb4b25f97273a015ea40c7e208ad0f7))
+* **options:** fix when url is localhost but not apis ([13f35e4](http://gitlab.forge.gouv.qc.ca/igo2/igo2-api/commit/13f35e4fdc863a5a3b928fc093a81886a276f686))
+* **options:** replace $or by Op.or ([4504bdb](http://gitlab.forge.gouv.qc.ca/igo2/igo2-api/commit/4504bdb25a00b73c33afdb064d91723bc4d92e84))
+* **profils:** verify if array empty ([b17e32d](http://gitlab.forge.gouv.qc.ca/igo2/igo2-api/commit/b17e32ddc71575725df5af5860ca46678db46675))
+
+
+### Features
+
+* **deps:** upgrade igo2-libs ([d0754a2](http://gitlab.forge.gouv.qc.ca/igo2/igo2-api/commit/d0754a2c58269ba7e3801d3e7d659d572df09e97))
+* **profil:** add guides ([d435889](http://gitlab.forge.gouv.qc.ca/igo2/igo2-api/commit/d435889c4b7f118f5c087950e814d53e0fc52418))
+* **tool:** add tool security ([723d23a](http://gitlab.forge.gouv.qc.ca/igo2/igo2-api/commit/723d23a7d9465952b1d077fc30946e89d59abeb9))
+* **userIGO:** add mergePreference option ([b2ee3a1](http://gitlab.forge.gouv.qc.ca/igo2/igo2-api/commit/b2ee3a19a871e1da4361c7901ccfd704cfcf42c8))
+* **userIGO:** add mergePreference option ([a00772f](http://gitlab.forge.gouv.qc.ca/igo2/igo2-api/commit/a00772fcec576f9672073f2c3c2e3bc156c0ed2a))
+
+
+
 ## [1.5.1](http://gitlab.forge.gouv.qc.ca/igo2/igo2-api/compare/1.5.0...1.5.1) (2021-01-14)
 
 
