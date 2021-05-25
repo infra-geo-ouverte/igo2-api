@@ -1,3 +1,12 @@
+## [1.6.1](http://gitlab.forge.gouv.qc.ca/igo2/igo2-api/compare/1.6.0...1.6.1) (2021-05-25)
+
+
+### Bug Fixes
+
+* **users-profils:** always empty when q passed ([5641fc4](http://gitlab.forge.gouv.qc.ca/igo2/igo2-api/commit/5641fc45fd6971dc32faa1fe6f3d9c41659f935e))
+
+
+
 # [1.6.0](http://gitlab.forge.gouv.qc.ca/igo2/igo2-api/compare/1.5.1...1.6.0) (2021-05-18)
 
 
