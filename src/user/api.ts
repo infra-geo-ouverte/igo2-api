@@ -153,6 +153,7 @@ export class UserApi {
   }
 
   static async getAllUsers(limit: number = 10, filter?: string): Promise<User[]> {
+    const Utils = Sequelize.Utils;
     const opts: any = filter
       ? {
           where: {
@@ -162,7 +163,7 @@ export class UserApi {
                   [Sequelize.Op.iLike]: `%${filter}%`
                 }
               },
-              Sequelize.where(Sequelize.fn('concat', Sequelize.col('firstName'), ' ', Sequelize.col('lastName')), {
+              new Utils.Where(new Utils.Fn('concat', [new Utils.Col('firstName'), ' ', new Utils.Col('lastName')]), {
                 [Sequelize.Op.iLike]: `%${filter}%`
               })
             ]
