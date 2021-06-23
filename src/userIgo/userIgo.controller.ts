@@ -70,11 +70,20 @@ export class UserIgoController {
     const profils = (await UserApi.getProfils(userId, request.headers['x-consumer-groups']).catch(
       () => []
     )) as string[];
-    const profilsIgo = (await this.profilIgoService.getByProfils(profils).catch(() => [])) as ProfilIgo[];
+    let profilsIgo = (await this.profilIgoService.getByProfils(profils).catch(() => [])) as ProfilIgo[];
     const preference: any = profilsIgo.reduce((acc, value) => Object.assign(acc, value ? value.preference : {}), {});
     const canShare = profilsIgo.find(p => p.canShare === true);
     preference.canShare = !!canShare;
     user.preference = Object.assign(preference, user.preference);
+
+    const hasAcrigeo = profilsIgo.find((p) => p.hasAcrigeo === true);
+    if (!hasAcrigeo) {
+      if (profilsIgo.length !== 1) {
+        profilsIgo = profilsIgo.filter((p) => p.name !== 'acrigeo');
+      } else {
+        profilsIgo = profilsIgo[0].name === 'acrigeo' ? profilsIgo : profilsIgo.filter((p) => p.name !== 'acrigeo');
+      }
+    }
 
     user.guides = profilsIgo.reduce((acc, value) => {
       if (value.guide) {
