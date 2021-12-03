@@ -76,7 +76,7 @@ const migrate = async () => {
       VALUES (DEFAULT, '${rAdd[1]}', '${rAdd[2]}', '${rAdd[3]}', NULL,
       '${(rAdd[4] || '{}').replace(/'/g, `''`)}'::json, '${(rAdd[5] || '{}').replace(/'/g, `''`)}'::json,
       CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)`;
-    query = query.replace(/"/g, '\\"').replace(/\${/g, '\\${');
+    query = query.replace(/\\"/g, '\\\\"').replace(/"/g, '\\"').replace(/\${/g, '\\${');
     exec(
       `PGPASSWORD="${password}" psql -h ${toHost} -U ${user} -c "${query}"`,
       (err, stdout, stderr) => {
@@ -112,7 +112,7 @@ const migrate = async () => {
       "sourceOptions"='${(rModify[5] || '{}').replace(/'/g, `''`)}'::json,
       "updatedAt"=CURRENT_TIMESTAMP
       where type='${rModify[1]}' and url='${rModify[2]}' and LOWER(layers)=LOWER('${rModify[3]}')`;
-    query = query.replace(/"/g, '\\"').replace(/\${/g, '\\${');
+    query = query.replace(/\\"/g, '\\\\"').replace(/"/g, '\\"').replace(/\${/g, '\\${');
     exec(
       `PGPASSWORD="${password}" psql -h ${toHost} -U ${user} -c "${query}"`,
       (err, stdout, stderr) => {
