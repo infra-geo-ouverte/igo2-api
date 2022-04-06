@@ -28,7 +28,7 @@ export class ContextService {
         id: id
       }
     })
-      .then((count: [number, Context[]]) => {
+      .then((count: [number]) => {
         if (!count[0]) {
           throw Boom.notFound();
         }

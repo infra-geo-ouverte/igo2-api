@@ -19,7 +19,7 @@ export class CatalogService {
           id: id
         }
       })
-      .then((count: [number, Catalog[]]) => {
+      .then((count: [number]) => {
         if (!count[0]) {
           throw Boom.notFound();
         }

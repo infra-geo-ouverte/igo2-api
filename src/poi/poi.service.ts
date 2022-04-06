@@ -23,7 +23,7 @@ export class PoiService {
           userId: userId
         }
       })
-      .then((count: [number, Poi[]]) => {
+      .then((count: [number]) => {
         if (!count[0]) {
           throw Boom.notFound();
         }

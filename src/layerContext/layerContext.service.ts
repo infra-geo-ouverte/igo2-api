@@ -32,7 +32,7 @@ export class LayerContextService {
         layerId: layerId,
         contextId: contextId
       }
-    }).then((count: [number, LayerContext[]]) => {
+    }).then((count: [number]) => {
       if (!count[0]) {
         throw Boom.notFound();
       }

@@ -40,7 +40,7 @@ export class LayerService {
           id: id
         }
       })
-      .then((count: [number, Layer[]]) => {
+      .then((count: [number]) => {
         if (!count[0]) {
           throw Boom.notFound();
         }

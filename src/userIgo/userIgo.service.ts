@@ -21,7 +21,7 @@ export class UserIgoService {
           userId: userId
         }
       })
-      .then((count: [number, UserIgo[]]) => {
+      .then((count: [number]) => {
         if (!count[0]) {
           throw Boom.notFound();
         }

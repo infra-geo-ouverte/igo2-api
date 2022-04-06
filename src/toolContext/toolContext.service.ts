@@ -29,7 +29,7 @@ export class ToolContextService {
         toolId: toolId,
         contextId: contextId
       }
-    }).then((count: [number, ToolContext[]]) => {
+    }).then((count: [number]) => {
       if (!count[0]) {
         throw Boom.notFound();
       }

@@ -42,7 +42,7 @@ export class ContextPermissionService {
         id: id
       }
     })
-      .then((count: [number, ContextPermission[]]) => {
+      .then((count: [number]) => {
         if (!count[0]) {
           throw Boom.notFound();
         }

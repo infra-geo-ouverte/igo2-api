@@ -18,7 +18,7 @@ export class ProfilIgoService {
           name: profilName
         }
       })
-      .then((count: [number, ProfilIgo[]]) => {
+      .then((count: [number]) => {
         if (!count[0]) {
           throw Boom.notFound();
         }

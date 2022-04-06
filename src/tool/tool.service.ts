@@ -24,7 +24,7 @@ export class ToolService {
       where: {
         id: id
       }
-    }).then((count: [number, Tool[]]) => {
+    }).then((count: [number]) => {
       if (!count[0]) {
         throw Boom.notFound();
       }
