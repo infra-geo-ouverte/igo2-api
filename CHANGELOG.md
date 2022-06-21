@@ -1,3 +1,30 @@
+## [1.6.3](http://gitlab.forge.gouv.qc.ca/igo2/igo2-api/compare/1.7.0...1.6.3) (2022-06-21)
+
+
+### Bug Fixes
+
+* fix node v16 ([586f76b](http://gitlab.forge.gouv.qc.ca/igo2/igo2-api/commit/586f76bf76b2cb5b59b08471c3d9808b3ba86b06))
+* **cookie:** ignore invalid cookie ([5431f6f](http://gitlab.forge.gouv.qc.ca/igo2/igo2-api/commit/5431f6f675ceac9950d04b3a7e6a40ea32f534ef))
+* **cookie:** ignore invalid cookie ([96fcc60](http://gitlab.forge.gouv.qc.ca/igo2/igo2-api/commit/96fcc6068288957a36c8af43874c9a6f6ba260da))
+* **migration:** fix \" string ([84aadad](http://gitlab.forge.gouv.qc.ca/igo2/igo2-api/commit/84aadada6a3347450ba28d8e830f6c9bb36aaa7b))
+
+
+### Features
+
+* **node:** compatible with v16 ([2d613e7](http://gitlab.forge.gouv.qc.ca/igo2/igo2-api/commit/2d613e7262aab364fedd2a93f630e9a5bd58d8fc))
+* **node:** upgrade to 16 ([1bd3c31](http://gitlab.forge.gouv.qc.ca/igo2/igo2-api/commit/1bd3c31172d69f5e4b6d8e8d0f8bc092ebd54c18))
+
+
+
+# [1.7.0](http://gitlab.forge.gouv.qc.ca/igo2/igo2-api/compare/1.6.1...1.7.0) (2021-06-23)
+
+
+### Features
+
+* **guides:** considering hasAcrigeo bool to display guides ([dedc02b](http://gitlab.forge.gouv.qc.ca/igo2/igo2-api/commit/dedc02b7322ac0d140175adea17f58c6a895b637))
+
+
+
 ## [1.6.1](http://gitlab.forge.gouv.qc.ca/igo2/igo2-api/compare/1.6.0...1.6.1) (2021-05-25)
 
 
