@@ -1,0 +1,45 @@
+{
+    "env": {
+        "browser": true,
+        "es2021": true
+    },
+    "extends": [
+        "standard"
+    ],
+    "parser": "@typescript-eslint/parser",
+    "parserOptions": {
+        "ecmaVersion": "latest",
+        "sourceType": "module"
+    },
+    "plugins": [
+        "@typescript-eslint",
+        "unused-imports"
+    ],
+    "rules": {
+        // https://eslint.org/docs/rules/
+        "arrow-spacing": "error",
+        "max-len": [
+          "error",
+          {
+            "code": 140,
+            "comments": 140,
+            "ignoreTrailingComments": true,
+            "ignoreUrls": true,
+            "ignoreTemplateLiterals": true,
+            "ignoreRegExpLiterals": true
+          }
+        ],
+        "node/no-path-concat": "off",
+        "array-callback-return": "off",
+        "no-async-promise-executor": "off",
+        "no-useless-escape": "off", // TODO Fix it
+        "node/no-deprecated-api": "off", // TODO Fix it
+        "unused-imports/no-unused-imports": "error",
+        "no-multi-spaces": "error",
+        "eqeqeq": ["error", "always"],
+        "semi": ["error", "always"],
+        "no-trailing-spaces": "error",
+        "no-multiple-empty-lines": "error",
+        "eol-last": ["error", "always"]
+      }
+}

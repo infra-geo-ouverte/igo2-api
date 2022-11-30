@@ -41,9 +41,10 @@ jspm_packages
 igo.db
 igo-test.db
 
-#ignore configs
-src/configurations/config.dev.json
-src/configurations/config.prod.json
-
-#pm2
-ecosystem.config.js
+# IDEs and editors
+/.idea
+.project
+.classpath
+.c9/
+.vscode/
+.settings/

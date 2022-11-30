@@ -1,78 +1,43 @@
-import * as Sequelize from 'sequelize';
+import {
+  Table,
+  Column,
+  Model,
+  AllowNull,
+  PrimaryKey,
+  Index,
+  AutoIncrement,
+  DataType,
+  ForeignKey
+} from 'sequelize-typescript';
 
-export enum TypePermission {
-  null,
-  read,
-  write
-}
+import { IContextPermission } from './contextPermission.interface';
+import { Context } from '../context/context.model';
 
-export interface IContextPermission {
-  id?: string;
-  typePermission: TypePermission;
+@Table({
+  tableName: 'context_permission',
+  timestamps: true
+})
+export class ContextPermission extends Model<IContextPermission> {
+  @PrimaryKey
+  @AutoIncrement
+  @AllowNull(false)
+  @Column
+  id: number;
+
+  @AllowNull(false)
+  @Column({ type: DataType.ENUM('read', 'write') })
+  typePermission: string;
+
+  @Index({ name: 'context_permission_contextId_profil', unique: true })
+  @Index
+  @AllowNull(false)
+  @Column
   profil: string;
-  contextId: string;
-};
 
-export interface ContextPermissionInstance
-  extends Sequelize.Instance<IContextPermission> {
-  id: string;
-  createdAt: Date;
-  updatedAt: Date;
-
-  profil: string;
-  contextId: string;
-  typePermission: TypePermission;
-}
-
-export interface ContextPermissionModel
-  extends Sequelize.Model<ContextPermissionInstance, IContextPermission> { }
-
-export default function define(sequelize: Sequelize.Sequelize, DataTypes) {
-  const contextPermission =
-    sequelize.define<ContextPermissionModel, IContextPermission>(
-      'contextPermission', {
-        'id': {
-          'type': DataTypes.INTEGER,
-          'allowNull': false,
-          'primaryKey': true,
-          'autoIncrement': true
-        },
-        'typePermission': {
-          'type': DataTypes.ENUM('read', 'write'),
-          'allowNull': false
-        },
-        'profil': {
-          'type': DataTypes.STRING,
-          'allowNull': false
-        },
-        'contextId': {
-          'type': DataTypes.INTEGER
-        }
-      },
-      {
-        'indexes': [{
-          'unique': true,
-          'fields': ['contextId', 'profil']
-        }, {
-          'fields': ['contextId']
-        }, {
-          'fields': ['profil']
-        }],
-        'tableName': 'contextPermission',
-        'timestamps': true
-      }
-    );
-
-  const context = sequelize.models['context'];
-
-  context.hasMany(contextPermission, {
-    foreignKey: {
-      name: 'contextId',
-      allowNull: false
-    }
-  });
-
-  contextPermission.sync();
-
-  return contextPermission;
+  @Index({ name: 'context_permission_contextId_profil', unique: true })
+  @Index
+  @ForeignKey(() => Context)
+  @AllowNull(false)
+  @Column
+  contextId: number;
 }

@@ -1,11 +1,5 @@
-import * as Hapi from 'hapi';
-import Routes from './routes';
-
-export function init(server: Hapi.Server) {
-    Routes(server);
-}
-
 export * from './api';
-export * from './user';
 export * from './user.validator';
 export * from './user.model';
+export * from './user.interface';
+export * from './user.service';

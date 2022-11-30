@@ -1,92 +1,50 @@
-import * as Sequelize from 'sequelize';
+import {
+  Table,
+  Column,
+  Model,
+  AllowNull,
+  PrimaryKey,
+  Index,
+  AutoIncrement,
+  DataType,
+  ForeignKey
+} from 'sequelize-typescript';
 
-export interface IToolContext {
-  id?: string;
-  toolId?: string;
-  contextId?: string;
-  options?: {[key: string]: any};
-};
+import { IToolContext } from './toolContext.interface';
+import { Context } from '../context/context.model';
+import { Tool } from '../tool/tool.model';
 
-export interface ToolContextInstance
-  extends Sequelize.Instance<IToolContext> {
-  id: string;
-  createdAt: Date;
-  updatedAt: Date;
+@Table({
+  tableName: 'tool_context',
+  timestamps: true
+})
+export class ToolContext extends Model<IToolContext> {
+  @PrimaryKey
+  @AutoIncrement
+  @AllowNull(false)
+  @Column
+  id: number;
 
-  toolId: string;
-  contextId: string;
-  options?: {[key: string]: any};
-}
+  @Column({ type: DataType.JSON })
+  options: { [key: string]: any };
 
-export interface ToolContextModel
-  extends Sequelize.Model<ToolContextInstance, IToolContext> { }
+  @Column
+  enabled: boolean;
 
-export default function define(sequelize: Sequelize.Sequelize, DataTypes) {
-  const toolContext = sequelize.define<ToolContextModel, IToolContext>(
-    'toolContext', {
-      'id': {
-        'type': DataTypes.INTEGER,
-        'allowNull': false,
-        'primaryKey': true,
-        'autoIncrement': true
-      },
-      'options': {
-        'type': DataTypes.TEXT,
-        'get': function() {
-          const options = this.getDataValue('options');
-          return options ? JSON.parse(options) : {};
-        },
-        'set': function(val) {
-          this.setDataValue('options', JSON.stringify(val));
-        }
-      },
-      contextId: {
-        type: DataTypes.INTEGER
-      },
-      toolId: {
-        type: DataTypes.INTEGER
-      }
-    },
-    {
-      'indexes': [{
-        'unique': true,
-        'fields': ['contextId', 'toolId']
-      }, {
-        'fields': ['contextId']
-      }, {
-        'fields': ['toolId']
-      }],
-      'tableName': 'toolContext',
-      'timestamps': true
-    }
-  );
+  @Column
+  order: number;
 
-  const tool = sequelize.models['tool'];
-  const context = sequelize.models['context'];
+  @Index({ name: 'tool_context_contextId_toolId', unique: true })
+  @Index
+  @ForeignKey(() => Context)
+  @AllowNull(false)
+  @Column
+  contextId: number;
 
-  tool.belongsToMany(context, {
-    through: {
-      model: toolContext,
-      unique: false
-    },
-    foreignKey: {
-      name: 'toolId',
-      allowNull: false
-    }
-  });
-
-  context.belongsToMany(tool, {
-    through: {
-      model: toolContext,
-      unique: false
-    },
-    foreignKey: {
-      name: 'contextId',
-      allowNull: false
-    }
-  });
-
-  toolContext.sync();
-
-  return toolContext;
+  @Index({ name: 'tool_context_contextId_toolId', unique: true })
+  @Index
+  @ForeignKey(() => Tool)
+  @AllowNull(false)
+  @Column
+  toolId: number;
 }

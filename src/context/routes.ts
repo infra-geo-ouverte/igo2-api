@@ -1,34 +1,60 @@
-import * as Hapi from 'hapi';
+import * as Hapi from '@hapi/hapi';
 import * as Joi from 'joi';
 
 import { ContextController } from './context.controller';
 import { ContextValidator } from './context.validator';
 import { ContextPermissionValidator } from '../contextPermission';
-import { UserValidator } from '../user/user.validator';
 
-export default function(server: Hapi.Server) {
+import { LoginValidator } from '../login/login.validator';
 
+export default function (server: Hapi.Server) {
   const contextController = new ContextController();
   server.bind(contextController);
 
   server.route({
     method: 'GET',
     path: '/contexts/default',
-    config: {
-      handler: contextController.getDefault,
+    handler: contextController.getDefault,
+    options: {
       tags: ['api', 'contexts'],
       description: 'Get default context.',
+      cache: false,
       validate: {
-        headers: UserValidator.authenticateValidator
+        headers: LoginValidator.TokenValidator
       },
       plugins: {
         'hapi-swagger': {
           responses: {
-            '200': {
+            200: {
               description: 'Context founded.'
             },
-            '404': {
+            404: {
               description: 'Context does not exists.'
+            }
+          }
+        }
+      }
+    }
+  });
+
+  server.route({
+    method: 'POST',
+    path: '/contexts/default',
+    handler: contextController.setDefaultContext,
+    options: {
+      tags: ['api', 'context'],
+      description: 'Define default context',
+      validate: {
+        payload: {
+          defaultContextId: Joi.number().integer().required()
+        },
+        headers: LoginValidator.TokenValidator
+      },
+      plugins: {
+        'hapi-swagger': {
+          responses: {
+            201: {
+              description: 'Default Context defined'
             }
           }
         }
@@ -39,10 +65,11 @@ export default function(server: Hapi.Server) {
   server.route({
     method: 'GET',
     path: '/contexts/{contextId}',
-    config: {
-      handler: contextController.getById,
+    handler: contextController.getById,
+    options: {
       tags: ['api', 'contexts'],
       description: 'Get context by id.',
+      cache: false,
       validate: {
         params: {
           contextId: Joi.string().required()
@@ -52,10 +79,10 @@ export default function(server: Hapi.Server) {
       plugins: {
         'hapi-swagger': {
           responses: {
-            '200': {
+            200: {
               description: 'Context founded.'
             },
-            '404': {
+            404: {
               description: 'Context does not exists.'
             }
           }
@@ -67,10 +94,11 @@ export default function(server: Hapi.Server) {
   server.route({
     method: 'GET',
     path: '/contexts/{contextId}/details',
-    config: {
-      handler: contextController.getDetailsById,
+    handler: contextController.getDetailsById,
+    options: {
       tags: ['api', 'tools', 'layers', 'contexts'],
       description: 'Get details of context by context id.',
+      cache: false,
       validate: {
         params: {
           contextId: Joi.string().required()
@@ -79,10 +107,10 @@ export default function(server: Hapi.Server) {
       plugins: {
         'hapi-swagger': {
           responses: {
-            '200': {
+            200: {
               description: 'Context founded.'
             },
-            '404': {
+            404: {
               description: 'Context does not exists.'
             }
           }
@@ -94,13 +122,14 @@ export default function(server: Hapi.Server) {
   server.route({
     method: 'GET',
     path: '/contexts',
-    config: {
-      handler: contextController.get,
+    handler: contextController.get,
+    options: {
       auth: false,
       tags: ['api', 'contexts'],
       description: 'Get all contexts.',
+      cache: false,
       validate: {
-        headers: UserValidator.userValidator
+        query: ContextValidator.getQuery
       }
     }
   });
@@ -108,8 +137,8 @@ export default function(server: Hapi.Server) {
   server.route({
     method: 'DELETE',
     path: '/contexts/{contextId}',
-    config: {
-      handler: contextController.delete,
+    handler: contextController.delete,
+    options: {
       tags: ['api', 'contexts'],
       description: 'Delete context by id.',
       validate: {
@@ -121,13 +150,13 @@ export default function(server: Hapi.Server) {
       plugins: {
         'hapi-swagger': {
           responses: {
-            '204': {
-              description: 'Deleted Context.',
+            204: {
+              description: 'Deleted Context.'
             },
-            '401': {
+            401: {
               description: 'Must be authenticated'
             },
-            '404': {
+            404: {
               description: 'Context does not exists.'
             }
           }
@@ -139,8 +168,8 @@ export default function(server: Hapi.Server) {
   server.route({
     method: 'PATCH',
     path: '/contexts/{contextId}',
-    config: {
-      handler: contextController.update,
+    handler: contextController.update,
+    options: {
       tags: ['api', 'contexts'],
       description: 'Update context by id.',
       validate: {
@@ -153,13 +182,13 @@ export default function(server: Hapi.Server) {
       plugins: {
         'hapi-swagger': {
           responses: {
-            '200': {
-              description: 'Deleted Context.',
+            200: {
+              description: 'Deleted Context.'
             },
-            '401': {
+            401: {
               description: 'Must be authenticated'
             },
-            '404': {
+            404: {
               description: 'Context does not exists.'
             }
           }
@@ -171,21 +200,21 @@ export default function(server: Hapi.Server) {
   server.route({
     method: 'POST',
     path: '/contexts',
-    config: {
-      handler: contextController.create,
+    handler: contextController.create,
+    options: {
       tags: ['api', 'contexts'],
       description: 'Create a context.',
       validate: {
         payload: ContextValidator.createModel,
-        headers: UserValidator.userValidator
+        headers: LoginValidator.TokenValidator
       },
       plugins: {
         'hapi-swagger': {
           responses: {
-            '201': {
+            201: {
               description: 'Created Context.'
             },
-            '401': {
+            401: {
               description: 'Must be authenticated'
             }
           }
@@ -197,23 +226,23 @@ export default function(server: Hapi.Server) {
   server.route({
     method: 'POST',
     path: '/contexts/{contextId}/clone',
-    config: {
-      handler: contextController.clone,
+    handler: contextController.clone,
+    options: {
       tags: ['api', 'contexts'],
       description: 'Clone a context.',
       validate: {
         params: {
           contextId: Joi.string().required()
         },
-        headers: ContextPermissionValidator.authenticatedAndReadPermission
+        headers: ContextPermissionValidator.readPermission
       },
       plugins: {
         'hapi-swagger': {
           responses: {
-            '201': {
+            201: {
               description: 'Cloned context.'
             },
-            '401': {
+            401: {
               description: 'Must be authenticated'
             }
           }
