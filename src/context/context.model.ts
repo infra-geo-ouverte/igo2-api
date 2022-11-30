@@ -1,106 +1,73 @@
-import * as Sequelize from 'sequelize';
+import {
+  Table,
+  Column,
+  Model,
+  AllowNull,
+  PrimaryKey,
+  Index,
+  AutoIncrement,
+  DataType,
+  Unique,
+  BelongsToMany,
+  HasMany
+} from 'sequelize-typescript';
 
-import { TypePermission } from '../contextPermission';
+import { Layer } from '../layer';
+import { LayerContext } from '../layerContext';
 
-export enum Scope {
-  public,
-  protected,
-  private
-}
+import { Tool } from '../tool';
+import { ToolContext } from '../toolContext';
 
-interface Map {
-  view: {
-    center: [number, number];
-    zoom: number;
-    projection: string;
-  };
-};
+import { ContextPermission } from '../contextPermission';
+import { ContextHidden } from '../contextHidden';
 
-export interface IContext {
-  id?: string;
+import { IContext } from './context.interface';
+
+@Table({
+  tableName: 'context',
+  timestamps: true
+})
+export class Context extends Model<IContext> {
+  @PrimaryKey
+  @AutoIncrement
+  @AllowNull(false)
+  @Column
+  id: number;
+
+  @AllowNull(false)
+  @Unique
+  @Column({ type: DataType.STRING(64) })
   uri: string;
-  scope: Scope;
+
+  @AllowNull(false)
+  @Column({ type: DataType.STRING(128) })
   title: string;
+
+  @Column({ type: DataType.STRING(128) })
   icon: string;
-  map: Map;
+
+  @Index
+  @AllowNull(false)
+  @Column({ type: DataType.STRING(128) })
   owner: string;
-  permission?: TypePermission | string;
-};
 
-export interface ContextInstance extends Sequelize.Instance<IContext> {
-  id: string;
-  createdAt: Date;
-  updatedAt: Date;
+  @Index
+  @AllowNull(false)
+  @Column({ type: DataType.ENUM('public', 'protected', 'private') })
+  scope: string;
 
-  uri: string;
-  scope: Scope;
-  title: string;
-  icon: string;
-  map: string;
-  owner: string;
-  permission?: TypePermission | string;
-}
+  @Column({ type: DataType.JSON })
+  map: { [key: string]: any };
 
+  @BelongsToMany(() => Layer, () => LayerContext)
+  layers: Layer[];
 
-export interface ContextDetailed extends ContextInstance {
-  tools?: any[];
-  layers?: any[];
-  toolbar?: string[];
-}
+  @BelongsToMany(() => Tool, () => ToolContext)
+  tools: Tool[];
 
-export interface ContextModel
-  extends Sequelize.Model<ContextInstance, IContext> { }
+  @HasMany(() => ContextPermission)
+  contextPermissions: ContextPermission[];
 
-export default function define(sequelize: Sequelize.Sequelize, DataTypes) {
-  const context = sequelize.define<ContextModel, IContext>('context', {
-    'id': {
-      'type': DataTypes.INTEGER,
-      'allowNull': false,
-      'primaryKey': true,
-      'autoIncrement': true
-    },
-    'uri': {
-      'type': DataTypes.STRING(64),
-      'allowNull': false,
-      'unique': true
-    },
-    'title': {
-      'type': DataTypes.STRING(128),
-      'allowNull': false
-    },
-    'icon': {
-      'type': DataTypes.STRING(128)
-    },
-    'owner': {
-      'type': DataTypes.STRING(128),
-      'allowNull': false
-    },
-    'scope': {
-      'type': DataTypes.ENUM('public', 'protected', 'private'),
-      'allowNull': false
-    },
-    'map': {
-      'type': DataTypes.TEXT,
-      'get': function() {
-        const map = this.getDataValue('map');
-        return map ? JSON.parse(map) : {};
-      },
-      'set': function(val) {
-        this.setDataValue('map', JSON.stringify(val));
-      }
-    }
-  },
-  {
-    'indexes': [{
-      'fields': ['scope']
-    }, {
-      'fields': ['owner']
-    }],
-    'tableName': 'context',
-    'timestamps': true
-  });
-
-  context.sync();
-
-  return context;
+  @HasMany(() => ContextHidden)
+  contextHiddens: ContextHidden[];
 }

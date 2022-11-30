@@ -1,37 +1,36 @@
-import * as Hapi from 'hapi';
+import * as Hapi from '@hapi/hapi';
 import * as Joi from 'joi';
 
 import { ContextPermissionController } from './contextPermission.controller';
 import { ContextPermissionValidator } from './contextPermission.validator';
 
-export default function(server: Hapi.Server) {
-
-  const contextPermissionController =
-    new ContextPermissionController();
+export default function (server: Hapi.Server) {
+  const contextPermissionController = new ContextPermissionController();
 
   server.bind(contextPermissionController);
 
   server.route({
     method: 'GET',
     path: '/contexts/{contextId}/permissions',
-    config: {
-      handler: contextPermissionController.getByContextId,
+    handler: contextPermissionController.getByContextId,
+    options: {
       tags: ['api', 'contextsPermissions', 'contexts', 'permissions'],
       description: 'Get permissions by contexts id.',
+      cache: false,
       validate: {
         params: {
           contextId: Joi.string().required()
         },
-        headers: ContextPermissionValidator.writePermission
+        headers: ContextPermissionValidator.readPermission
       },
       plugins: {
         'hapi-swagger': {
           responses: {
-            '200': {
-              'description': 'permissions founded.'
+            200: {
+              description: 'permissions founded.'
             },
-            '404': {
-              'description': 'Permission does not exists.'
+            404: {
+              description: 'Permission does not exists.'
             }
           }
         }
@@ -42,8 +41,8 @@ export default function(server: Hapi.Server) {
   server.route({
     method: 'DELETE',
     path: '/contexts/{contextId}/permissions/{id}',
-    config: {
-      handler: contextPermissionController.delete,
+    handler: contextPermissionController.delete,
+    options: {
       tags: ['api', 'contextsPermissions', 'contexts', 'permissions'],
       description: 'Delete contextPermission by id.',
       validate: {
@@ -51,16 +50,16 @@ export default function(server: Hapi.Server) {
           id: Joi.string().required(),
           contextId: Joi.string().required()
         },
-        headers: ContextPermissionValidator.writePermission
+        headers: ContextPermissionValidator.readPermission
       },
       plugins: {
         'hapi-swagger': {
           responses: {
-            '204': {
-              'description': 'Deleted ContextPermission.',
+            204: {
+              description: 'Deleted ContextPermission.'
             },
-            '404': {
-              'description': 'ContextPermission does not exists.'
+            404: {
+              description: 'ContextPermission does not exists.'
             }
           }
         }
@@ -71,8 +70,8 @@ export default function(server: Hapi.Server) {
   server.route({
     method: 'PATCH',
     path: '/contexts/{contextId}/permissions/{id}',
-    config: {
-      handler: contextPermissionController.update,
+    handler: contextPermissionController.update,
+    options: {
       tags: ['api', 'contextsPermissions', 'contexts', 'permissions'],
       description: 'Update contextPermission by id.',
       validate: {
@@ -86,11 +85,11 @@ export default function(server: Hapi.Server) {
       plugins: {
         'hapi-swagger': {
           responses: {
-            '200': {
-              'description': 'Deleted ContextPermission.',
+            200: {
+              description: 'Deleted ContextPermission.'
             },
-            '404': {
-              'description': 'ContextPermission does not exists.'
+            404: {
+              description: 'ContextPermission does not exists.'
             }
           }
         }
@@ -101,8 +100,8 @@ export default function(server: Hapi.Server) {
   server.route({
     method: 'POST',
     path: '/contexts/{contextId}/permissions',
-    config: {
-      handler: contextPermissionController.create,
+    handler: contextPermissionController.create,
+    options: {
       tags: ['api', 'contextsPermissions', 'contexts', 'permissions'],
       description: 'Create a contextPermission.',
       validate: {
@@ -115,8 +114,8 @@ export default function(server: Hapi.Server) {
       plugins: {
         'hapi-swagger': {
           responses: {
-            '201': {
-              'description': 'Created ContextPermission.'
+            201: {
+              description: 'Created ContextPermission.'
             }
           }
         }

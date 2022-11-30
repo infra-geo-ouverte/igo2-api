@@ -1,58 +1,47 @@
-import * as Hapi from 'hapi';
-import * as Boom from 'boom';
+import * as Hapi from '@hapi/hapi';
 
-import { Tool } from './tool';
-import { ITool, ToolInstance } from './tool.model';
+import { handleError, HapiRequestToUser } from '../utils';
+
+import { ToolService } from './tool.service';
+import { ITool } from './tool.interface';
 
 export class ToolController {
+  private toolService: ToolService;
 
-  private tool: Tool;
-
-  constructor() {
-    this.tool = new Tool();
+  constructor () {
+    this.toolService = new ToolService();
   }
 
-  public create(request: Hapi.Request, reply: Hapi.IReply) {
-    const toolToCreate: ITool = request.payload;
+  public async create (request: Hapi.Request, h: Hapi.ResponseToolkit) {
+    const toolToCreate: ITool = request.payload as ITool;
 
-    this.tool.create(toolToCreate).subscribe(
-      (tool: ToolInstance) => reply(tool).code(201),
-      (error: Boom.BoomError) => reply(error)
-    );
+    const res = await this.toolService.create(toolToCreate).catch(handleError);
+
+    return h.response(res).code(201);
   }
 
-  public update(request: Hapi.Request, reply: Hapi.IReply) {
-    const id = request.params['id'];
-    const toolToUpdate: ITool = request.payload;
+  public async update (request: Hapi.Request, _h: Hapi.ResponseToolkit) {
+    const id = request.params.id;
+    const toolToUpdate: ITool = request.payload as ITool;
 
-    this.tool.update(id, toolToUpdate).subscribe(
-      (tool: ToolInstance) => reply(tool),
-      (error: Boom.BoomError) => reply(error)
-    );
+    return await this.toolService.update(id, toolToUpdate).catch(handleError);
   }
 
-  public delete(request: Hapi.Request, reply: Hapi.IReply) {
-    const id = request.params['id'];
+  public async delete (request: Hapi.Request, h: Hapi.ResponseToolkit) {
+    const id = request.params.id;
 
-    this.tool.delete(id).subscribe(
-      (tool: ToolInstance) => reply(tool).code(204),
-      (error: Boom.BoomError) => reply(error)
-    );
+    await this.toolService.delete(id).catch(handleError);
+    return h.response().code(204);
   }
 
-  public getById(request: Hapi.Request, reply: Hapi.IReply) {
-    const id = request.params['id'];
-
-    this.tool.getById(id).subscribe(
-      (tool: ToolInstance) => reply(tool),
-      (error: Boom.BoomError) => reply(error)
-    );
+  public async getById (request: Hapi.Request, _h: Hapi.ResponseToolkit) {
+    const id = request.params.id;
+    const user = HapiRequestToUser(request);
+    return await this.toolService.getById(id, user.id).catch(handleError);
   }
 
-  public get(request: Hapi.Request, reply: Hapi.IReply) {
-    this.tool.get().subscribe(
-      (tools: ToolInstance[]) => reply(tools),
-      (error: Boom.BoomError) => reply(error)
-    );
+  public async get (request: Hapi.Request, _h: Hapi.ResponseToolkit) {
+    const user = HapiRequestToUser(request);
+    return await this.toolService.get(user.id).catch(handleError);
   }
 }

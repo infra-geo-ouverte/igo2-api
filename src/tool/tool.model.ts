@@ -1,73 +1,54 @@
-import * as Sequelize from 'sequelize';
+import {
+  Table, Column, Model, AllowNull, PrimaryKey, Unique,
+  AutoIncrement, DataType
+} from 'sequelize-typescript';
+import { ITool } from './tool.interface';
 
-export interface ITool {
-  id?: string;
+@Table({
+  tableName: 'tool',
+  timestamps: true
+})
+export class Tool extends Model<ITool> {
+  @PrimaryKey
+  @AutoIncrement
+  @AllowNull(false)
+  @Column
+  id: number;
+
+  @Unique
+  @AllowNull(true)
+  @Column({ type: DataType.STRING(64) })
   name: string;
-  title?: string;
-  tooltip?: string;
-  icon?: string;
-  inToolbar?: boolean;
-  options?: { [key: string]: any };
-};
 
-export interface ToolInstance extends Sequelize.Instance<ITool> {
-  id: string;
-  createdAt: Date;
-  updatedAt: Date;
+  @Column({ type: DataType.STRING(64) })
+  title: string;
 
-  name: string;
-  title?: string;
-  tooltip?: string;
-  icon?: string;
-  inToolbar?: boolean;
-  options?: { [key: string]: any };
-}
+  @Column({ type: DataType.STRING(128) })
+  tooltip: string;
 
-export interface ToolModel
-  extends Sequelize.Model<ToolInstance, ITool> { }
+  @Column({ type: DataType.STRING(128) })
+  icon: string;
 
+  @Column
+  inToolbar: boolean;
 
-export default function define(sequelize: Sequelize.Sequelize, DataTypes) {
-  const tool = sequelize.define<ToolModel, ITool>('tool', {
-    'id': {
-      'type': DataTypes.INTEGER,
-      'allowNull': false,
-      'primaryKey': true,
-      'autoIncrement': true
-    },
-    'name': {
-      'type': DataTypes.STRING(64),
-      'allowNull': false
-    },
-    'title': {
-      'type': DataTypes.STRING(64)
-    },
-    'tooltip': {
-      'type': DataTypes.STRING(128)
-    },
-    'icon': {
-      'type': DataTypes.STRING(128)
-    },
-    'inToolbar': {
-      'type': DataTypes.BOOLEAN
-    },
-    'options': {
-      'type': DataTypes.TEXT,
-      'get': function() {
-        const options = this.getDataValue('options');
-        return options ? JSON.parse(options) : {};
-      },
-      'set': function(val) {
-        this.setDataValue('options', JSON.stringify(val));
-      }
-    }
-  },
-    {
-      'tableName': 'tool',
-      'timestamps': true
-    });
+  @Column
+  global: boolean;
 
-  tool.sync();
+  @Column
+  order: number;
 
-  return tool;
+  @Column({ type: DataType.JSON })
+  options: { [key: string]: any };
+
+  @Column(DataType.STRING)
+  get profils (): string[] {
+    const profils: string = this.getDataValue('profils') as any;
+    return profils ? profils.split(',') : [];
+  }
+
+  set profils (value: string[]) {
+    const profils: any = value.join(',');
+    this.setDataValue('profils', profils);
+  }
 }

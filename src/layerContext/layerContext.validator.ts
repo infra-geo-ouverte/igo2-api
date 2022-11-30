@@ -1,32 +1,17 @@
 import * as Joi from 'joi';
+import { LayerValidator } from '../layer/layer.validator';
 
 export class LayerContextValidator {
-
   static createModel = Joi.object().keys({
     layerId: Joi.number().required(),
-    view: Joi.object().keys({
-      attribution: Joi.string().allow(''),
-      minZoom: Joi.number(),
-      maxZoom: Joi.number()
-    }),
-    options: Joi.object().keys({
-      visible: Joi.boolean(),
-      title: Joi.string()
-    }),
-    order: Joi.number()
+    layerOptions: LayerValidator.layerOptionsModel,
+    sourceOptions: LayerValidator.sourceOptionsModel,
+    enabled: Joi.boolean().optional()
   });
 
   static updateModel = Joi.object().keys({
-    view: Joi.object().keys({
-      attribution: Joi.string().allow(''),
-      minZoom: Joi.number(),
-      maxZoom: Joi.number()
-    }),
-    options: Joi.object().keys({
-      visible: Joi.boolean(),
-      title: Joi.string()
-    }),
-    order: Joi.number()
+    layerOptions: LayerValidator.layerOptionsModel,
+    sourceOptions: LayerValidator.sourceOptionsModel,
+    enabled: Joi.boolean().optional()
   });
-
 }

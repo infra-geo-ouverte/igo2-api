@@ -1,6 +1,6 @@
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
 
-For API-IGO2 Source Code (https://github.com/infra-geo-ouverte/igo2-api), this license is applied :
+For IGO2-API Source Code (https://github.com/infra-geo-ouverte/igo2-api), this license is applied :
 
 
 This license is approved by the international Open Source Initiative (OSI) : https://opensource.org/licenses/LiLiQ-R-1.1
@@ -108,18 +108,3 @@ The licensor may also expressly choose to grant the licence in its current versi
 To the extent that the licensor is a government department, public body or legal person established in the public interest and created under a law of the National Assembly of Québec, the licence is governed by the laws applicable in Québec and, in the event of a dispute, the courts of Québec have sole jurisdiction.
 
 This licence may be distributed without any special conditions. However, a modified version must be distributed under a different name. Any reference to the Centre de services partagés du Québec or its successors, where applicable, must be withdrawn, except as needed to describe the origin of the licence.
-
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
-
-For EXTERNAL LIBRAIRIES OF API-IGO2 :
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
-
-
-For NodeJS (https://github.com/nodejs/node) :
-
-https://github.com/nodejs/node/blob/master/LICENSE
-
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
