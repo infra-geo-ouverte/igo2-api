@@ -1,5 +1,11 @@
+import {
+  IDatabaseConfiguration, IDataConfiguration, IDBStringConfiguration,
+  IPostgresConfiguration, IServerConfiguration, ISqliteConfiguration
+} from '@igo2/base-api';
 import * as nconf from 'nconf';
 import * as path from 'path';
+import * as Jwt from 'jsonwebtoken';
+import { UserWithCredentials } from '../login/login.interface';
 
 // Read Configurations
 const configs = new nconf.Provider({
@@ -11,14 +17,26 @@ const configs = new nconf.Provider({
   }
 });
 
-interface IUserApiConfiguration {
-  host: string;
-  port: number;
+export interface CredentialsConfig {
+  admins: UserWithCredentials[];
+  users?: UserWithCredentials[];
 }
+export interface JwtConfig {
+  maxRefresh: number;
+  secretKey: string;
+  signOptions: Jwt.SignOptions;
+  verifyOptions: Jwt.VerifyOptions;
+}
+
+export { IDatabaseConfiguration, ISqliteConfiguration, IPostgresConfiguration, IDBStringConfiguration, IDataConfiguration };
 
 export interface ILdapConfiguration {
   url: string;
-  baseSearch: string;
+  baseDN: string;
+  bindDN: string;
+  bindCredentials: string;
+  attributes?: any;
+  entryParser?: any;
 }
 
 interface ILocalhostConfiguration {
@@ -26,60 +44,15 @@ interface ILocalhostConfiguration {
   basePaths: string[];
 }
 
-export interface IServerConfiguration {
-    port: number;
-    plugins: Array<string>;
-    jwtExpiration: string;
-    userApi: IUserApiConfiguration;
-    ldap: ILdapConfiguration[];
-    googleKey?: string;
-    adminProfil?: string;
-    localhost?: ILocalhostConfiguration;
+export interface IgoApiIServerConfiguration extends IServerConfiguration {
+  ldap: ILdapConfiguration[];
+  localhost?: ILocalhostConfiguration;
 }
 
-export interface IDatabaseConfiguration {
-  dialect?: string; // [sqlite, postgres]
-}
-export interface ISqliteConfiguration extends IDatabaseConfiguration {
-  dialect: string;
-  host: string;
-  storage: string;
-}
-export interface IPostgresConfiguration extends IDatabaseConfiguration {
-  dialect: string;
-  host: string;
-  port: number;
-  database: string;
-  username?: string;
-  password?: string;
-}
-export interface IDBStringConfiguration extends IDatabaseConfiguration {
-  connectionString: string;
-}
-export type IDataConfiguration = ISqliteConfiguration |
-                                 IPostgresConfiguration |
-                                 IDBStringConfiguration;
-
-export interface IConsumer {
-  xConsumerId: string;
-  xConsumerUsername: string;
-}
-
-export interface ITestConfiguration {
-  admin: IConsumer;
-  anonyme: IConsumer;
-  user1: IConsumer;
-  user2: IConsumer;
-}
-
-export function getDatabaseConfig(): IDataConfiguration {
+export function getDatabaseConfig (): IDataConfiguration {
   return configs.get('database');
 }
 
-export function getServerConfig(): IServerConfiguration {
+export function getServerConfig (): IgoApiIServerConfiguration {
   return configs.get('server');
-}
-
-export function getTestConfig(): ITestConfiguration {
-  return configs.get('test');
 }

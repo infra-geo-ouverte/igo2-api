@@ -1,46 +1,39 @@
-import * as Sequelize from 'sequelize';
+import { Table, Column, Model, AllowNull, PrimaryKey, AutoIncrement, DataType } from 'sequelize-typescript';
+import { ICatalog } from './catalog.interface';
 
-export interface ICatalog {
-  id?: string;
+@Table({
+  tableName: 'catalog',
+  timestamps: true
+})
+export class Catalog extends Model<ICatalog> {
+  @PrimaryKey
+  @AutoIncrement
+  @AllowNull(false)
+  @Column
+  id: number;
+
+  @AllowNull(false)
+  @Column({ type: DataType.STRING(64) })
   title: string;
+
+  @AllowNull(false)
+  @Column({ type: DataType.STRING(128) })
   url: string;
-};
 
-export interface CatalogInstance extends Sequelize.Instance<ICatalog> {
-  id: string;
-  createdAt: Date;
-  updatedAt: Date;
+  @Column({ type: DataType.JSON })
+  options: { [key: string]: any };
 
-  title: string;
-  url: string;
-}
+  @Column
+  order: number;
 
-export interface CatalogModel
-  extends Sequelize.Model<CatalogInstance, ICatalog> { }
+  @Column(DataType.STRING)
+  get profils (): string[] {
+    const profils: string = this.getDataValue('profils') as any;
+    return profils ? profils.split(',') : [];
+  }
 
-
-export default function define(sequelize: Sequelize.Sequelize, DataTypes) {
-  const catalog = sequelize.define<CatalogModel, ICatalog>('catalog', {
-    'id': {
-      'type': DataTypes.INTEGER,
-      'allowNull': false,
-      'primaryKey': true,
-      'autoIncrement': true
-    },
-    'title': {
-      'type': DataTypes.STRING(64),
-      'allowNull': false
-    },
-    'url': {
-      'type': DataTypes.STRING(128),
-      'allowNull': false
-    }
-  }, {
-    'tableName': 'catalog',
-    'timestamps': true
-  });
-
-  catalog.sync();
-
-  return catalog;
+  set profils (value: string[]) {
+    const profils: any = value.join(',');
+    this.setDataValue('profils', profils);
+  }
 }

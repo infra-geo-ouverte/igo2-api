@@ -1,24 +1,99 @@
 {
-    "database": {
-      "host": "localhost",
-      "dialect": "sqlite",
-      "storage": "./igo.db"
+  "SQLITE_DB_PREFIX_TO_REMOVE_database": {
+    "host": "localhost",
+    "dialect": "sqlite",
+    "storage": "./igo.db"
+  },
+
+  "database": {
+    "dialect": "postgres",
+    "host": "lau021",
+    "port": 5432,
+    "database": "igo2_api",
+    "username": "igo_mtq",
+    "password": "dgeo_igo"
+  },
+  "credentials": {
+    "admins": [
+      {
+        "username": "admin",
+        "firstName": "Igo",
+        "lastName": "Admin",
+        "password": "admin",
+        "profils": ["admin","read","write"],
+        "email": "info[@]igouverte.org",
+        "expiresIn": "14050d"
+      }
+  ],
+    "users": [
+      {
+        "username": "user1",
+        "password": "user1",
+        "firstName": "First",
+        "lastName": "Igo User",
+        "profils": ["read", "another"],
+        "email": "info[@]igouverte.org"
+      },
+      {
+        "username": "user2",
+        "password": "user2",
+        "firstName": "Second",
+        "lastName": "Igo User",
+        "profils": ["write"],
+        "email": "info[@]igouverte.org"
+      }
+    ]
+  },
+  "jwt": {
+    "expiresIn": "1d",
+    "signOptions": {
+      "issuer": "igo2-api"
     },
-    "server": {
-        "port": 5000,
-        "adminProfil": "admin",
-        "jwtExpiration": "1h",
-        "userApi": {
-          "host": "localhost",
-          "port": 8001
-        },
-        "plugins": [
-            "logger",
-            "sanitizer",
-            "swagger"
-        ]
-    },
-    "test": {
-      "xConsumerId": ""
+    "secretKey": "YOUROWNSECRET",
+    "maxRefresh": 30
+  },
+  "ldap": {
+    "url": "ldap://SDCMTQ0-000001.MTQ.MIN.INTRA",
+    "baseDN": "DC=MTQ,DC=MIN,DC=INTRA",
+    "bindDN": "CN=cs-min000-linux-web,OU=UNIX,OU=MIN,DC=MTQ,DC=MIN,DC=INTRA",
+    "bindCredentials": "Aw0uEy3_DONc_",
+    "attributes": {
+      "user": [ "objectGUID", "dn", "userPrincipalName", "sAMAccountName", "mail", "lockoutTime", "whenCreated", "pwdLastSet", "userAccountControl", "sn", "givenName", "cn", "displayName"]
     }
+  },
+  "server": {
+    "port": 5000,
+    "plugins": ["logger", "health", "monitor", "route", "dev-errors", "sanitizer", "swagger"],
+    "pluginsOptions": {
+      "global": {
+        "baseHref": "/igo2"
+      },
+      "swagger": {
+        "tags": [
+          {
+            "name": "contexts",
+            "description": "Api contexts interface."
+          }
+        ]
+      }
+    },
+    "routes": [
+      "layer",
+      "tool",
+      "poi",
+      "login",
+      "catalog",
+      "context",
+      "contextHidden",
+      "userIgo",
+      "profilIgo",
+      "contextPermission",
+      "layerContext",
+      "toolContext"
+    ],
+    "localhost": {
+      "hosts": ["https://testgeoegl.msp.gouv.qc.ca"],
+      "basePaths": ["/apis/"]
+    }
+  }
 }

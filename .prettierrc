@@ -1,0 +1,6 @@
+{
+  "singleQuote": true,
+  "trailingComma": "none",
+  "prettier.disableLanguages": ["html"],
+  "printWidth": 120
+}

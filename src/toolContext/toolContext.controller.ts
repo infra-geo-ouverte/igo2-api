@@ -1,64 +1,52 @@
-import * as Hapi from 'hapi';
-import * as Boom from 'boom';
+import * as Hapi from '@hapi/hapi';
 
-import { ToolContext, IToolContext, ToolContextInstance } from './index';
+import { handleError } from '../utils';
+
+import { ToolContextService, IToolContext } from './index';
 
 export class ToolContextController {
+  private toolContextService: ToolContextService;
 
-  private toolContext: ToolContext;
-
-  constructor() {
-    this.toolContext = new ToolContext();
+  constructor () {
+    this.toolContextService = new ToolContextService();
   }
 
-  public create(request: Hapi.Request, reply: Hapi.IReply) {
-    const newToolContext: IToolContext = request.payload;
-    newToolContext['contextId'] = request.params['contextId'];
+  public async create (request: Hapi.Request, h: Hapi.ResponseToolkit) {
+    const newToolContext = request.payload as IToolContext;
+    newToolContext.contextId = request.params.contextId;
 
-    this.toolContext.create(newToolContext).subscribe(
-      (tc: ToolContextInstance) => reply(tc).code(201),
-      (error: Boom.BoomError) => reply(error)
-    );
+    const res = await this.toolContextService.create(newToolContext).catch(handleError);
+
+    return h.response(res).code(201);
   }
 
-  public update(request: Hapi.Request, reply: Hapi.IReply) {
-    const toolId = request.params['toolId'];
-    const contextId = request.params['contextId'];
-    const toolContext: IToolContext = request.payload;
+  public async update (request: Hapi.Request, _h: Hapi.ResponseToolkit) {
+    const toolId = request.params.toolId;
+    const contextId = request.params.contextId;
+    const toolContext = request.payload as IToolContext;
 
-    this.toolContext.update(contextId, toolId, toolContext).subscribe(
-      (cp: ToolContextInstance) => reply(cp),
-      (error: Boom.BoomError) => reply(error)
-    );
+    return await this.toolContextService.update(contextId, toolId, toolContext).catch(handleError);
   }
 
-  public delete(request: Hapi.Request, reply: Hapi.IReply) {
-    const toolId = request.params['toolId'];
-    const contextId = request.params['contextId'];
+  public async delete (request: Hapi.Request, h: Hapi.ResponseToolkit) {
+    const toolId = request.params.toolId;
+    const contextId = request.params.contextId;
 
-    this.toolContext.delete(contextId, toolId).subscribe(
-      (cp: ToolContextInstance) => reply(cp).code(204),
-      (error: Boom.BoomError) => reply(error)
-    );
+    await this.toolContextService.delete(contextId, toolId).catch(handleError);
+
+    return h.response().code(204);
   }
 
-  public getById(request: Hapi.Request, reply: Hapi.IReply) {
-    const toolId = request.params['toolId'];
-    const contextId = request.params['contextId'];
+  public async getById (request: Hapi.Request, _h: Hapi.ResponseToolkit) {
+    const toolId = request.params.toolId;
+    const contextId = request.params.contextId;
 
-    this.toolContext.getById(contextId, toolId).subscribe(
-      (cp: ToolContextInstance) => reply(cp),
-      (error: Boom.BoomError) => reply(error)
-    );
+    return await this.toolContextService.getById(contextId, toolId).catch(handleError);
   }
 
-  public getByContextId(request: Hapi.Request, reply: Hapi.IReply) {
-    const contextId = request.params['contextId'];
+  public async getByContextId (request: Hapi.Request, _h: Hapi.ResponseToolkit) {
+    const contextId = request.params.contextId;
 
-    this.toolContext.getByContextId(contextId).subscribe(
-      (cp: ToolContextInstance[]) => reply(cp),
-      (error: Boom.BoomError) => reply(error)
-    );
+    return await this.toolContextService.getByContextId(contextId).catch(handleError);
   }
-
 }
