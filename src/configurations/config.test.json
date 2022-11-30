@@ -1,24 +1,63 @@
 {
-    "database": {
-      "host": "localhost",
-      "dialect": "sqlite",
-      "storage": "./igo-test.db"
+  "database": {
+    "host": "localhost",
+    "dialect": "sqlite",
+    "storage": "./igo-test.db"
+  },
+  "credentials": {
+    "admins": [
+      {
+        "username": "admin",
+        "firstName": "Igo",
+        "lastName": "Admin",
+        "password": "admin",
+        "profils": ["admin", "privilege", "another"],
+        "email": "info[@]igouverte.org",
+        "expiresIn": "14050d"
+      }
+  ],
+    "users": [
+      {
+        "username": "standard",
+        "password": "standard",
+        "firstName": "Standard user",
+        "lastName": "Standard user",
+        "profils": ["privilege", "another"],
+        "email": "info[@]igouverte.org"
+      },
+      {
+        "username": "user2",
+        "password": "user2",
+        "firstName": "Second",
+        "lastName": "Igo User",
+        "profils": ["another"],
+        "email": "info[@]igouverte.org"
+      }
+    ]
+  },
+  "jwt": {
+    "expiresIn": "1d",
+    "signOptions": {
+      "issuer": "igo2-api-test"
     },
-    "server": {
-        "port": 5000,
-        "adminProfil": "admin",
-        "jwtExpiration": "1h",
-        "userApi": {
-          "host": "localhost",
-          "port": 8001
-        },
-        "plugins": [
-            "logger",
-            "sanitizer",
-            "swagger"
-        ]
-    },
-    "test": {
-      "xConsumerId": ""
-    }
+    "secretKey": "YOUROWNSECRET4Test",
+    "maxRefresh": 5
+  },
+  "server": {
+    "port": 5000,
+    "plugins": ["logger", "sanitizer", "swagger"],
+    "routes": [
+      "layer",
+      "tool",
+      "poi",
+      "login",
+      "catalog",
+      "context",
+      "userIgo",
+      "profilIgo",
+      "contextPermission",
+      "layerContext",
+      "toolContext"
+    ]
+  }
 }

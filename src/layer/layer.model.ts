@@ -1,191 +1,78 @@
-import * as Sequelize from 'sequelize';
+import {
+  Table, Column, Model, AllowNull, PrimaryKey, Index,
+  AutoIncrement, DataType, AfterUpdate, AfterCreate, Default
+} from 'sequelize-typescript';
 
-interface ViewLayer {
-  attribution: string;
-  minZoom: number;
-  maxZoom: number;
-};
+import * as Configs from '../configurations';
+import { IDatabaseConfiguration } from '../configurations';
 
-export interface OgcFilterLayer {
-  filtersAreEditable: boolean;
-  filters?: { [key: string]: any };
-};
+import { ILayer } from './layer.interface';
 
+@Table({
+  tableName: 'layer',
+  timestamps: true
+})
+export class Layer extends Model<ILayer> {
+  @PrimaryKey
+  @AutoIncrement
+  @AllowNull(false)
+  @Column
+  id: number;
 
+  @Default(true)
+  @AllowNull(false)
+  @Column
+  enabled: boolean;
 
-export interface SourceLayer {
+  @Index({ name: 'layer_type_url_layers', unique: true })
+  @AllowNull(false)
+  @Column({ type: DataType.STRING(16) })
+  type: string;
+
+  @Index({ name: 'layer_type_url_layers', unique: true })
+  @Column
   url: string;
-  params?: { [key: string]: any };
-  featureTypes?: string;
-  fieldNameGeometry?: string;
-  maxFeatures?: number;
-  version?: string;
-  outputFormat?: string;
-  outputFormatDownload?: string;
-};
 
-export interface SourceField {
-  name: string;
-  alias: string;
-}
+  @Index({ name: 'layer_type_url_layers', unique: true })
+  @Column({ type: DataType.STRING(128) })
+  layers: string;
 
-export interface ILayer {
-  id?: string;
-  title: string;
-  type: string;
-  baseLayer: boolean;
-  view?: ViewLayer;
-  source?: SourceLayer;
-  isOgcFilterable?: boolean;
-  ogcFilters?: any;
-  sourceFields?: SourceField[];
-  wfsSource?: SourceLayer;
-  order?: number;
-};
+  @Index({ unique: false })
+  @Column
+  global: boolean;
 
-export interface LayerInstance extends Sequelize.Instance<ILayer> {
-  id: string;
-  createdAt: Date;
-  updatedAt: Date;
+  @Column({ type: DataType.JSON })
+  layerOptions: { [key: string]: any };
 
-  title: string;
-  type: string;
-  baseLayer: boolean;
-  view?: ViewLayer;
-  source?: SourceLayer;
-  isOgcFilterable?: boolean;
-  ogcFilters?: any;
-  sourceFields?: SourceField[];
-  wfsSource?: SourceLayer;
-  download?: any;
-  metadata?: any;
-  timeFilter?: any;
-  options?: any;
-}
+  @Column({ type: DataType.JSON })
+  sourceOptions: { [key: string]: any };
 
-export interface LayerModel
-  extends Sequelize.Model<LayerInstance, ILayer> { }
+  @Column({
+    type: (Configs.getDatabaseConfig() as IDatabaseConfiguration).dialect === 'postgres' ? DataType.TSVECTOR : DataType.TEXT
+  }) // only for postgresql
+  searchableColumn: { [key: string]: any };
 
+  @Column(DataType.STRING)
+  get profils (): string[] {
+    const profils: string = this.getDataValue('profils') as any;
+    return profils ? profils.split(',') : [];
+  }
 
-export default function define(sequelize: Sequelize.Sequelize, DataTypes) {
-  const layer = sequelize.define<LayerModel, ILayer>('layer', {
-    'id': {
-      'type': DataTypes.INTEGER,
-      'allowNull': false,
-      'primaryKey': true,
-      'autoIncrement': true
-    },
-    'title': {
-      'type': DataTypes.STRING(128),
-      'allowNull': false
-    },
-    'type': {
-      'type': DataTypes.STRING(32),
-      'allowNull': false
-    },
-    'baseLayer': {
-      'type': DataTypes.BOOLEAN
-    },
-    'view': {
-      'type': DataTypes.TEXT,
-      'get': function() {
-        const view = this.getDataValue('view');
-        return view ? JSON.parse(view) : {};
-      },
-      'set': function(val) {
-        this.setDataValue('view', JSON.stringify(val));
-      }
-    },
-    'source': {
-      'type': DataTypes.TEXT,
-      'get': function() {
-        const source = this.getDataValue('source');
-        return source ? JSON.parse(source) : {};
-      },
-      'set': function(val) {
-        this.setDataValue('source', JSON.stringify(val));
-      }
-    },
-    'isOgcFilterable': {
-      'type': DataTypes.BOOLEAN
-    },
-    'ogcFilters': {
-      'type': DataTypes.TEXT,
-      'get': function() {
-        const ogcFilters = this.getDataValue('ogcFilters');
-        return ogcFilters ? JSON.parse(ogcFilters) : {};
-      },
-      'set': function(val) {
-        this.setDataValue('ogcFilters', JSON.stringify(val));
-      }
-    },
-    'sourceFields': {
-      'type': DataTypes.TEXT,
-      'get': function() {
-        const sourceFields = this.getDataValue('sourceFields');
-        return sourceFields ? JSON.parse(sourceFields) : {};
-      },
-      'set': function(val) {
-        this.setDataValue('sourceFields', JSON.stringify(val));
-      }
-    },
-    'wfsSource': {
-      'type': DataTypes.TEXT,
-      'get': function() {
-        const wfsSource = this.getDataValue('wfsSource');
-        return wfsSource ? JSON.parse(wfsSource) : {};
-      },
-      'set': function(val) {
-        this.setDataValue('wfsSource', JSON.stringify(val));
-      }
-    },
-    'download': {
-      'type': DataTypes.TEXT,
-      'get': function() {
-        const download = this.getDataValue('download');
-        return download ? JSON.parse(download) : {};
-      },
-      'set': function(val) {
-        this.setDataValue('download', JSON.stringify(val));
-      }
-    },
-    'metadata': {
-      'type': DataTypes.TEXT,
-      'get': function() {
-        const metadata = this.getDataValue('metadata');
-        return metadata ? JSON.parse(metadata) : {};
-      },
-      'set': function(val) {
-        this.setDataValue('metadata', JSON.stringify(val));
-      }
-    },
-    'timeFilter': {
-      'type': DataTypes.TEXT,
-      'get': function() {
-        const timeFilter = this.getDataValue('timeFilter');
-        return timeFilter ? JSON.parse(timeFilter) : {};
-      },
-      'set': function(val) {
-        this.setDataValue('timeFilter', JSON.stringify(val));
-      }
-    },
-    'options': {
-      'type': DataTypes.TEXT,
-      'get': function() {
-        const options = this.getDataValue('options');
-        return options ? JSON.parse(options) : {};
-      },
-      'set': function(val) {
-        this.setDataValue('options', JSON.stringify(val));
-      }
+  set profils (value: string[]) {
+    const profils: any = value.join(',');
+    this.setDataValue('profils', profils);
+  }
+
+  @AfterUpdate
+  @AfterCreate
+  static updateSearchableColumn (layer: Layer) {
+    // this will be called when an instance is created or updated
+    let sql = 'UPDATE layer SET "searchableColumn" =\'NA\'';
+    if ((Configs.getDatabaseConfig() as IDatabaseConfiguration).dialect === 'postgres') {
+      sql = ` 
+      UPDATE layer SET "searchableColumn" = to_tsvector('simple', ${['coalesce(layers,\'\')', 'coalesce("layerOptions"->\'title\',\'{}\')'].join(" || ' ' || ")});
+      `;
     }
-  },
-    {
-      'tableName': 'layer',
-      'timestamps': true
-    });
-
-  layer.sync();
-
-  return layer;
+    layer.sequelize.query(sql);
+  }
 }

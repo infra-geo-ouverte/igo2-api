@@ -1,13 +1,43 @@
-import * as Server from './server';
-import * as Configs from './configurations';
+import { Server, Config, Base64 } from '@igo2/base-api';
+import { IgoJWTUser } from './login/login.interface';
+import { IProfilIgo } from './profilIgo/profilIgo.interface';
 
-const serverConfigs = Configs.getServerConfig();
-const testConfigs = Configs.getTestConfig();
-const admin = testConfigs.admin;
+import * as Jwt from 'jsonwebtoken';
+import { ILayer } from './layer/layer.interface';
+import { ITool } from './tool/tool.interface';
+import { CredentialsConfig, JwtConfig } from './configurations';
 
-Server.init(serverConfigs).then((server) => {
+Config.readConfig(__dirname, `configurations/config.${process.env.NODE_ENV || 'dev'}.json`);
 
-  setTimeout(() => {
+const serverConfigs = Config.getServerConfig();
+const jwtConfig = Config.getConfig('jwt') as JwtConfig;
+const credentialsConfig = Config.getConfig('credentials') as CredentialsConfig;
+const adminCredentialsConfig = credentialsConfig.admins[0];
+
+const initDB = async () => {
+  const server = await Server.init(serverConfigs);
+
+  const adminInfoPayload: IgoJWTUser = {
+    user: {
+      id: adminCredentialsConfig.username,
+      source: 'igo',
+      sourceId: adminCredentialsConfig.username,
+      firstName: adminCredentialsConfig.firstName || 'ADMIN',
+      lastName: adminCredentialsConfig.lastName || 'ADMIN',
+      email: adminCredentialsConfig.email,
+      isAdmin: true
+    }
+  };
+
+  const token = Jwt.sign(
+    adminInfoPayload,
+    jwtConfig.secretKey,
+    Object.assign({}, jwtConfig.signOptions, { expiresIn: '14050d' })
+  );
+
+  const adminTokenHeaders = {
+    authorization: `Bearer ${token}`
+  };
 
   const handleError = (response) => {
     if (response.statusCode < 200 || response.statusCode >= 400) {
@@ -17,332 +47,305 @@ Server.init(serverConfigs).then((server) => {
     }
   };
 
-  server.inject({
-    method: 'POST',
-    url: '/tools',
-    headers: {
-      'x-consumer-username': admin.xConsumerUsername,
-      'x-consumer-id': admin.xConsumerId
-    },
-    payload: {
-      name: 'ogcFilter',
-      inToolbar: true
-    }
-  }, handleError);
+  // CREATE THE USERS
+  const profilsToCreate = [];
+  credentialsConfig.admins.concat(
+    credentialsConfig.users).map(user => {
+    profilsToCreate.concat(user.profils);
+    server
+      .inject({
+        method: 'POST',
+        url: '/login',
+        headers: adminTokenHeaders,
+        payload: {
+          username: user.username,
+          password: Base64.encode(user.password),
+          source: user.source || 'igo'
+        }
+      })
+      .catch(handleError);
+  });
 
-  server.inject({
-    method: 'POST',
-    url: '/tools',
-    headers: {
-      'x-consumer-username': admin.xConsumerUsername,
-      'x-consumer-id': admin.xConsumerId
-    },
-    payload: {
-      name: 'searchResults',
-      inToolbar: true
+  // CREATE THE PROFILS
+  const canShareToProfils = [];
+  adminCredentialsConfig.profils.map((p, i) => {
+    if (p !== 'admin') {
+      canShareToProfils.push(i);
     }
-  }, handleError);
+  });
+  if (adminCredentialsConfig.profils) {
+    adminCredentialsConfig.profils.map((profil, id) => {
+      const payload: IProfilIgo = {
+        id,
+        name: profil,
+        title: profil
 
-  server.inject({
-    method: 'POST',
-    url: '/tools',
-    headers: {
-      'x-consumer-username': admin.xConsumerUsername,
-      'x-consumer-id': admin.xConsumerId
-    },
-    payload: {
-      name: 'contextManager',
-      inToolbar: true
-    }
-  }, handleError);
-
-  server.inject({
-    method: 'POST',
-    url: '/tools',
-    headers: {
-      'x-consumer-username': admin.xConsumerUsername,
-      'x-consumer-id': admin.xConsumerId
-    },
-    payload: {
-      name: 'contextEditor'
-    }
-  }, handleError);
-
-  server.inject({
-    method: 'POST',
-    url: '/tools',
-    headers: {
-      'x-consumer-username': admin.xConsumerUsername,
-      'x-consumer-id': admin.xConsumerId
-    },
-    payload: {
-      name: 'permissionsContextManager',
-      inToolbar: false
-    }
-  }, handleError);
-
-  server.inject({
-    method: 'POST',
-    url: '/tools',
-    headers: {
-      'x-consumer-username': admin.xConsumerUsername,
-      'x-consumer-id': admin.xConsumerId
-    },
-    payload: {
-      name: 'toolsContextManager',
-      inToolbar: false
-    }
-  }, handleError);
-
-  server.inject({
-    method: 'POST',
-    url: '/tools',
-    headers: {
-      'x-consumer-username': admin.xConsumerUsername,
-      'x-consumer-id': admin.xConsumerId
-    },
-    payload: {
-      name: 'mapDetails',
-      inToolbar: true
-    }
-  }, handleError);
-
-  server.inject({
-    method: 'POST',
-    url: '/tools',
-    headers: {
-      'x-consumer-username': admin.xConsumerUsername,
-      'x-consumer-id': admin.xConsumerId
-    },
-    payload: {
-      name: 'timeAnalysis',
-      inToolbar: true
-    }
-  }, handleError);
-
-  server.inject({
-    method: 'POST',
-    url: '/tools',
-    headers: {
-      'x-consumer-username': admin.xConsumerUsername,
-      'x-consumer-id': admin.xConsumerId
-    },
-    payload: {
-      name: 'print',
-      inToolbar: true
-    }
-  }, handleError);
-
-  server.inject({
-    method: 'POST',
-    url: '/tools',
-    headers: {
-      'x-consumer-username': admin.xConsumerUsername,
-      'x-consumer-id': admin.xConsumerId
-    },
-    payload: {
-      name: 'catalog',
-      inToolbar: true
-    }
-  }, handleError);
-
-  server.inject({
-    method: 'POST',
-    url: '/tools',
-    headers: {
-      'x-consumer-username': admin.xConsumerUsername,
-      'x-consumer-id': admin.xConsumerId
-    },
-    payload: {
-      name: 'catalogLayers',
-      inToolbar: false
-    }
-  }, handleError);
-
-  server.inject({
-    method: 'POST',
-    url: '/tools',
-    headers: {
-      'x-consumer-username': admin.xConsumerUsername,
-      'x-consumer-id': admin.xConsumerId
-    },
-    payload: {
-      name: 'shareMap',
-      inToolbar: true
-    }
-  }, handleError);
-
-  server.inject({
-    method: 'POST',
-    url: '/layers',
-    headers: {
-      'x-consumer-username': admin.xConsumerUsername,
-      'x-consumer-id': admin.xConsumerId
-    },
-    payload: {
-      title: 'Relief',
-      type: 'xyz',
-      baseLayer: true,
-      source: {
-        url: 'https://geoegl.msp.gouv.qc.ca/carto/tms/1.0.0/' +
-        'carte_relief@EPSG_3857/{z}/{x}/{-y}.png'
+      };
+      if (profil === 'admin') {
+        payload.canShare = true;
+        payload.canFilter = true;
+        payload.canShareToProfils = canShareToProfils;
       }
-    }
-  }, handleError);
 
-  server.inject({
-    method: 'POST',
-    url: '/layers',
-    headers: {
-      'x-consumer-username': admin.xConsumerUsername,
-      'x-consumer-id': admin.xConsumerId
-    },
-    payload: {
-      title: 'Satellite',
-      type: 'xyz',
-      baseLayer: true,
-      source: {
-        url: 'https://geoegl.msp.gouv.qc.ca/carto/tms/1.0.0/' +
-        'orthos@EPSG_3857/{z}/{x}/{-y}.png'
-      }
-    }
-  }, handleError);
+      server
+        .inject({
+          method: 'POST',
+          url: '/profils',
+          headers: adminTokenHeaders,
+          payload
+        })
+        .catch(handleError);
+    });
+  }
 
-  server.inject({
-    method: 'POST',
-    url: '/contexts',
-    headers: {
-      'x-consumer-username': admin.xConsumerUsername,
-      'x-consumer-id': admin.xConsumerId
-    },
-    payload: {
-      uri: 'default',
-      title: 'Default',
-      scope: 'public',
-      map: {
-        view: {
-          projection: 'EPSG:3857',
-          center: [-72, 52],
-          zoom: 6
-        }
-      },
-      tools: [
-        {id: '1'},
-        {id: '2'},
-        {id: '3'},
-        {id: '4'},
-        {id: '5'},
-        {id: '6'},
-        {id: '7'},
-        {id: '8'},
-        {id: '9'},
-        {id: '10'},
-        {id: '11'}
-      ],
-      layers: [{
-        title: 'Plan',
-        type: 'xyz',
-        baseLayer: true,
-        visible: true,
-        source: {
-          url: 'https://geoegl.msp.gouv.qc.ca/carto/tms/1.0.0/' +
-          'carte_gouv_qc_ro@EPSG_3857/{z}/{x}/{-y}.png'
-        }
-      }, {
-        title: 'MSP DESSERTE MUN 911',
-        type: 'wms',
-        source: {
-          url: '/ws/igo_gouvouvert.fcgi',
-          params: {
-            layers: 'MSP_DESSERTE_MUN_911',
-            version: '1.3.0'
-          }
-        }
-      }, {
-        title: 'MSP Tel. Urgence',
-        type: 'wms',
-        source: {
-          url: '/ws/igo_gouvouvert.fcgi',
-          params: {
-            layers: 'telephone_urg',
-            version: '1.3.0'
-          }
-        }
-      },
-      {
-        visible: false,
-        title: 'cs avec filtre',
-        type: 'wfs',
-        source: {
-          url: '/ws/igo_gouvouvert.fcgi',
-          featureTypes: 'bgr_v_centr_servc_geomt_act',
-          fieldNameGeometry: 'geometry',
-          maxFeatures: 10000,
-          version: '2.0.0',
-          outputFormat: 'geojson',
-          outputFormatDownload: 'shp'
+  const toolToAdd = [
+    'about',
+    'activeOgcFilter',
+    'activeTimeFilter',
+    'advancedMap',
+    'catalog',
+    'catalogBrowser',
+    'contextEditor',
+    'contextManager',
+    'contextPermissionManager',
+    'directions',
+    'draw',
+    'importExport',
+    'map',
+    'map-proximity',
+    'mapDetails',
+    'mapLegend',
+    'mapTools',
+    'measurer',
+    'ogcFilter',
+    'print',
+    'searchResults',
+    'shareMap',
+    'spatialFilter',
+    'timeFilter'
+  ];
+  const toolToAddOutToolBar = [
+    'activeOgcFilter', 'activeTimeFilter', 'contextEditor', 'contextPermissionManager', 'catalogBrowser'
+  ];
+  toolToAdd.map(name => {
+    server
+      .inject({
+        method: 'POST',
+        url: '/tools',
+        headers: adminTokenHeaders,
+        payload: {
+          name,
+          inToolbar: !toolToAddOutToolBar.includes(name)
+        } as ITool
+      })
+      .catch(handleError);
+  });
+
+  server
+    .inject({
+      method: 'POST',
+      url: '/layers',
+      headers: adminTokenHeaders,
+      payload: {
+        layerOptions: {
+          title: 'Relief',
+          baseLayer: true
         },
-        isOgcFilterable: true,
-        ogcFilters: {
-          filtersAreEditable: true,
-          filters: {
-            logical: 'Or',
-            filters: [{
-                operator: 'During',
-                propertyName: 'dat_debut_',
-                begin: '2014',
-                end: '2016'
-              },
-              {
-                operator: 'PropertyIsEqualTo',
-                propertyName: 'nom_unite_',
-                expression: 'CS de Lévis'
-              },
-              {
-                operator: 'PropertyIsLike',
-                propertyName: 'ide_unite_',
-                pattern: '3*'
+        sourceOptions: {
+          type: 'xyz',
+          url: 'https://geoegl.msp.gouv.qc.ca/carto/tms/1.0.0/' + 'carte_relief@EPSG_3857/{z}/{x}/{-y}.png'
+        },
+        global: true
+      } as ILayer
+    })
+    .catch(handleError);
+
+  server
+    .inject({
+      method: 'POST',
+      url: '/layers',
+      headers: adminTokenHeaders,
+      payload: {
+        layerOptions: {
+          title: 'Satellite',
+          baseLayer: true
+        },
+        sourceOptions: {
+          type: 'xyz',
+          url: 'https://geoegl.msp.gouv.qc.ca/carto/tms/1.0.0/' + 'orthos@EPSG_3857/{z}/{x}/{-y}.png'
+        },
+        global: true
+      } as ILayer
+    })
+    .catch(handleError);
+
+  // todo inject hidden
+  // todo inject private
+  server
+    .inject({
+      method: 'POST',
+      url: '/contexts',
+      headers: adminTokenHeaders,
+      payload: {
+        uri: 'default',
+        title: 'Default',
+        scope: 'public',
+        map: {
+          view: {
+            projection: 'EPSG:3857',
+            center: [-72, 52],
+            zoom: 6
+          }
+        },
+        tools: [
+          { id: '21' },
+          { id: '2' },
+          { id: '7' }, { id: '8' }, { id: '9' },
+          { id: '17' },
+          { id: '23' },
+          { id: '18' },
+          { id: '11' },
+          { id: '10' },
+          { id: '5' },
+          { id: '6' },
+          { id: '12' },
+          { id: '20' },
+          { id: '22' },
+          { id: '1' },
+          { id: '4' }
+        ],
+        layers: [
+          {
+            global: true,
+            layerOptions: {
+              title: 'Plan',
+              baseLayer: true
+            },
+            sourceOptions: {
+              type: 'xyz',
+              visible: true,
+              url: 'https://geoegl.msp.gouv.qc.ca/carto/tms/1.0.0/' + 'carte_gouv_qc_ro@EPSG_3857/{z}/{x}/{-y}.png'
+            }
+          },
+          {
+            sourceOptions: {
+              type: 'wms',
+              url: 'https://ws.mapserver.transports.gouv.qc.ca/swtq',
+              params: {
+                layers: 'site_inv_geotech_p'
               }
-            ]
-          }
-        },
-        sourceFields: [
-          {name: 'nom_unite_', alias: 'Nom du CS'},
-          {name: 'dat_debut_', alias: 'Début CS'},
-          {name: 'ide_unite_', alias: 'Identifiant du CS'},
-      ],
-      },
+            }
+          },
+          {
+            sourceOptions: {
+              type: 'wms',
+              url: 'https://ws.mapserver.transports.gouv.qc.ca/swtq',
+              params: {
+                layers: 'telephone_urg'
+              }
+            }
+          },
+          {
+            layerOptions: {
+              title: 'WFS Layer',
+              visible: false
+            },
+            sourceOptions: {
+              type: 'wfs',
+              url: 'https://ws.mapserver.transports.gouv.qc.ca/swtq',
+              queryable: true,
+              params: {
+                featureTypes: 'bgr_v_centr_servc_geomt_act',
+                fieldNameGeometry: 'geometry',
+                outputFormat: 'geojson'
+              },
+              sourceFields: [
+                { name: 'nom_unite_', alias: 'Nom du CS' },
+                { name: 'dat_debut_', alias: 'Début CS' },
+                { name: 'ide_unite_', alias: 'Identifiant du CS' }
+              ],
+              ogcFilters: {
+                allowedOperatorsType: 'all',
+                enabled: true,
+                editable: true,
+                filters: {
+                  operator: 'PropertyIsEqualTo',
+                  propertyName: 'ide_unite_',
+                  expression: '1713'
+                }
+              }
+            }
+          },
 
-      {
-        title: 'WMS-WFS isOgcFilterable HasFilters HasSourceFields',
-        type: 'wms',
-        source: {
-          url: '/geoserver/wms',
-         params: {'layers': 'water_areas',
-         version: '1.3.0' }},
-        isOgcFilterable: true,
-        ogcFilters: {
-          filtersAreEditable: true,
-          filters: {
-          operator: 'Intersects',
-          geometryName: 'the_geom',
-          wkt_geometry: 'POLYGON((-8015003 5942074,' +
-          '-8015003 5780349,-7792364 5780349,' +
-          '-7792364 5942074,-8015003 5942074))'
-        }},
-        sourceFields: [{'name': 'landuse', 'alias': 'Land use alias'}],
-        wfsSource: {
-          'url': '/geoserver/wms',
-          'featureTypes': 'water_areas',
-          'fieldNameGeometry': 'the_geom',
-          'maxFeatures': 10000,
-          version: '1.1.0',
-          outputFormat: 'application/json',
-          outputFormatDownload: 'application/vnd.google-earth.kml+xml'
-        }
+          {
+            layerOptions: {
+              title: 'WMS-WFS isOgcFilterable HasFilters HasSourceFields'
+            },
+            sourceOptions: {
+              type: 'wms',
+              url: 'https://ws.mapserver.transports.gouv.qc.ca/swtq',
+              params: {
+                layers: 'bgr_v_sous_route_res_sup_act',
+                version: '1.3.0'
+              },
+
+              paramsWFS: {
+                featureTypes: 'bgr_v_sous_route_res_sup_act',
+                fieldNameGeometry: 'geometry',
+                outputFormat: 'geojson'
+              },
+              ogcFilters: {
+                allowedOperatorsType: 'all',
+                enabled: true,
+                editable: true,
+                filters: {
+                  operator: 'Intersects',
+                  geometryName: 'geometry',
+                  wkt_geometry:
+                  'POLYGON((-8015003 5942074,' +
+                  '-8015003 5780349,-7792364 5780349,' +
+                  '-7792364 5942074,-8015003 5942074))'
+                }
+              },
+              sourceFields: [{ alias: 'No RTSS', excludeFromOgcFilters: false, name: 'num_rts' }]
+            }
+          }
+        ]
       }
-    ]
-    }
-  }, handleError);
-}, 1000);
-});
+    })
+    .catch(handleError);
+
+  server
+    .inject({
+      method: 'POST',
+      url: '/catalogs',
+      headers: adminTokenHeaders,
+      payload: {
+        title: 'Service web du MTQ grand public',
+        order: 1,
+        url: 'https://ws.mapserver.transports.gouv.qc.ca/swtq'
+      }
+    })
+    .catch(handleError);
+
+  server
+    .inject({
+      method: 'POST',
+      url: '/catalogs',
+      headers: adminTokenHeaders,
+      payload: {
+        title: 'Service web du MTQ privé',
+        order: 2,
+        url: 'https://ws.mapserver.transports.gouv.qc.ca/applicatif',
+        profils: ['admin']
+      }
+    })
+    .catch(handleError);
+};
+
+if (!adminCredentialsConfig || !adminCredentialsConfig.username) {
+  console.error('Must have adminCredentialsConfig.username in configuration.');
+  process.exit(1);
+} else {
+  initDB();
+}
