@@ -94,7 +94,9 @@ export class ProfilIgoController {
 
   public async getProfilsAndUsers (request: Hapi.Request, _h: Hapi.ResponseToolkit) {
     const requestedUser = HapiRequestToUser(request);
-    const q = request.query.q ? request.query.q.normalize('NFD').replace(/[\u0300-\u036f]/g, '') : undefined;
+    // unable to find names and profils with accent if q is normalized.. 
+    // const q = request.query.q ? request.query.q.normalize('NFD').replace(/[\u0300-\u036f]/g, '') : undefined;
+    const q = request.query.q;
     const qRE = q ? new RegExp(q, 'gi') : undefined;
 
     const profils: string[] = await UserApi.getProfils(requestedUser.id).catch(() => []);
