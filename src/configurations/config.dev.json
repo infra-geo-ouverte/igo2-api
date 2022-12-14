@@ -13,6 +13,9 @@
     "username": "...",
     "password": "..."
   },
+  "geoServices" : {
+    "getInfoFromCapabilities": false
+  },
   "credentials": {
     "admins": [
       {

@@ -171,7 +171,9 @@ export class LayerService {
     originalQ: string,
     type: string = 'Layer',
     limit: number = 5,
-    page: number = 1): Promise<{}> {
+    page: number = 1,
+    getInfoFromCapabilities: boolean = false
+    ): Promise<{}> {
     const q = originalQ
       .replace(/(\(|\)|\*)/g, ' ')
       .replace(/  +/g, ' ')
@@ -230,14 +232,16 @@ export class LayerService {
       }
 
       // TODO enable other service capabilities
-      if (plainRawResult.url && plainRawResult.type === 'wms' && plainRawResult.sourceOptions?.optionsFromCapabilities !== false) {
-        const localUrl = new URL.URL(plainRawResult.url);
-        localUrl.searchParams.set('service', plainRawResult.type);
-        localUrl.searchParams.set('request', 'getcapabilities');
+      if (getInfoFromCapabilities) {
+        if (plainRawResult.url && plainRawResult.type === 'wms' && plainRawResult.sourceOptions?.optionsFromCapabilities !== false) {
+          const localUrl = new URL.URL(plainRawResult.url);
+          localUrl.searchParams.set('service', plainRawResult.type);
+          localUrl.searchParams.set('request', 'getcapabilities');
 
-        if (!processedUrl.includes(localUrl.href)) {
-          processedUrl.push(localUrl.href);
-          wmsCapabilitiesPromises.push(axios.get(localUrl.href));
+          if (!processedUrl.includes(localUrl.href)) {
+            processedUrl.push(localUrl.href);
+            wmsCapabilitiesPromises.push(axios.get(localUrl.href));
+          }
         }
       }
     });

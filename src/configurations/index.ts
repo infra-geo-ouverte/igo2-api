@@ -48,6 +48,9 @@ export interface IgoApiIServerConfiguration extends IServerConfiguration {
   ldap: ILdapConfiguration[];
   localhost?: ILocalhostConfiguration;
 }
+export interface GeoServicesOptions {
+  getInfoFromCapabilities: boolean;
+}
 
 export function getDatabaseConfig (): IDataConfiguration {
   return configs.get('database');
@@ -55,4 +58,8 @@ export function getDatabaseConfig (): IDataConfiguration {
 
 export function getServerConfig (): IgoApiIServerConfiguration {
   return configs.get('server');
+}
+
+export function getGeoServiceConfig (): GeoServicesOptions {
+  return configs.get('geoServices');
 }
