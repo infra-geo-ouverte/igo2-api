@@ -4,7 +4,6 @@ import { IProfilIgo } from './profilIgo/profilIgo.interface';
 
 import * as Jwt from 'jsonwebtoken';
 import { ILayer } from './layer/layer.interface';
-import { ITool } from './tool/tool.interface';
 import { CredentialsConfig, JwtConfig } from './configurations';
 
 Config.readConfig(__dirname, `configurations/config.${process.env.NODE_ENV || 'dev'}.json`);
@@ -98,47 +97,62 @@ const initDB = async () => {
     });
   }
 
-  const toolToAdd = [
-    'about',
-    'activeOgcFilter',
-    'activeTimeFilter',
-    'advancedMap',
-    'catalog',
-    'catalogBrowser',
-    'contextEditor',
-    'contextManager',
-    'contextPermissionManager',
-    'directions',
-    'draw',
-    'importExport',
-    'map',
-    'map-proximity',
-    'mapDetails',
-    'mapLegend',
-    'mapTools',
-    'measurer',
-    'ogcFilter',
-    'print',
-    'searchResults',
-    'shareMap',
-    'spatialFilter',
-    'timeFilter'
+  const mapToolsOptions = {
+    allowShowAllLegends: true,
+    showAllLegendsValue: false,
+    toggleLegendOnVisibilityChange: false,
+    expandLegendOfVisibleLayers: false,
+    updateLegendOnResolutionChange: false,
+    selectedTabAtOpening: "vide OU legend",
+    ogcButton: true,
+    timeButton: true,
+    layerAdditionAllowed: true,
+    layerListControls: {
+      excludeBaseLayers: true,
+      showToolbar: "always"
+    }
+  }
+
+
+  const toolsToAdd = [
+    { name:'about',inToolbar: true, global: true, order: 12},
+    { name:'activeOgcFilter',inToolbar: false, global: true, order: 3},
+    { name:'activeTimeFilter',inToolbar: false, global: true, order: 3},
+    { name:'advancedMap',inToolbar: true, global: true, order: 11},
+    { name:'catalog',inToolbar: true, global: true, order: 4},
+    { name:'catalogBrowser',inToolbar: false, global: true, order: 4},
+    { name:'contextEditor',inToolbar: false, global: true, order: 2},
+    { name:'contextManager',inToolbar: true, global: true, order: 2},
+    { name:'contextPermissionManager',inToolbar: false, global: true, order: 2},
+    { name:'directions',inToolbar: true, global: true, order: 8},
+    { name:'draw',inToolbar: true, global: true, order: 7},
+    { name:'importExport',inToolbar: true, global: true, order: 9},
+    { name:'map',inToolbar: true, global: false},
+    { name:'map-proximity',inToolbar: true, global: false},
+    { name:'mapDetails',inToolbar: true, global: false},
+    { name:'mapLegend',inToolbar: true, global: false},
+    { name:'mapTools',inToolbar: true, options: mapToolsOptions, global: true, order: 3},
+    { name:'measurer',inToolbar: true, global: true, order: 6},
+    { name:'ogcFilter',inToolbar: true, global: false},
+    { name:'print',inToolbar: true, global: true, order: 5},
+    { name:'searchResults',inToolbar: true, global: true, order: 1},
+    { name:'shareMap',inToolbar: true, global: true, order: 10},
+    { name:'spatialFilter',inToolbar: true, global: false},
+    { name:'timeFilter',inToolbar: true, global: false}
   ];
-  const toolToAddOutToolBar = [
-    'activeOgcFilter', 'activeTimeFilter', 'contextEditor', 'contextPermissionManager', 'catalogBrowser'
-  ];
-  toolToAdd.map(name => {
-    server
-      .inject({
-        method: 'POST',
-        url: '/tools',
-        headers: adminTokenHeaders,
-        payload: {
-          name,
-          inToolbar: !toolToAddOutToolBar.includes(name)
-        } as ITool
-      })
-      .catch(handleError);
+
+  toolsToAdd.map(toolToAdd => {
+    setTimeout(() => {
+      server
+        .inject({
+          method: 'POST',
+          url: '/tools',
+          headers: adminTokenHeaders,
+          payload: toolToAdd
+        })
+        .catch(handleError);
+    }, 50);
+
   });
 
   server
@@ -197,23 +211,6 @@ const initDB = async () => {
             zoom: 6
           }
         },
-        tools: [
-          { id: '21' },
-          { id: '2' },
-          { id: '7' }, { id: '8' }, { id: '9' },
-          { id: '17' },
-          { id: '23' },
-          { id: '18' },
-          { id: '11' },
-          { id: '10' },
-          { id: '5' },
-          { id: '6' },
-          { id: '12' },
-          { id: '20' },
-          { id: '22' },
-          { id: '1' },
-          { id: '4' }
-        ],
         layers: [
           {
             global: true,
