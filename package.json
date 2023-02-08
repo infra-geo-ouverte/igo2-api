@@ -39,7 +39,7 @@
     "@igo2/base-api": "^1.2.2",
     "activedirectory": "^0.7.2",
     "axios": "^1.2.0",
-    "jsonwebtoken": "^8.5.1",
+    "jsonwebtoken": "^9.0.0",
     "rxjs": "^7.4.0",
     "sqlite3": "^5.1.2",
     "ts-cacheable": "^1.0.9",
