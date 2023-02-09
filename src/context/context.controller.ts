@@ -118,10 +118,13 @@ export class ContextController {
 
   public async get (request: Hapi.Request, _h: Hapi.ResponseToolkit) {
     const requestedUser = HapiRequestToUser(request);
+    const {
+      randomUUID
+    } = await import('node:crypto');
 
-    let owner = `anonymous-${Math.random()}`;
+    let owner = `anonymous-${randomUUID()}`;
     let isAnonyme = false;
-    let id = `anonymous-${Math.random()}`;
+    let id = `anonymous-${randomUUID()}`;
 
     if (!requestedUser) {
       isAnonyme = true;
