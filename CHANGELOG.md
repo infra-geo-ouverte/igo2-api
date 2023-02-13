@@ -1,6 +1,13 @@
-## [1.7.3](https://github.com/infra-geo-ouverte/igo2-api/compare/1.7.2...1.7.3) (2023-02-13)
+## [1.7.4](https://github.com/infra-geo-ouverte/igo2-api/compare/1.7.3...1.7.4) (2023-02-13)
 
-* **chore:** Dependency update release
+
+### Bug Fixes
+
+* **token:** fix token verification error due to jsonwebtoken migration ([3d154dd](https://github.com/infra-geo-ouverte/igo2-api/commit/3d154ddc6717169a776d3988e6186ab71815e8db))
+
+
+
+## [1.7.3](https://github.com/infra-geo-ouverte/igo2-api/compare/1.7.2...1.7.3) (2023-02-13)
 
 
 
