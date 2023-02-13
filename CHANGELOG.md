@@ -1,5 +1,7 @@
 ## [1.7.3](https://github.com/infra-geo-ouverte/igo2-api/compare/1.7.2...1.7.3) (2023-02-13)
 
+* **chore:** Dependency update release
+
 
 
 ## [1.7.2](https://github.com/infra-geo-ouverte/igo2-api/compare/0.0.1...1.7.2) (2022-12-14)
