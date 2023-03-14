@@ -19,6 +19,7 @@ export interface ILdapConfiguration {
 interface ILocalhostConfiguration {
   hosts: string[];
   basePaths: string[];
+  wssUri: string;
 }
 
 export interface IServerConfiguration {

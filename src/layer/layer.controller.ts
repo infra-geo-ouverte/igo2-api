@@ -85,11 +85,13 @@ export class LayerController {
 
     const localhost = ServerConfigs.localhost;
     const hosts = localhost ? localhost.hosts : [];
+    const wssUri = localhost ? localhost.wssUri : undefined;
     const urlObj = URL.parse(query.url || '');
     const url = urlObj && urlObj.hostname ? urlObj.protocol + '//' + urlObj.hostname : '';
+    const isInWssUri = wssUri && urlObj.pathname.substr(0, wssUri.length) === wssUri;
 
     let permission: any = {};
-    if (ServerConfigs.wssApi && (!url || hosts.indexOf(url) !== -1) && UserApi.isInBasePath(urlObj.pathname)) {
+    if (ServerConfigs.wssApi && (!url || hosts.indexOf(url) !== -1) && isInWssUri) {
       const theme = query.url.substring(query.url.lastIndexOf('/') + 1, query.url.lastIndexOf('.fcgi'));
       https.globalAgent.options.rejectUnauthorized = false;
       permission = await axios
@@ -110,6 +112,23 @@ export class LayerController {
           return {};
         }
       }
+    }
+
+    const userId = request.headers['x-consumer-id'];
+    const username = request.headers['x-consumer-username'];
+
+    const profils: string[] = await UserApi.getProfils(userId, request.headers['x-consumer-groups']).catch(() => {
+      return [];
+    });
+    profils.push(username);
+
+    const isAllowed = await UserApi.verifyPermissionByUrl(
+      url,
+      profils
+    );
+
+    if (!isAllowed) {
+      return {};
     }
 
     const options = await this.layerService
