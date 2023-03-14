@@ -72,16 +72,25 @@ export class UserApi {
     }
     const acl = plugins.data.find(plugin => plugin.name === 'acl' && plugin.enabled);
     let allowed = acl ? false : true;
-    if (acl && acl.config.whitelist) {
+    if (acl && acl.config.allow && acl.config.allow.length) {
       for (const profil of profils) {
-        // TODO blacklist
-        const i = acl.config.whitelist.indexOf(profil);
+        const i = acl.config.allow.indexOf(profil);
         if (i !== -1) {
           allowed = true;
           break;
         }
       }
+    } else if (acl && acl.config.deny && acl.config.deny.length) {
+      allowed = true;
+      for (const profil of profils) {
+        const i = acl.config.deny.indexOf(profil);
+        if (i !== -1) {
+          allowed = false;
+          break;
+        }
+      }
     }
+
     return allowed;
   }
 

@@ -87,11 +87,11 @@ export class LayerController {
     const hosts = localhost ? localhost.hosts : [];
     const wssUri = localhost ? localhost.wssUri : undefined;
     const urlObj = URL.parse(query.url || '');
-    const url = urlObj && urlObj.hostname ? urlObj.protocol + '//' + urlObj.hostname : '';
+    const urlHost = urlObj && urlObj.hostname ? urlObj.protocol + '//' + urlObj.hostname : '';
     const isInWssUri = wssUri && urlObj.pathname.substr(0, wssUri.length) === wssUri;
 
     let permission: any = {};
-    if (ServerConfigs.wssApi && (!url || hosts.indexOf(url) !== -1) && isInWssUri) {
+    if (ServerConfigs.wssApi && (!urlHost || hosts.indexOf(urlHost) !== -1) && isInWssUri) {
       const theme = query.url.substring(query.url.lastIndexOf('/') + 1, query.url.lastIndexOf('.fcgi'));
       https.globalAgent.options.rejectUnauthorized = false;
       permission = await axios
@@ -123,7 +123,7 @@ export class LayerController {
     profils.push(username);
 
     const isAllowed = await UserApi.verifyPermissionByUrl(
-      url,
+      query.url,
       profils
     );
 
