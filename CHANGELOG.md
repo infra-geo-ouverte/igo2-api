@@ -1,3 +1,13 @@
+# [1.8.0](http://gitlab.forge.gouv.qc.ca/igo2/igo2-api/compare/1.7.1...1.8.0) (2023-03-23)
+
+
+### Features
+
+* **options:** use kong to verify permissions ([83fa635](http://gitlab.forge.gouv.qc.ca/igo2/igo2-api/commit/83fa635d66c4a63121ed1195021a7352599d074b))
+* **permissions:** kong deny permissions and fix rename whitelist to allow ([0982dcc](http://gitlab.forge.gouv.qc.ca/igo2/igo2-api/commit/0982dccecabae078d443d15c7e47070ca190d15c))
+
+
+
 ## [1.7.1](http://gitlab.forge.gouv.qc.ca/igo2/igo2-api/compare/1.6.3...1.7.1) (2022-06-21)
 
 
