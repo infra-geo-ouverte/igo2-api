@@ -36,7 +36,7 @@ export class Context extends Model<IContext> {
 
   @AllowNull(false)
   @Unique
-  @Column({ type: DataType.STRING(64) })
+  @Column({ type: DataType.TEXT })
   uri: string;
 
   @AllowNull(false)
