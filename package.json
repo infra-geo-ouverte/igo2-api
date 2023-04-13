@@ -16,8 +16,8 @@
     "start": "nodemon",
     "build.dev": "rimraf build && npm run tsc && npm run copyConfigs",
     "serve.dev": "node build/index.js",
-    "build.prod": "rimraf build && cross-env NODE_ENV=prod&&npm run tsc&&npm run copyConfigs",
-    "serve.prod": "cross-env NODE_ENV=prod&&node build/index.js",
+    "build.prod": "rimraf build && cross-env NODE_ENV=prod npm run tsc&&npm run copyConfigs",
+    "serve.prod": "cross-env NODE_ENV=prod node build/index.js",
     "start.prod": "npm run build.prod && npm run serve.prod",
     "copyConfigs": "copy-newer --cwd ./src/configurations/ *.json  \"build\\configurations\"",
     "lint": "eslint -c .eslintrc.json --ext .ts src/**/*.ts",
@@ -41,26 +41,26 @@
     "axios": "^1.2.0",
     "jsonwebtoken": "^9.0.0",
     "rxjs": "^7.4.0",
-    "sqlite3": "^5.1.2",
+    "sqlite3": "^5.1.6",
     "ts-cacheable": "^1.0.9",
     "ts-md5": "^1.3.1",
-    "xml2js": "^0.4.23"
+    "xml2js": "^0.5.0"
   },
   "devDependencies": {
     "@types/hapi__hapi": "^20.0.13",
     "@types/jsonwebtoken": "^9.0.0",
     "@types/node": "^18.11.9",
     "@types/tape": "^4.13.0",
-    "@typescript-eslint/eslint-plugin": "^5.44.0",
-    "@typescript-eslint/parser": "^5.44.0",
+    "@typescript-eslint/eslint-plugin": "^5.45.0",
+    "@typescript-eslint/parser": "^5.45.0",
     "conventional-changelog-cli": "^2.1.1",
     "cross-env": "^7.0.3",
-    "eslint": "^7.26.0",
-    "eslint-config-standard": "^16.0.3",
-    "eslint-plugin-import": "^2.22.1",
+    "eslint": "^8.28.0",
+    "eslint-config-standard": "^17.0.0",
+    "eslint-plugin-import": "^2.26.0",
     "eslint-plugin-node": "^11.1.0",
-    "eslint-plugin-promise": "^5.0.0",
-    "eslint-plugin-unused-imports": "^1.1.5",
+    "eslint-plugin-promise": "^6.1.1",
+    "eslint-plugin-unused-imports": "^2.0.0",
     "nodemon": "^2.0.20",
     "openapi-types": "^12.0.2",
     "rimraf": "^3.0.2",
@@ -70,6 +70,6 @@
     "typescript": "^4.6.3"
   },
   "engines": {
-    "node": ">=14.17.1"
+    "node": ">=16.19.0"
   }
 }
