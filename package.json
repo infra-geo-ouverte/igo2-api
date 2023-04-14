@@ -36,7 +36,7 @@
   },
   "homepage": "https://github.com/infra-geo-ouverte/igo2-api#readme",
   "dependencies": {
-    "@igo2/base-api": "^1.2.2",
+    "@igo2/base-api": "^1.2.3",
     "activedirectory": "^0.7.2",
     "axios": "^1.2.0",
     "jsonwebtoken": "^9.0.0",
