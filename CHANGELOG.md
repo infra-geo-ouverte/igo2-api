@@ -1,3 +1,12 @@
+## [1.7.5](https://github.com/infra-geo-ouverte/igo2-api/compare/1.7.4...1.7.5) (2023-04-14)
+
+
+### Bug Fixes
+
+* **context:** now handling long uri as text ([531cf1a](https://github.com/infra-geo-ouverte/igo2-api/commit/531cf1a40f5f59370b052f454a4fa19b55ebaf14))
+
+
+
 ## [1.7.4](https://github.com/infra-geo-ouverte/igo2-api/compare/1.7.3...1.7.4) (2023-02-13)
 
 
