@@ -103,42 +103,41 @@ const initDB = async () => {
     toggleLegendOnVisibilityChange: false,
     expandLegendOfVisibleLayers: false,
     updateLegendOnResolutionChange: false,
-    selectedTabAtOpening: "vide OU legend",
+    selectedTabAtOpening: 'vide OU legend',
     ogcButton: true,
     timeButton: true,
     layerAdditionAllowed: true,
     layerListControls: {
       excludeBaseLayers: true,
-      showToolbar: "always"
+      showToolbar: 'always'
     }
-  }
-
+  };
 
   const toolsToAdd = [
-    { name:'about',inToolbar: true, global: true, order: 12},
-    { name:'activeOgcFilter',inToolbar: false, global: true, order: 3},
-    { name:'activeTimeFilter',inToolbar: false, global: true, order: 3},
-    { name:'advancedMap',inToolbar: true, global: true, order: 11},
-    { name:'catalog',inToolbar: true, global: true, order: 4},
-    { name:'catalogBrowser',inToolbar: false, global: true, order: 4},
-    { name:'contextEditor',inToolbar: false, global: true, order: 2},
-    { name:'contextManager',inToolbar: true, global: true, order: 2},
-    { name:'contextPermissionManager',inToolbar: false, global: true, order: 2},
-    { name:'directions',inToolbar: true, global: true, order: 8},
-    { name:'draw',inToolbar: true, global: true, order: 7},
-    { name:'importExport',inToolbar: true, global: true, order: 9},
-    { name:'map',inToolbar: true, global: false},
-    { name:'map-proximity',inToolbar: true, global: false},
-    { name:'mapDetails',inToolbar: true, global: false},
-    { name:'mapLegend',inToolbar: true, global: false},
-    { name:'mapTools',inToolbar: true, options: mapToolsOptions, global: true, order: 3},
-    { name:'measurer',inToolbar: true, global: true, order: 6},
-    { name:'ogcFilter',inToolbar: true, global: false},
-    { name:'print',inToolbar: true, global: true, order: 5},
-    { name:'searchResults',inToolbar: true, global: true, order: 1},
-    { name:'shareMap',inToolbar: true, global: true, order: 10},
-    { name:'spatialFilter',inToolbar: true, global: false},
-    { name:'timeFilter',inToolbar: true, global: false}
+    { name: 'about', inToolbar: true, global: true, order: 12 },
+    { name: 'activeOgcFilter', inToolbar: false, global: true, order: 3 },
+    { name: 'activeTimeFilter', inToolbar: false, global: true, order: 3 },
+    { name: 'advancedMap', inToolbar: true, global: true, order: 11 },
+    { name: 'catalog', inToolbar: true, global: true, order: 4 },
+    { name: 'catalogBrowser', inToolbar: false, global: true, order: 4 },
+    { name: 'contextEditor', inToolbar: false, global: true, order: 2 },
+    { name: 'contextManager', inToolbar: true, global: true, order: 2 },
+    { name: 'contextPermissionManager', inToolbar: false, global: true, order: 2 },
+    { name: 'directions', inToolbar: true, global: true, order: 8 },
+    { name: 'draw', inToolbar: true, global: true, order: 7 },
+    { name: 'importExport', inToolbar: true, global: true, order: 9 },
+    { name: 'map', inToolbar: true, global: false },
+    { name: 'map-proximity', inToolbar: true, global: false },
+    { name: 'mapDetails', inToolbar: true, global: false },
+    { name: 'mapLegend', inToolbar: true, global: false },
+    { name: 'mapTools', inToolbar: true, options: mapToolsOptions, global: true, order: 3 },
+    { name: 'measurer', inToolbar: true, global: true, order: 6 },
+    { name: 'ogcFilter', inToolbar: true, global: false },
+    { name: 'print', inToolbar: true, global: true, order: 5 },
+    { name: 'searchResults', inToolbar: true, global: true, order: 1 },
+    { name: 'shareMap', inToolbar: true, global: true, order: 10 },
+    { name: 'spatialFilter', inToolbar: true, global: false },
+    { name: 'timeFilter', inToolbar: true, global: false }
   ];
 
   toolsToAdd.map(toolToAdd => {
@@ -152,7 +151,6 @@ const initDB = async () => {
         })
         .catch(handleError);
     }, 50);
-
   });
 
   server

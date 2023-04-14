@@ -12,12 +12,12 @@ export class ContextAccessService {
 
     if (accessObj) {
       return await ContextAccess.update(
-        { contextId: contextId, calls: ++accessObj.calls },
+        { contextId, calls: ++accessObj.calls },
         { where: { id: accessObj.id } }
       );
     } else {
       return await ContextAccess
-        .create({ contextId: contextId, calls: 1 });
+        .create({ contextId, calls: 1 });
     }
   }
 }

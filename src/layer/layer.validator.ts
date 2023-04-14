@@ -43,5 +43,5 @@ export class LayerValidator {
     enabled: Joi.boolean().optional()
   });
 
-  static createModel = LayerValidator.updateModel
+  static createModel = LayerValidator.updateModel;
 }

@@ -18,15 +18,15 @@ export class PoiService {
     return await Poi
       .update(poi, {
         where: {
-          id: id,
-          userId: userId
+          id,
+          userId
         }
       })
       .then((count: [number]) => {
         if (!count[0]) {
           throw Boom.notFound();
         }
-        return { id: id };
+        return { id };
       });
   }
 
@@ -34,8 +34,8 @@ export class PoiService {
     return await Poi
       .destroy({
         where: {
-          id: id,
-          userId: userId
+          id,
+          userId
         }
       })
       .then((count: number) => {
@@ -49,7 +49,7 @@ export class PoiService {
     return await Poi
       .findAll({
         where: {
-          userId: userId
+          userId
         }
       })
       .then((pois: Poi[]) => {
@@ -62,8 +62,8 @@ export class PoiService {
     return await Poi
       .findOne({
         where: {
-          id: id,
-          userId: userId
+          id,
+          userId
         }
       })
       .then((poi: Poi) => {

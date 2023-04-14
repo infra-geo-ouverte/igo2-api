@@ -24,30 +24,30 @@ export class LayerContext extends Model<ILayerContext> {
   @AutoIncrement
   @AllowNull(false)
   @Column
-  id: number;
+    id: number;
 
   @Default(true)
   @AllowNull(false)
   @Column
-  enabled: boolean;
+    enabled: boolean;
 
   @Column({ type: DataType.JSON })
-  layerOptions: { [key: string]: any };
+    layerOptions: { [key: string]: any };
 
   @Column({ type: DataType.JSON })
-  sourceOptions: { [key: string]: any };
+    sourceOptions: { [key: string]: any };
 
   @Index({ name: 'tool_context_contextId_layerId', unique: true })
   @Index
   @ForeignKey(() => Context)
   @AllowNull(false)
   @Column
-  contextId: number;
+    contextId: number;
 
   @Index({ name: 'tool_context_contextId_layerId', unique: true })
   @Index
   @ForeignKey(() => Layer)
   @AllowNull(false)
   @Column
-  layerId: number;
+    layerId: number;
 }

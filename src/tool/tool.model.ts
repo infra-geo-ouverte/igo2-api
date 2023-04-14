@@ -13,33 +13,33 @@ export class Tool extends Model<ITool> {
   @AutoIncrement
   @AllowNull(false)
   @Column
-  id: number;
+    id: number;
 
   @Unique
   @AllowNull(true)
   @Column({ type: DataType.STRING(64) })
-  name: string;
+    name: string;
 
   @Column({ type: DataType.STRING(64) })
-  title: string;
+    title: string;
 
   @Column({ type: DataType.STRING(128) })
-  tooltip: string;
+    tooltip: string;
 
   @Column({ type: DataType.STRING(128) })
-  icon: string;
+    icon: string;
 
   @Column
-  inToolbar: boolean;
+    inToolbar: boolean;
 
   @Column
-  global: boolean;
+    global: boolean;
 
   @Column
-  order: number;
+    order: number;
 
   @Column({ type: DataType.JSON })
-  options: { [key: string]: any };
+    options: { [key: string]: any };
 
   @Column(DataType.STRING)
   get profils (): string[] {

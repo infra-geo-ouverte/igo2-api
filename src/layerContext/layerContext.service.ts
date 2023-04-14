@@ -29,16 +29,16 @@ export class LayerContextService {
   public async update (contextId: string, layerId: string, layerContext: ILayerContext): Promise<ILayerContext> {
     return await LayerContext.update(layerContext, {
       where: {
-        layerId: layerId,
-        contextId: contextId
+        layerId,
+        contextId
       }
     }).then((count: [number]) => {
       if (!count[0]) {
         throw Boom.notFound();
       }
       return {
-        layerId: layerId,
-        contextId: contextId
+        layerId,
+        contextId
       };
     });
   }
@@ -46,8 +46,8 @@ export class LayerContextService {
   public async delete (contextId: string, layerId: string): Promise<void> {
     return await LayerContext.destroy({
       where: {
-        layerId: layerId,
-        contextId: contextId
+        layerId,
+        contextId
       }
     }).then((count: number) => {
       if (!count) {
@@ -59,7 +59,7 @@ export class LayerContextService {
   public async deleteByContextId (contextId: string): Promise<void> {
     return await LayerContext.destroy({
       where: {
-        contextId: contextId
+        contextId
       }
     }).then((count: number) => {
       if (!count) {
@@ -71,7 +71,7 @@ export class LayerContextService {
   public async getByContextId (contextId: string): Promise<LayerContext[]> {
     return await LayerContext.findAll({
       where: {
-        contextId: contextId,
+        contextId,
         enabled: true
       },
       order: ['layerOptions.zIndex']
@@ -86,8 +86,8 @@ export class LayerContextService {
   public async getById (contextId: string, layerId: string): Promise<LayerContext> {
     return await LayerContext.findOne({
       where: {
-        layerId: layerId,
-        contextId: contextId,
+        layerId,
+        contextId,
         enabled: true
       }
     }).then((layerContext: LayerContext) => {
@@ -104,8 +104,8 @@ export class LayerContextService {
         throw error;
       }
       return {
-        layer: layer,
-        error: error
+        layer,
+        error
       };
     };
 
@@ -144,7 +144,7 @@ export class LayerContextService {
 
           layer.layerOptions = layer.layerOptions || {};
           const rep = await this.create({
-            contextId: contextId,
+            contextId,
             layerId: layerFound.id,
             layerOptions: {
               zIndex: layer.layerOptions.zIndex,
@@ -160,7 +160,7 @@ export class LayerContextService {
               }
               return {
                 layerId: layerFound.id,
-                error: error
+                error
               };
             });
 

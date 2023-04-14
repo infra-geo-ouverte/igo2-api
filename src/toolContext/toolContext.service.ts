@@ -26,16 +26,16 @@ export class ToolContextService {
   public async update (contextId: string, toolId: string, toolContext: IToolContext): Promise<IToolContext> {
     return await ToolContext.update(toolContext, {
       where: {
-        toolId: toolId,
-        contextId: contextId
+        toolId,
+        contextId
       }
     }).then((count: [number]) => {
       if (!count[0]) {
         throw Boom.notFound();
       }
       return {
-        toolId: toolId,
-        contextId: contextId
+        toolId,
+        contextId
       };
     });
   }
@@ -43,8 +43,8 @@ export class ToolContextService {
   public async delete (contextId: string, toolId: string): Promise<void> {
     return await ToolContext.destroy({
       where: {
-        toolId: toolId,
-        contextId: contextId
+        toolId,
+        contextId
       }
     }).then((count: number) => {
       if (!count) {
@@ -56,7 +56,7 @@ export class ToolContextService {
   public async deleteByContextId (contextId: string): Promise<void> {
     return await ToolContext.destroy({
       where: {
-        contextId: contextId
+        contextId
       }
     }).then((count: number) => {
       if (!count) {
@@ -68,7 +68,7 @@ export class ToolContextService {
   public async getByContextId (contextId: string): Promise<ToolContext[]> {
     return await ToolContext.findAll({
       where: {
-        contextId: contextId
+        contextId
       }
     }).then((toolContextsContexts: ToolContext[]) => {
       const plainToolContextsContexts = toolContextsContexts.map((toolContext) =>
@@ -81,8 +81,8 @@ export class ToolContextService {
   public async getById (contextId: string, toolId: string): Promise<ToolContext> {
     return await ToolContext.findOne({
       where: {
-        toolId: toolId,
-        contextId: contextId
+        toolId,
+        contextId
       }
     }).then((toolContext: ToolContext) => {
       if (!toolContext) {
@@ -99,7 +99,7 @@ export class ToolContextService {
       if (tool.id && !tool.global) {
         promises.push(
           this.create({
-            contextId: contextId,
+            contextId,
             toolId: tool.id
           })
             .then((rep) => {
@@ -111,7 +111,7 @@ export class ToolContextService {
               }
               return {
                 toolId: tool.id,
-                error: error
+                error
               };
             })
         );

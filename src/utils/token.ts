@@ -12,7 +12,7 @@ export function verifyTokenAndDecode (jwtToken): any {
     return;
   }
   try {
-    return Jwt.verify(jwtToken, jwtConfig.secretKey,jwtConfig.verifyOptions);
+    return Jwt.verify(jwtToken, jwtConfig.secretKey, jwtConfig.verifyOptions);
   } catch (err) {
     throw Boom.forbidden(err);
   }

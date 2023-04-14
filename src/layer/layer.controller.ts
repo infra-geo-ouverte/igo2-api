@@ -82,10 +82,12 @@ export class LayerController {
       throw Boom.methodNotAllowed(msg);
     }
     const geoservicesConfig = Configs.getGeoServiceConfig();
-    const getInfoFromCapabilities = geoservicesConfig?.getInfoFromCapabilities === true ? true : false;
+    const getInfoFromCapabilities = geoservicesConfig?.getInfoFromCapabilities === true;
 
     const query: any = request.query;
-    return this.layerService.getFormattedLayersItemsByMatch(query.q, query.type, query.limit, query.page, getInfoFromCapabilities).catch(handleError);
+    return this.layerService.getFormattedLayersItemsByMatch(query.q,
+      query.type, query.limit,
+      query.page, getInfoFromCapabilities).catch(handleError);
   }
 
   public async getBaseLayers (_request: Hapi.Request, _h: Hapi.ResponseToolkit) {

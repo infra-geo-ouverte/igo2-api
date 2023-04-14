@@ -23,17 +23,17 @@ export class ContextAccess extends Model<IContextAccess> {
   @AutoIncrement
   @AllowNull(false)
   @Column
-  id: number;
+    id: number;
 
   @Index
   @ForeignKey(() => Context)
   @AllowNull(false)
   @Column
-  contextId: number;
+    contextId: number;
 
   @Column
-  calls: number;
+    calls: number;
 
   @UpdatedAt
-  accessedAt: Date;
+    accessedAt: Date;
 }

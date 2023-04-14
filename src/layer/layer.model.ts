@@ -17,40 +17,40 @@ export class Layer extends Model<ILayer> {
   @AutoIncrement
   @AllowNull(false)
   @Column
-  id: number;
+    id: number;
 
   @Default(true)
   @AllowNull(false)
   @Column
-  enabled: boolean;
+    enabled: boolean;
 
   @Index({ name: 'layer_type_url_layers', unique: true })
   @AllowNull(false)
   @Column({ type: DataType.STRING(16) })
-  type: string;
+    type: string;
 
   @Index({ name: 'layer_type_url_layers', unique: true })
   @Column
-  url: string;
+    url: string;
 
   @Index({ name: 'layer_type_url_layers', unique: true })
   @Column({ type: DataType.STRING(128) })
-  layers: string;
+    layers: string;
 
   @Index({ unique: false })
   @Column
-  global: boolean;
+    global: boolean;
 
   @Column({ type: DataType.JSON })
-  layerOptions: { [key: string]: any };
+    layerOptions: { [key: string]: any };
 
   @Column({ type: DataType.JSON })
-  sourceOptions: { [key: string]: any };
+    sourceOptions: { [key: string]: any };
 
   @Column({
     type: (Configs.getDatabaseConfig() as IDatabaseConfiguration).dialect === 'postgres' ? DataType.TSVECTOR : DataType.TEXT
   }) // only for postgresql
-  searchableColumn: { [key: string]: any };
+    searchableColumn: { [key: string]: any };
 
   @Column(DataType.STRING)
   get profils (): string[] {

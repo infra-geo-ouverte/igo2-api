@@ -12,18 +12,18 @@ export class ContextHidden extends Model<IContextHidden> {
   @AutoIncrement
   @AllowNull(false)
   @Column
-  id: number;
+    id: number;
 
   @Index({ name: 'context_hidden_contextId_user', unique: true })
   @Index
   @AllowNull(false)
   @Column
-  user: string;
+    user: string;
 
   @Index({ name: 'context_hidden_contextId_user', unique: true })
   @Index
   @ForeignKey(() => Context)
   @AllowNull(false)
   @Column
-  contextId: number;
+    contextId: number;
 }
