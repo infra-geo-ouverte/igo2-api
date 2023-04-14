@@ -70,7 +70,7 @@ export class ContextController {
         const layerOptions = Object.assign({}, l);
         delete layerOptions.sourceOptions;
         return {
-          layerOptions: layerOptions,
+          layerOptions,
           sourceOptions: l.sourceOptions
         };
       })
@@ -158,7 +158,7 @@ export class ContextController {
             }
           ],
           where: {
-            owner: owner
+            owner
           },
           order: [['createdAt', 'DESC']]
         })

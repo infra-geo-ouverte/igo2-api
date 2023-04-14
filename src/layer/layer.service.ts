@@ -64,14 +64,14 @@ export class LayerService {
     return await Layer
       .update(layer, {
         where: {
-          id: id
+          id
         }
       })
       .then((count: [number]) => {
         if (!count[0]) {
           throw Boom.notFound();
         }
-        return { id: id };
+        return { id };
       });
   }
 
@@ -79,7 +79,7 @@ export class LayerService {
     return await Layer
       .destroy({
         where: {
-          id: id
+          id
         }
       })
       .then((count: number) => {
@@ -128,7 +128,7 @@ export class LayerService {
   public async getById (id: string, user: string): Promise<Layer> {
     const layer = await Layer.findOne({
       where: {
-        id: id,
+        id,
         enabled: true
       }
     });
@@ -173,7 +173,7 @@ export class LayerService {
     limit: number = 5,
     page: number = 1,
     getInfoFromCapabilities: boolean = false
-    ): Promise<{}> {
+  ): Promise<{}> {
     const q = originalQ
       .replace(/(\(|\)|\*)/g, ' ')
       .replace(/  +/g, ' ')
@@ -193,7 +193,7 @@ export class LayerService {
     LIMIT :limit OFFSET :offset;
   `, {
       model: Layer,
-      replacements: { q: q, query: term, limit: limit, offset: (page - 1) * limit }
+      replacements: { q, query: term, limit, offset: (page - 1) * limit }
     });
 
     const wmsCapabilitiesPromises = [];
@@ -379,7 +379,7 @@ export class LayerService {
 
     return await Layer
       .findOne({
-        where: where
+        where
       })
       .then((layerFound: Layer) => {
         if (!layerFound) {

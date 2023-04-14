@@ -15,7 +15,7 @@ export class CatalogService {
     return await Catalog
       .update(catalog, {
         where: {
-          id: id
+          id
         }
       })
       .then((count: [number]) => {
@@ -23,7 +23,7 @@ export class CatalogService {
           throw Boom.notFound();
         }
 
-        return { id: id };
+        return { id };
       });
   }
 
@@ -31,7 +31,7 @@ export class CatalogService {
     return await Catalog
       .destroy({
         where: {
-          id: id
+          id
         }
       })
       .then((count: number) => {
@@ -66,7 +66,7 @@ export class CatalogService {
 
     const catalog = await Catalog.findOne({
       where: {
-        id: id
+        id
       }
     });
 

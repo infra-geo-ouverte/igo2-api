@@ -25,14 +25,14 @@ export class ContextService {
   public async update (id: string, context: IContext): Promise<{ id: string }> {
     return await Context.update(context, {
       where: {
-        id: id
+        id
       }
     })
       .then((count: [number]) => {
         if (!count[0]) {
           throw Boom.notFound();
         }
-        return { id: id };
+        return { id };
       })
       .catch((error) => {
         if (error?.data?.name === 'SequelizeUniqueConstraintError') {
@@ -49,7 +49,7 @@ export class ContextService {
   public async delete (id: string): Promise<void> {
     return await Context.destroy({
       where: {
-        id: id
+        id
       }
     }).then((count: number) => {
       if (!count) {
@@ -79,15 +79,15 @@ export class ContextService {
       include.push(Tool);
     }
 
-    let where: any = { id: id };
+    let where: any = { id };
 
     if (isNaN(id as any)) {
       where = { uri: id };
     }
 
     const context = await Context.findOne({
-      include: include,
-      where: where
+      include,
+      where
     });
 
     if (!context) {

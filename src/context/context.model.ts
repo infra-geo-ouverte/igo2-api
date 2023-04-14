@@ -32,42 +32,42 @@ export class Context extends Model<IContext> {
   @AutoIncrement
   @AllowNull(false)
   @Column
-  id: number;
+    id: number;
 
   @AllowNull(false)
   @Unique
   @Column({ type: DataType.TEXT })
-  uri: string;
+    uri: string;
 
   @AllowNull(false)
   @Column({ type: DataType.STRING(128) })
-  title: string;
+    title: string;
 
   @Column({ type: DataType.STRING(128) })
-  icon: string;
+    icon: string;
 
   @Index
   @AllowNull(false)
   @Column({ type: DataType.STRING(128) })
-  owner: string;
+    owner: string;
 
   @Index
   @AllowNull(false)
   @Column({ type: DataType.ENUM('public', 'protected', 'private') })
-  scope: string;
+    scope: string;
 
   @Column({ type: DataType.JSON })
-  map: { [key: string]: any };
+    map: { [key: string]: any };
 
   @BelongsToMany(() => Layer, () => LayerContext)
-  layers: Layer[];
+    layers: Layer[];
 
   @BelongsToMany(() => Tool, () => ToolContext)
-  tools: Tool[];
+    tools: Tool[];
 
   @HasMany(() => ContextPermission)
-  contextPermissions: ContextPermission[];
+    contextPermissions: ContextPermission[];
 
   @HasMany(() => ContextHidden)
-  contextHiddens: ContextHidden[];
+    contextHiddens: ContextHidden[];
 }

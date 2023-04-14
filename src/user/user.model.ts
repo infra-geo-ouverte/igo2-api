@@ -12,24 +12,24 @@ export class User extends Model<IUser> {
   @PrimaryKey
   @AllowNull(false)
   @Column({ type: DataType.TEXT })
-  id: string;
+    id: string;
 
   @AllowNull(false)
   @Column({ type: DataType.STRING(64) })
-  source: string;
+    source: string;
 
   @Column({ type: DataType.STRING(64) })
-  sourceId: string;
+    sourceId: string;
 
   @Column({ type: DataType.STRING(64) })
-  firstName: string;
+    firstName: string;
 
   @Column({ type: DataType.STRING(64) })
-  lastName: string;
+    lastName: string;
 
   @Column({ type: DataType.STRING(128) })
-  email: string;
+    email: string;
 
   @UpdatedAt
-  loginAt: Date;
+    loginAt: Date;
 }

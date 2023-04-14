@@ -39,14 +39,14 @@ export class ContextPermissionService {
   public async update (id: string, contextPermission: IContextPermission): Promise<{ id: string }> {
     return await ContextPermission.update(contextPermission, {
       where: {
-        id: id
+        id
       }
     })
       .then((count: [number]) => {
         if (!count[0]) {
           throw Boom.notFound();
         }
-        return { id: id };
+        return { id };
       })
       .catch((error) => {
         if (error?.data?.name === 'SequelizeUniqueConstraintError') {
@@ -63,7 +63,7 @@ export class ContextPermissionService {
   public async delete (id: string): Promise<void> {
     return await ContextPermission.destroy({
       where: {
-        id: id
+        id
       }
     }).then((count: number) => {
       if (!count) {
@@ -75,7 +75,7 @@ export class ContextPermissionService {
   public async getById (id: string): Promise<ContextPermission> {
     return await ContextPermission.findOne({
       where: {
-        id: id
+        id
       }
     }).then((permission: ContextPermission) => {
       if (!permission) {
@@ -88,7 +88,7 @@ export class ContextPermissionService {
   public async getByContextId (contextId): Promise<ContextPermission[]> {
     return await ContextPermission.findAll({
       where: {
-        contextId: contextId
+        contextId
       }
     }).then((contextPermissions: ContextPermission[]) => {
       const plainContextPermissions = contextPermissions.map((contextPermission) => {
@@ -126,7 +126,7 @@ export class ContextPermissionService {
     }
 
     const context = await Context.findOne({
-      where: where
+      where
     });
 
     if (!context) {

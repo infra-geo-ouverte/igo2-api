@@ -15,19 +15,19 @@ export class UserIgo extends Model<IUserIgo> {
   @AutoIncrement
   @AllowNull(false)
   @Column
-  id: number;
+    id: number;
 
   @Column
-  defaultContextId: number;
+    defaultContextId: number;
 
   @Column({ type: DataType.JSON })
-  preference: { [key: string]: any };
+    preference: { [key: string]: any };
 
   @Index
   @AllowNull(false)
   @ForeignKey(() => User)
   @Column({ type: DataType.TEXT })
-  userId: string;
+    userId: string;
 
   @Column(DataType.TEXT)
   get profils (): string[] {

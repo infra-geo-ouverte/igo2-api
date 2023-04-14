@@ -15,27 +15,27 @@ export class Poi extends Model<IPoi> {
   @AutoIncrement
   @AllowNull(false)
   @Column
-  id: number;
+    id: number;
 
   @AllowNull(false)
   @Column({ type: DataType.STRING(64) })
-  title: number;
+    title: number;
 
   @AllowNull(false)
   @Column({ type: DataType.DECIMAL })
-  x: number;
+    x: number;
 
   @AllowNull(false)
   @Column({ type: DataType.DECIMAL })
-  y: number;
+    y: number;
 
   @AllowNull(false)
   @Column
-  zoom: number;
+    zoom: number;
 
   @Index
   @AllowNull(false)
   @ForeignKey(() => User)
   @Column({ type: DataType.TEXT })
-  userId: string;
+    userId: string;
 }

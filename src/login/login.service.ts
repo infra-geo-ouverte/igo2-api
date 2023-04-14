@@ -55,7 +55,7 @@ export class LoginService {
         );
         this.updateOrCreateUser(userInfoPayload.user);
         this.createUserIgoIfNotExists(userInfoPayload.user, currentUserFromConfig.profils);
-        resolve({ token: token });
+        resolve({ token });
       }
     });
   }
@@ -97,7 +97,7 @@ export class LoginService {
               );
               this.updateOrCreateUser(userInfoPayload.user);
               this.createUserIgoIfNotExists(userInfoPayload.user);
-              resolve({ token: token });
+              resolve({ token });
             } else {
               reject(Boom.unauthorized('Authentication failed'));
             }
@@ -130,7 +130,7 @@ export class LoginService {
 
     return {
       token: Jwt.sign(
-        { user: user },
+        { user },
         jwtConfig.secretKey,
         Object.assign({}, jwtConfig.signOptions, { expiresIn: jwtConfig.signOptions.expiresIn || '1d' })
       )

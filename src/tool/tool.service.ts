@@ -22,20 +22,20 @@ export class ToolService {
   public async update (id: string, tool: ITool): Promise<{ id: string }> {
     return await Tool.update(tool, {
       where: {
-        id: id
+        id
       }
     }).then((count: [number]) => {
       if (!count[0]) {
         throw Boom.notFound();
       }
-      return { id: id };
+      return { id };
     });
   }
 
   public async delete (id: string): Promise<void> {
     return await Tool.destroy({
       where: {
-        id: id
+        id
       }
     }).then((count: number) => {
       if (!count) {
@@ -66,7 +66,7 @@ export class ToolService {
 
     return await Tool.findOne({
       where: {
-        id: id
+        id
       }
     }).then((tool: Tool) => {
       if (!tool || (tool.profils.length !== 0 && !tool.profils.some(p => profils.includes(p)))) {

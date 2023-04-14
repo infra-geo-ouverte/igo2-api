@@ -10,21 +10,21 @@ export class Catalog extends Model<ICatalog> {
   @AutoIncrement
   @AllowNull(false)
   @Column
-  id: number;
+    id: number;
 
   @AllowNull(false)
   @Column({ type: DataType.STRING(64) })
-  title: string;
+    title: string;
 
   @AllowNull(false)
   @Column({ type: DataType.STRING(128) })
-  url: string;
+    url: string;
 
   @Column({ type: DataType.JSON })
-  options: { [key: string]: any };
+    options: { [key: string]: any };
 
   @Column
-  order: number;
+    order: number;
 
   @Column(DataType.STRING)
   get profils (): string[] {

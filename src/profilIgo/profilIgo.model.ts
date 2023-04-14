@@ -10,24 +10,24 @@ export class ProfilIgo extends Model<IProfilIgo> {
   @PrimaryKey
   @AllowNull(false)
   @Column
-  id: number;
+    id: number;
 
   @AllowNull(false)
   @Column({ type: DataType.STRING(128) })
-  name: string;
+    name: string;
 
   @AllowNull(false)
   @Column({ type: DataType.STRING(128) })
-  title: string;
+    title: string;
 
   @Column({ type: DataType.STRING(128) })
-  group: string;
+    group: string;
 
   @Column({ type: DataType.JSON })
-  preference: { [key: string]: any };
+    preference: { [key: string]: any };
 
   @Column
-  canShare: boolean;
+    canShare: boolean;
 
   @Column(DataType.STRING)
   get canShareToProfils (): number[] {
@@ -41,8 +41,8 @@ export class ProfilIgo extends Model<IProfilIgo> {
   }
 
   @Column
-  canFilter: boolean;
+    canFilter: boolean;
 
   @Column
-  guide: string;
+    guide: string;
 }

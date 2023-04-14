@@ -21,7 +21,7 @@ export class UserService {
     return await User
       .update(user, {
         where: {
-          id: id
+          id
         }
       })
       .then((count: [number]) => {
@@ -73,7 +73,7 @@ export class UserService {
     return await User
       .findOne({
         where: {
-          sourceId: sourceId,
+          sourceId,
           source: sources
         }
       })

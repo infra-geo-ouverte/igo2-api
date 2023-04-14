@@ -23,28 +23,28 @@ export class ToolContext extends Model<IToolContext> {
   @AutoIncrement
   @AllowNull(false)
   @Column
-  id: number;
+    id: number;
 
   @Column({ type: DataType.JSON })
-  options: { [key: string]: any };
+    options: { [key: string]: any };
 
   @Column
-  enabled: boolean;
+    enabled: boolean;
 
   @Column
-  order: number;
+    order: number;
 
   @Index({ name: 'tool_context_contextId_toolId', unique: true })
   @Index
   @ForeignKey(() => Context)
   @AllowNull(false)
   @Column
-  contextId: number;
+    contextId: number;
 
   @Index({ name: 'tool_context_contextId_toolId', unique: true })
   @Index
   @ForeignKey(() => Tool)
   @AllowNull(false)
   @Column
-  toolId: number;
+    toolId: number;
 }

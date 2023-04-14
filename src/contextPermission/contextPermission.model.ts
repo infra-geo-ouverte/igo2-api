@@ -22,22 +22,22 @@ export class ContextPermission extends Model<IContextPermission> {
   @AutoIncrement
   @AllowNull(false)
   @Column
-  id: number;
+    id: number;
 
   @AllowNull(false)
   @Column({ type: DataType.ENUM('read', 'write') })
-  typePermission: string;
+    typePermission: string;
 
   @Index({ name: 'context_permission_contextId_profil', unique: true })
   @Index
   @AllowNull(false)
   @Column
-  profil: string;
+    profil: string;
 
   @Index({ name: 'context_permission_contextId_profil', unique: true })
   @Index
   @ForeignKey(() => Context)
   @AllowNull(false)
   @Column
-  contextId: number;
+    contextId: number;
 }

@@ -17,14 +17,14 @@ export class UserIgoService {
     return await UserIgo
       .update(userIgo, {
         where: {
-          userId: userId
+          userId
         }
       })
       .then((count: [number]) => {
         if (!count[0]) {
           throw Boom.notFound();
         }
-        return { userId: userId };
+        return { userId };
       });
   }
 
@@ -32,7 +32,7 @@ export class UserIgoService {
     return await UserIgo
       .destroy({
         where: {
-          userId: userId
+          userId
         }
       })
       .then((count: number) => {
@@ -46,7 +46,7 @@ export class UserIgoService {
     return await UserIgo
       .findOne({
         where: {
-          userId: userId
+          userId
         }
       })
       .then((userIgo: UserIgo) => {
