@@ -56,6 +56,8 @@ export class LoginService {
         this.updateOrCreateUser(userInfoPayload.user);
         this.createUserIgoIfNotExists(userInfoPayload.user, currentUserFromConfig.profils);
         resolve({ token });
+      } else {
+        reject(Boom.unauthorized('Invalid username or password'));
       }
     });
   }
