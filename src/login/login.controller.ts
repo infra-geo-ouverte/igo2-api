@@ -1,3 +1,4 @@
+import * as Boom from '@hapi/boom';
 import * as Hapi from '@hapi/hapi';
 
 import { handleError, objectGUIDToUUID } from '../utils';
@@ -34,7 +35,7 @@ export class LoginController {
     }
   }
 
-  public async authenticate (request: Hapi.Request, _h: Hapi.ResponseToolkit) {
+  public async authenticate (request: Hapi.Request, _h: Hapi.ResponseToolkit): Promise<any> {
     const credentialsConfig = Config.getConfig('credentials') as CredentialsConfig;
     const pl = request.payload as UserWithCredentials;
 
@@ -52,6 +53,8 @@ export class LoginController {
       return await this.loginService.authenticateByIgoUsers(request.payload as UserWithCredentials).catch(handleError);
     } else if (this.ad) {
       return await this.loginService.authenticateByAd(this.ad, request.payload as UserWithCredentials).catch(handleError);
+    } else {
+      return Promise.reject(Boom.unauthorized('Invalid username or password'))
     }
   }
 
