@@ -16,5 +16,5 @@ export interface IProfilIgo {
   canShareToProfils?: number[];
   canFilter?: boolean;
   hasAcrigeo?: boolean;
-  guide?: string;
+  guides?: string[];
 }

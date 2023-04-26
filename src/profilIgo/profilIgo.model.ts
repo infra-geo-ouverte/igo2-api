@@ -47,6 +47,14 @@ export class ProfilIgo extends Model<IProfilIgo> {
   @Column
   hasAcrigeo: boolean;
 
-  @Column
-  guide: string;
+  @Column(DataType.STRING)
+  get guides(): string[] {
+    const guides: string = this.getDataValue('guides') as any;
+    return guides ? guides.split(',') : [];
+  }
+
+  set guides(value: string[]) {
+    const guides: any = value.join(',');
+    this.setDataValue('guides', guides);
+  }
 }

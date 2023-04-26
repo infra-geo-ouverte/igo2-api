@@ -86,8 +86,8 @@ export class UserIgoController {
     }
 
     user.guides = profilsIgo.reduce((acc, value) => {
-      if (value.guide) {
-        acc.push(value.guide);
+      if (value.guides) {
+        acc.push(...value.guides);
       }
       return [...new Set(acc)];
     }, []);
