@@ -120,7 +120,7 @@ export class ContextController {
 
   public async get (request: Hapi.Request, _h: Hapi.ResponseToolkit) {
     const cc = Config.getConfig('credentials') as CredentialsConfig;
-    const pco = cc.publicContextOwner || 'admin';
+    const pco = cc?.publicContextOwner || 'admin';
     
     const requestedUser = HapiRequestToUser(request);
     const {
