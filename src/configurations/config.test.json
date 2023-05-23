@@ -5,6 +5,7 @@
     "storage": "./igo-test.db"
   },
   "credentials": {
+    "publicContextOwner": "admin",
     "admins": [
       {
         "username": "admin",
