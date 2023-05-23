@@ -18,6 +18,7 @@ const configs = new nconf.Provider({
 });
 
 export interface CredentialsConfig {
+  publicContextOwner?: string;
   admins: UserWithCredentials[];
   users?: UserWithCredentials[];
 }
