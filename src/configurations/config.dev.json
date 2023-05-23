@@ -17,6 +17,7 @@
     "getInfoFromCapabilities": false
   },
   "credentials": {
+    "publicContextOwner": "admin",
     "admins": [
       {
         "username": "admin",
