@@ -5,6 +5,7 @@ import { handleError, HapiRequestToUser } from '../utils';
 import { UserApi, User } from '../user';
 import { ProfilIgoService } from './profilIgo.service';
 import { IProfilIgo, IProfilIgoChilds } from './profilIgo.interface';
+import * as Configs from '../configurations';
 
 export class ProfilIgoController {
   private profilIgoService: ProfilIgoService;
@@ -93,6 +94,7 @@ export class ProfilIgoController {
   }
 
   public async getProfilsAndUsers (request: Hapi.Request, _h: Hapi.ResponseToolkit) {
+    const dialect = (Configs.getDatabaseConfig() as Configs.IDatabaseConfiguration).dialect;
     const requestedUser = HapiRequestToUser(request);
     // unable to find names and profils with accent if q is normalized..
     // const q = request.query.q ? request.query.q.normalize('NFD').replace(/[\u0300-\u036f]/g, '') : undefined;
@@ -135,7 +137,7 @@ export class ProfilIgoController {
         return { name: p.name, title: p.title };
       });
 
-    const usersIgo = await UserApi.getAllUsers(request.query.limit, q)
+    const usersIgo = await UserApi.getAllUsers(request.query.limit, q, dialect)
       .then((users: User[]) => {
         return users.map((u) => {
           return {

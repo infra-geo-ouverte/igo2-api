@@ -26,24 +26,34 @@ export class UserApi {
       });
   }
 
-  static async getAllUsers (limit: number = 10, filter?: string): Promise<User[]> {
-    const opts: any = filter
-      ? {
-          where: {
-            [Op.or]: [
-              {
-                sourceId: {
-                  [Op.iLike]: `%${filter}%`
-                }
-              },
-              new Utils.Where(new Utils.Fn('concat', [new Utils.Col('firstName'), ' ', new Utils.Col('lastName')]), {
-                [Op.iLike]: `%${filter}%`
-              })
-            ]
-          }
-        }
-      : {};
-
+  static async getAllUsers(limit: number = 10, filter?: string, dialect?: 'sqlite' | 'postgres'): Promise<User[]> {
+    let opts: any = {};
+    let filterToApply;
+    let where; 
+    if (dialect === 'postgres') {
+      filterToApply = filter;
+      where = {
+        [Op.or]: [
+          {
+            sourceId: {
+              [Op.iLike]: `%${filterToApply}%`
+            }
+          },
+          new Utils.Where(new Utils.Fn('concat', [new Utils.Col('firstName'), ' ', new Utils.Col('lastName')]), {
+            [Op.iLike]: `%${filterToApply}%`
+          })
+        ]
+      }
+    } else {
+      filterToApply = filter.toLowerCase();
+      where = {
+        [Op.or]: [
+          new Utils.Where(new Utils.Fn('lower', [new Utils.Col('sourceId')]), { [Op.like]: `%${filterToApply}%` }),
+          new Utils.Where(new Utils.Literal("lower(firstName || ' ' || lastName)"), { [Op.like]: `%${filterToApply}%` })
+        ]
+      }
+    }
+    opts = filterToApply ? { where } : {};
     opts.limit = limit;
 
     return await User.findAll(opts).then((users: User[]) => {
