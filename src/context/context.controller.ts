@@ -13,6 +13,8 @@ import { LayerContextService } from '../layerContext/layerContext.service';
 import { ContextAccessService } from '../contextAccess/contextAccess.service';
 
 import { IContext, ContextService, Context, Scope } from './index';
+import { Config } from '@igo2/base-api';
+import { CredentialsConfig } from '../configurations';
 
 export class ContextController {
   private contextService: ContextService;
@@ -117,6 +119,9 @@ export class ContextController {
   }
 
   public async get (request: Hapi.Request, _h: Hapi.ResponseToolkit) {
+    const cc = Config.getConfig('credentials') as CredentialsConfig;
+    const pco = cc.publicContextOwner || 'admin';
+    
     const requestedUser = HapiRequestToUser(request);
     const {
       randomUUID
@@ -281,7 +286,7 @@ export class ContextController {
       })
       .map((c) => {
         const plainC: any = c.get();
-        if (!plainC.contextPermissions.length && plainC.owner !== 'admin') {
+        if (!plainC.contextPermissions.length && plainC.owner !== pco) {
           return;
         }
 
