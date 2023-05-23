@@ -1,3 +1,18 @@
+## [1.7.6](https://github.com/infra-geo-ouverte/igo2-api/compare/1.7.5...1.7.6) (2023-05-23)
+
+
+### Bug Fixes
+
+* **login:** wrong login did not return any promise ([620d42d](https://github.com/infra-geo-ouverte/igo2-api/commit/620d42d8c58bdeb64c638b968303eb0e68965799))
+* **user api:** get user on sqlite database was impossible ([5e49959](https://github.com/infra-geo-ouverte/igo2-api/commit/5e49959ba7290f4e97990cb5ed2cb13160644473))
+
+
+### Features
+
+* **context:** define public context owner by config ([394c995](https://github.com/infra-geo-ouverte/igo2-api/commit/394c995c3143d0478a57144c713d7edbcf6aa620))
+
+
+
 ## [1.7.5](https://github.com/infra-geo-ouverte/igo2-api/compare/1.7.4...1.7.5) (2023-04-14)
 
 
