@@ -17,7 +17,7 @@ export class LoginService {
     const jwtConfig = Config.getConfig('jwt') as JwtConfig;
     const credentialsConfig = Config.getConfig('credentials') as CredentialsConfig;
 
-    const usersFromCredentialsConfig = [];
+    const usersFromCredentialsConfig :UserWithCredentials[] = [];
     const adminUsernames = [];
     if (credentialsConfig.admins) {
       credentialsConfig.admins.map((admin: UserWithCredentials) => usersFromCredentialsConfig.push(admin));
@@ -27,7 +27,8 @@ export class LoginService {
       credentialsConfig.users.map(user => usersFromCredentialsConfig.push(user));
     }
 
-    const currentUserFromConfig: UserWithCredentials = usersFromCredentialsConfig.find(ufc => ufc.username === userCredentials.username);
+    const currentUserFromConfig: UserWithCredentials = usersFromCredentialsConfig
+      .find(ufc => ufc.username.toLowerCase() === userCredentials.username.toLowerCase());
     return new Promise((resolve, reject) => {
       let userInfoPayload: IgoJWTUser;
       if (

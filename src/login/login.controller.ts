@@ -39,7 +39,7 @@ export class LoginController {
     const credentialsConfig = Config.getConfig('credentials') as CredentialsConfig;
     const pl = request.payload as UserWithCredentials;
 
-    const usersFromCredentialsConfig = [];
+    const usersFromCredentialsConfig: UserWithCredentials[] = [];
     if (credentialsConfig?.admins) {
       credentialsConfig.admins.map((admin: UserWithCredentials) => usersFromCredentialsConfig.push(admin));
     }
@@ -47,7 +47,7 @@ export class LoginController {
       credentialsConfig.users.map(user => usersFromCredentialsConfig.push(user));
     }
 
-    const userFromIgoConfig: UserWithCredentials = usersFromCredentialsConfig.find(ufc => ufc.username === pl.username);
+    const userFromIgoConfig: UserWithCredentials = usersFromCredentialsConfig.find(ufc => ufc.username.toLowerCase() === pl.username.toLowerCase());
 
     if (userFromIgoConfig) {
       return await this.loginService.authenticateByIgoUsers(request.payload as UserWithCredentials).catch(handleError);
