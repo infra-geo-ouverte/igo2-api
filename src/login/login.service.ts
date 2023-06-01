@@ -9,6 +9,7 @@ import { User } from '../user/user.model';
 import { IUserIgo, UserIgo, UserIgoService } from '../userIgo';
 import { UserService } from '../user/user.service';
 import { CredentialsConfig, JwtConfig } from '../configurations';
+import { verifyTokenAndDecode } from '../utils';
 
 export class LoginService {
   public async authenticateByIgoUsers (
@@ -117,7 +118,7 @@ export class LoginService {
       throw Boom.forbidden();
     }
     const jwtToken = authorizationHeader.split(' ')[1];
-    const tokenDecoded: any = Jwt.decode(jwtToken);
+    const tokenDecoded: any = verifyTokenAndDecode(jwtToken);
     const user = tokenDecoded.user;
     user.refresh = user.refresh ? ++user.refresh : 1;
     const jwtMaxRefresh = jwtConfig.maxRefresh || 0;
