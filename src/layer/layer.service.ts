@@ -185,7 +185,7 @@ export class LayerService {
     const rawResults = await Layer.sequelize.query(`
     SELECT 
     ts_rank(:q, to_tsquery(:query)) AS rank,
-    ts_headline('simple',coalesce(("layerOptions"->'title')::text, layers), to_tsquery(:query),'StartSel=<strong>, StopSel=</strong>' ),
+    ts_headline('simple',coalesce(("layerOptions"->>'title'), layers), to_tsquery(:query),'StartSel=<strong>, StopSel=</strong>' ),
     *
     FROM ${Layer.tableName}
     WHERE "searchableColumn" @@ to_tsquery(:query) and enabled = true
