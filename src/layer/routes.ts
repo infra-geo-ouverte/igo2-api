@@ -115,8 +115,7 @@ export default function (server: Hapi.Server) {
           type: Joi.string().required(),
           limit: Joi.number(),
           page: Joi.number()
-        },
-        headers: LoginValidator.userValidator
+        }
       },
       plugins: {
         'hapi-swagger': {
