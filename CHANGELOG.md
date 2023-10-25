@@ -1,3 +1,21 @@
+## [1.7.7](https://github.com/infra-geo-ouverte/igo2-api/compare/1.7.5...1.7.7) (2023-10-25)
+
+
+### Bug Fixes
+
+* **login:** decode is not a function ([#30](https://github.com/infra-geo-ouverte/igo2-api/issues/30)) ([85cd494](https://github.com/infra-geo-ouverte/igo2-api/commit/85cd494ce81a7423a85f07352bd619f94e6726c6))
+* **login:** prevent case sensitive username for custom igo users login ([#29](https://github.com/infra-geo-ouverte/igo2-api/issues/29)) ([d09696f](https://github.com/infra-geo-ouverte/igo2-api/commit/d09696f73060b685228c3ab4e375c38622a92f8e))
+* **login:** wrong login did not return any promise ([620d42d](https://github.com/infra-geo-ouverte/igo2-api/commit/620d42d8c58bdeb64c638b968303eb0e68965799))
+* **user api:** get user on sqlite database was impossible ([5e49959](https://github.com/infra-geo-ouverte/igo2-api/commit/5e49959ba7290f4e97990cb5ed2cb13160644473))
+
+
+### Features
+
+* **context:** define public context owner by config ([#27](https://github.com/infra-geo-ouverte/igo2-api/issues/27)) ([8cf1056](https://github.com/infra-geo-ouverte/igo2-api/commit/8cf10564563a006ee624208f18e4bd5627fd6ef7))
+* **layer:** enable search layers without auth + minor fix ([a856fb2](https://github.com/infra-geo-ouverte/igo2-api/commit/a856fb2999afbd8ded0b99f49f1b3e2313d48024))
+
+
+
 ## [1.7.5](https://github.com/infra-geo-ouverte/igo2-api/compare/1.7.4...1.7.5) (2023-04-14)
 
 
