@@ -1,3 +1,7 @@
+## [1.7.8](https://github.com/infra-geo-ouverte/igo2-api/compare/1.7.7...1.7.8) (2023-10-25)
+
+
+
 ## [1.7.7](https://github.com/infra-geo-ouverte/igo2-api/compare/1.7.5...1.7.7) (2023-10-25)
 
 
