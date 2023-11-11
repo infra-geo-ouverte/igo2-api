@@ -38,7 +38,7 @@
   "dependencies": {
     "@igo2/base-api": "^1.2.3",
     "activedirectory": "^0.7.2",
-    "axios": "^1.2.0",
+    "axios": "^1.6.0",
     "jsonwebtoken": "^9.0.0",
     "rxjs": "^7.4.0",
     "sqlite3": "^5.1.6",
