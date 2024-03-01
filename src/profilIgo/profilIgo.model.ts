@@ -57,4 +57,7 @@ export class ProfilIgo extends Model<IProfilIgo> {
     const guides: any = value.join(',');
     this.setDataValue('guides', guides);
   }
+
+  @Column
+  hasOsrmPrivateAccess: boolean;
 }

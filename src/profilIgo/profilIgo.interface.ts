@@ -17,4 +17,5 @@ export interface IProfilIgo {
   canFilter?: boolean;
   hasAcrigeo?: boolean;
   guides?: string[];
+  hasOsrmPrivateAccess?: boolean;
 }

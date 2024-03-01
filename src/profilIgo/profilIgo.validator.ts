@@ -10,7 +10,8 @@ export class ProfilIgoValidator {
     canShareToProfils: Joi.array().items(Joi.number()),
     canFilter: Joi.boolean(),
     hasAcrigeo: Joi.boolean(),
-    guides: Joi.array().items(Joi.string())
+    guides: Joi.array().items(Joi.string()),
+    hasOsrmPrivateAccess: Joi.boolean()
   });
 
   static createModel = ProfilIgoValidator.updateModel.concat(
