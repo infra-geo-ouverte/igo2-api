@@ -92,7 +92,7 @@ export class UserIgoController {
       return [...new Set(acc)];
     }, []);
 
-    user.osrmPrivateAccess = profilsIgo.find(profil => profil.hasOsrmPrivateAccess) ? true : false;
+    user.hasOsrmPrivateAccess = profilsIgo.find(profil => profil.hasOsrmPrivateAccess) ? true : false;
 
     return h.response(user);
   }
