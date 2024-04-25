@@ -1,0 +1,66 @@
+MAP
+    NAME "ogcapi-demo"
+    STATUS ON
+    EXTENT -180 -90 180 90
+    PROJECTION
+        "init=epsg:4326"
+    END
+
+    OUTPUTFORMAT
+        NAME "application/json"
+        DRIVER "OGR/GEOJSON"
+        MIMETYPE "application/json"
+        FORMATOPTION "FORM=SIMPLE"
+        FORMATOPTION "STORAGE=stream"
+    END
+    OUTPUTFORMAT
+        NAME "png"
+        DRIVER AGG/PNG
+        MIMETYPE "image/png"
+        IMAGEMODE RGB
+        EXTENSION "png"
+        FORMATOPTION "GAMMA=0.75"
+    END
+
+    WEB
+        METADATA
+            "OWS_ABSTRACT" "This is a test web service"
+            "OWS_ACCESSCONSTRAINTS" ""
+            "WFS_enable_request" "*"
+            "OWS_FEES" "none"
+            "OWS_KEYWORDLIST" "test,testing,123"
+            "OWS_SERVICE_ONLINERESOURCE" ""
+            "OWS_TITLE" "Testing capabilities"
+            "WFS_GETFEATURE_FORMATLIST" "JSON"
+            "wfs_srs" "EPSG:4326 EPSG:3857 EPSG:4269"
+            "ows_enable_request"    "*" #REQUIRED
+            "oga_onlineresource"    "http://127.0.0.1:8080/parking/ogcapi" #REQUIRED
+            "oga_html_template_directory" "/usr/local/share/mapserver/ogcapi/templates/html-bootstrap4/" #REQUIRED
+        END
+    END
+
+    LAYER
+        NAME "parking"
+        STATUS ON
+        TYPE POINT
+        CONNECTIONTYPE POSTGIS
+        CONNECTION "host=db dbname=admin user=admin
+                    password=admin port=5432"
+        DATA "geom from api.parking_terminal_on_roads"
+        #EXTENT -74.26760582924372 45.228993241514075 -73.06187901538895 45.98473995476249
+        PROCESSING "CLOSE_CONNECTION=DEFER"
+        LABELITEM "id"
+        LABELITEM "status"
+        LABELITEM "roadName"
+        METADATA
+            "ows_title" "Parking Terminals" #REQUIRED
+            "gml_include_items" "id,status,roadname,zonegroupcode,exploitationtype"
+            "gml_featureid" "id"
+        END
+        PROJECTION
+            "init=epsg:4326"
+        END
+        TEMPLATE "VOID" #REQUIRED
+    END
+
+END

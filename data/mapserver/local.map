@@ -1,0 +1,74 @@
+MAP
+  NAME "ogcapi-demo"
+  STATUS ON
+  SIZE 600 400
+  EXTENT -180 -90 180 90
+  UNITS DD
+  SHAPEPATH "./data"
+  IMAGECOLOR 255 255 255
+  PROJECTION
+    "init=epsg:4326"
+  END
+
+  WEB
+    IMAGEPATH "/ms4w/tmp/ms_tmp/"
+    IMAGEURL "/ms_tmp/"
+    METADATA
+      "ows_title"             "MS4W Demo OGCAPI Server"
+      "ows_abstract"          "This OGCAPI demonstration server was setup by GatewayGeo (https://gatewaygeomatics.com/) and is powered by MS4W (https://ms4w.com/)."
+      "oga_onlineresource"    "http://127.0.0.1:8080/localdemo/ogcapi" #REQUIRED  (setup "localdemo" link to mapfile in CONFIG file)
+      "ows_service_onlineresource" "https://gatewaygeomatics.com/"
+      "ows_contactperson"     "Jeff McKenna"
+      "ows_contactorganization" "GatewayGeo"
+      "ows_contactposition"   "President"
+      "ows_contactelectronicmailaddress" "info@gatewaygeomatics.com"
+      "ows_srs"               "EPSG:4326 EPSG:3857 EPSG:4269"
+      "ows_getfeatureinfo_formatlist" "text/plain,text/html,application/json,application/vnd.ogc.gml,gml"
+      "ows_enable_request"    "*" #REQUIRED
+      "oga_html_template_directory" "/usr/local/share/mapserver/ogcapi/templates/html-bootstrap4/" #REQUIRED
+    END
+  END
+
+  OUTPUTFORMAT
+    NAME "png"
+    DRIVER AGG/PNG
+    MIMETYPE "image/png"
+    IMAGEMODE RGB
+    EXTENSION "png"
+    FORMATOPTION "GAMMA=0.75"
+  END
+
+  OUTPUTFORMAT
+    NAME "application/json"
+    DRIVER "OGR/GEOJSON"
+    MIMETYPE "application/json"
+    FORMATOPTION "FORM=SIMPLE"
+    FORMATOPTION "STORAGE=memory"
+  END
+
+  /* Ocean */
+  LAYER
+    NAME "ocean"
+    METADATA
+      "ows_title" "Ocean" #REQUIRED
+      "ows_abstract" "Oceans, NaturalEarth dataset, 2020"
+      "gml_include_items" "all" #REQUIRED
+      "gml_featureid"     "ne_id" #REQUIRED
+    END
+    TYPE POLYGON
+    STATUS ON
+    CONNECTIONTYPE OGR
+    CONNECTION "demo.db"
+    DATA "countries"
+    PROJECTION
+      "init=epsg:4326"
+    END
+    CLASS
+      NAME "Ocean"
+      STYLE
+        COLOR 134 204 249
+      END
+    END
+    TEMPLATE "VOID" #REQUIRED
+  END # layer
+END # mapfile

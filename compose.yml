@@ -1,0 +1,46 @@
+services:
+  postgrest:
+    image: postgrest/postgrest
+    ports:
+      - "3000:3000"
+    links:
+      - db:db
+    environment:
+      PGRST_DB_URI: postgres://authenticator:mysecretpassword@db:5432/admin
+      PGRST_DB_SCHEMA: api
+      PGRST_JWT_SECRET: elBJKnZG88CYM6IZehS6Z4Hcjwq2kplL
+      PGRST_DB_ANON_ROLE: web_anon #In production this role should not be the same as the one used for the connection
+      PGRST_SERVER_PROXY_URI: "http://127.0.0.1:3000"
+    depends_on:
+      - db
+  db:
+    image: postgis/postgis
+    restart: always
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - 5432:5432
+  mapserver:
+    image: camptocamp/mapserver
+    restart: always
+    ports:
+      - 8080:80
+    environment:
+      - MAPSERVER_CONFIG_FILE=/etc/mapserver/mapserver.conf
+      # - MS_MAPFILE=/etc/mapserver/parking.map
+    volumes:
+      - ./data/mapserver:/etc/mapserver/
+  nginx:
+    image: nginx
+    restart: always
+    ports:
+      - 80:80
+    volumes:
+      - ./nginx/:/etc/nginx/
+    depends_on:
+      - db
+volumes:
+  pgdata:
