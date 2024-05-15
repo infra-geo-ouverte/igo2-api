@@ -1,4 +1,4 @@
-import { IBaseTool } from "../tool/tool.interface";
+import { IBaseTool } from '../tool/tool.interface';
 
 export interface IToolContext extends IBaseTool {
   toolId?: string;

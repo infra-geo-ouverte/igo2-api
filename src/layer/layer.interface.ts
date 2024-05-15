@@ -26,4 +26,4 @@ export interface ILayer {
   sourceOptions?: SourceOptions;
 }
 
-export type ILayerIn = Omit<ILayer, "id">;
+export type ILayerIn = Omit<ILayer, 'id'>;
