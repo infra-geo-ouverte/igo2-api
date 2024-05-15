@@ -2,7 +2,7 @@ import * as Boom from '@hapi/boom';
 
 import { ObjectUtils } from '@igo2/base-api';
 
-import { LayerService, ILayer } from '../layer';
+import { LayerService, ILayer, Layer } from '../layer';
 import { ILayerContext } from './layerContext.interface';
 import { LayerContext } from './layerContext.model';
 
@@ -98,79 +98,43 @@ export class LayerContextService {
     });
   }
 
-  public async bulkCreate(contextId: string, layers: ILayer[], ignoreErrors = true, createLayerIfNotExist = false) {
-    const handleError = (layer, error) => {
-      if (!ignoreErrors) {
-        throw error;
+  public async bulkCreate(contextId: string, layers: ILayer[]): Promise<(LayerContext | undefined)[]> {
+    const promises = layers.map((layer) => this._createLayerContext(layer, contextId));
+    return Promise.all(promises);
+  }
+
+  private async _createLayerContext(layer: ILayer, contextId: string): Promise<LayerContext | undefined> {
+    try {
+      const layerDB = await this.getLayerOrCreate(layer);
+      if (layerDB.global && !layer.layerOptions.visible) {
+        return;
       }
-      return {
-        layer: layer,
-        error: error
-      };
-    };
 
-    const promises = [];
-    for (const layer of layers) {
-      promises.push(
-        new Promise(async (resolve, _reject) => {
-          let layerFound: any = await this.layerService.getBySource(layer).catch((error) => {
-            if (createLayerIfNotExist) {
-              return;
-            }
-            return handleError(layer, error);
-          });
+      const layerContext = await this.create({
+        contextId: contextId,
+        layerId: String(layerDB.id),
+        layerOptions: layer.layerOptions ?? {},
+        sourceOptions: layer.sourceOptions
+      });
 
-          if (!layerFound) {
-            const params = layer.sourceOptions.params;
-            const layerToCreate = {
-              type: layer.sourceOptions.type,
-              url: layer.sourceOptions.url,
-              layers: params ? params.layers || params.LAYERS : undefined,
-              layerOptions: {},
-              sourceOptions: {}
-            };
-            layerFound = await this.layerService.create(layerToCreate).catch((error) => {
-              handleError(layer, error);
-            });
-          }
+      return layerContext;
+    } catch (error) {
+      // Ignore error
+      return;
+    }
+  }
 
-          if (!layerFound || layerFound.error) {
-            resolve(layerFound);
-            return;
-          }
-
-          if (layerFound.global && !layer.layerOptions.visible) {
-            resolve(layerFound);
-            return;
-          }
-
-          layer.layerOptions = layer.layerOptions || {};
-          const rep = await this.create({
-            contextId: contextId,
-            layerId: layerFound.id,
-            layerOptions: {
-              zIndex: layer.layerOptions.zIndex,
-              visible: layer.layerOptions.visible
-            }
-          })
-            .then((l) => {
-              return { layerId: l.layerId };
-            })
-            .catch((error) => {
-              if (!ignoreErrors) {
-                throw error;
-              }
-              return {
-                layerId: layerFound.id,
-                error: error
-              };
-            });
-
-          resolve(rep);
-        })
-      );
+  private async getLayerOrCreate(layer: ILayer): Promise<Layer> {
+    const layerDB: Layer = await this.layerService.getBySource(layer.sourceOptions, layer.id);
+    if (layerDB) {
+      return layerDB;
     }
 
-    return await Promise.all(promises);
+    const params = layer.sourceOptions.params;
+    return this.layerService.create({
+      type: layer.sourceOptions.type,
+      url: layer.sourceOptions.url,
+      layers: params ? params.layers || params.LAYERS : undefined
+    });
   }
 }

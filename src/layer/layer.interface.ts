@@ -17,11 +17,13 @@ export interface LayerOptions {
 }
 
 export interface ILayer {
-  id?: string;
-  type?: string;
+  id: string;
+  type: string;
   url?: string;
   layers?: string;
   global?: boolean;
   layerOptions?: LayerOptions;
   sourceOptions?: SourceOptions;
 }
+
+export type ILayerIn = Omit<ILayer, "id">;

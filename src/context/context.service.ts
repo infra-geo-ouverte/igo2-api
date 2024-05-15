@@ -168,7 +168,7 @@ export class ContextService {
     for (const layer of context.layers) {
       const plainL = layer.get();
       plainLayers.push(plainL);
-      promises.push(UserApi.verifyPermissionByUrl(plainL.sourceOptions.url, profils));
+      promises.push(UserApi.verifyPermissionByUrl(plainL.sourceOptions?.url, profils));
     }
 
     for (const layer of globalLayers) {
@@ -176,7 +176,7 @@ export class ContextService {
       if (plainLayers.findIndex((l) => l.id === plainL.id) === -1) {
         plainL.LayerContext = {};
         plainLayers.push(plainL);
-        promises.push(UserApi.verifyPermissionByUrl(plainL.sourceOptions.url, profils));
+        promises.push(UserApi.verifyPermissionByUrl(plainL.sourceOptions?.url, profils));
       }
     }
 

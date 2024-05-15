@@ -1,4 +1,6 @@
 import { TypePermission } from '../contextPermission';
+import { ILayer } from '../layer';
+import { ITool } from '../tool';
 
 export enum Scope {
   public,
@@ -27,7 +29,7 @@ export interface IContext {
 }
 
 export interface ContextDetailed extends IContext {
-  tools?: any[];
-  layers?: any[];
+  tools?: ITool[];
+  layers?: ILayer[];
   toolbar?: string[];
 }

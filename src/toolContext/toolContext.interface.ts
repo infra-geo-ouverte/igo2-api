@@ -1,9 +1,8 @@
-export interface IToolContext {
-  id?: string;
+import { IBaseTool } from "../tool/tool.interface";
+
+export interface IToolContext extends IBaseTool {
   toolId?: string;
   contextId?: string;
   enabled?: boolean;
   order?: number;
-  global?: boolean;
-  options?: { [key: string]: any };
 }

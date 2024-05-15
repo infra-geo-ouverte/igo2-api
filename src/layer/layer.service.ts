@@ -6,14 +6,13 @@ import { ObjectUtils } from '@igo2/base-api';
 import { getServerConfig } from '../configurations';
 import { UserApi } from '../user';
 
-import { ILayer } from './layer.interface';
+import { ILayer, ILayerIn, SourceOptions } from './layer.interface';
 import { Layer } from './layer.model';
 
 const ServerConfigs = getServerConfig();
 
 export class LayerService {
-
-  public async create(layer: ILayer): Promise<Layer> {
+  public async create(layer: ILayerIn): Promise<Layer> {
     const localhost = ServerConfigs.localhost;
     const hosts = localhost ? localhost.hosts : [];
     const urlObj = URL.parse(layer.url || '');
@@ -125,27 +124,27 @@ export class LayerService {
     return layerPlain;
   }
 
-  public async getBySource(layer: ILayer): Promise<Layer> {
+  public async getBySource(options: SourceOptions | undefined, layerId?: string): Promise<Layer> {
+    options = options ?? {};
     const localhost = ServerConfigs.localhost;
     const hosts = localhost ? localhost.hosts : [];
-    layer.sourceOptions = layer.sourceOptions || {};
-    const urlObj = URL.parse(layer.sourceOptions.url || '');
+    const urlObj = URL.parse(options.url || '');
     const url = urlObj ? urlObj.protocol + '//' + urlObj.hostname : '';
     if (url && hosts.indexOf(url) !== -1) {
-      layer.sourceOptions.url = urlObj.path;
+      options.url = urlObj.path;
     }
 
     const where: any = {
       [Op.or]: [
         {
-          type: layer.sourceOptions.type,
-          url: layer.sourceOptions.url || null,
-          layers: (layer.sourceOptions.params || {}).layers || (layer.sourceOptions.params || {}).LAYERS || null
+          type: options.type,
+          url: options.url || null,
+          layers: (options.params || {}).layers || (options.params || {}).LAYERS || null
         }
       ]
     };
-    if (layer.id) {
-      where[Op.or].unshift({ id: layer.id });
+    if (layerId) {
+      where[Op.or].unshift({ id: layerId });
     }
 
     return await Layer

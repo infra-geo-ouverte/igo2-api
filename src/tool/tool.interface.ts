@@ -1,12 +1,15 @@
-export interface ITool {
-  id?: string;
+export interface ITool extends IBaseTool {
   name: string;
   title?: string;
   tooltip?: string;
   icon?: string;
   inToolbar?: boolean;
-  global?: boolean;
   order?: number;
-  options?: { [key: string]: any };
   profils: string[];
+}
+
+export interface IBaseTool {
+  id?: string;
+  global?: boolean;
+  options?: { [key: string]: any };
 }

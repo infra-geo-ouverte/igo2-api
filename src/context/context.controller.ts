@@ -12,7 +12,7 @@ import { ToolContextService } from '../toolContext/toolContext.service';
 import { LayerContextService } from '../layerContext/layerContext.service';
 import { ContextAccessService } from '../contextAccess/contextAccess.service';
 
-import { IContext, ContextService, Context, Scope } from './index';
+import { IContext, ContextService, Context, Scope, ContextDetailed } from './index';
 
 export class ContextController {
   private contextService: ContextService;
@@ -32,7 +32,7 @@ export class ContextController {
   }
 
   public async create(request: Hapi.Request, h: Hapi.ResponseToolkit) {
-    const newContext: any = request.payload;
+    const newContext = request.payload as ContextDetailed;
     newContext.owner = request.headers['x-consumer-username'];
 
     const context = await this.contextService.create(newContext).catch(handleError);
@@ -40,7 +40,7 @@ export class ContextController {
       await this.toolContextService.bulkCreate(context.id, newContext.tools);
     }
     if (newContext.layers) {
-      await this.layerContextService.bulkCreate(context.id, newContext.layers, true, true);
+      await this.layerContextService.bulkCreate(context.id, newContext.layers);
     }
 
     return h.response(context).code(201);
@@ -89,7 +89,7 @@ export class ContextController {
     }
     if (newContext.layers) {
       await this.layerContextService.deleteByContextId(context.id).catch(handleError);
-      await this.layerContextService.bulkCreate(context.id, newContext.layers, true, true);
+      await this.layerContextService.bulkCreate(context.id, newContext.layers);
     }
     return context;
   }

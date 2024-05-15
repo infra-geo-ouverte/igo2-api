@@ -63,12 +63,10 @@ export class LayerController {
 
     return await this.layerService
       .getBySource({
-        sourceOptions: {
-          type: query.type,
-          url: query.url,
-          params: {
-            layers: query.layers
-          }
+        type: query.type,
+        url: query.url,
+        params: {
+          layers: query.layers
         }
       })
       .catch((e) => {
@@ -133,12 +131,10 @@ export class LayerController {
 
     const options = await this.layerService
       .getBySource({
-        sourceOptions: {
-          type: query.type,
-          url: query.url,
-          params: {
-            layers: query.layers
-          }
+        type: query.type,
+        url: query.url,
+        params: {
+          layers: query.layers
         }
       })
       .catch((e) => {
