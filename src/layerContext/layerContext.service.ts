@@ -125,7 +125,14 @@ export class LayerContextService {
   }
 
   private async getLayerOrCreate(layer: ILayer): Promise<Layer> {
-    const layerDB: Layer = await this.layerService.getBySource(layer.sourceOptions, layer.id);
+    let layerDB: Layer;
+
+    try {
+      layerDB = await this.layerService.getBySource(layer.sourceOptions, layer.id);
+    } catch (error) {
+      // ignore error
+    }
+
     if (layerDB) {
       return layerDB;
     }
