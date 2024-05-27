@@ -19,11 +19,11 @@
     "start.prod": "npm run build.prod && npm run serve.prod",
     "copyConfigs": "cp ./src/configurations/*.json ./build/configurations/.",
     "lint": "tslint -c tslint.json -t prose src/**/*.ts",
-    "test": "npm run lint && npm run build.dev && rimraf igo-test.db && NODE_ENV=test tape ./build/poi/*.test.js | tap-spec && NODE_ENV=test tape ./build/context/*.test.js | tap-spec && NODE_ENV=test tape ./build/contextPermission/*.test.js | tap-spec && NODE_ENV=test tape ./build/tool/*.test.js | tap-spec && NODE_ENV=test tape ./build/toolContext/*.test.js | tap-spec && NODE_ENV=test tape ./build/layer/*.test.js | tap-spec && NODE_ENV=test tape ./build/layerContext/*.test.js | tap-spec",
-    "test.poi": "npm run lint && npm run build.dev && rimraf igo-test.db && NODE_ENV=test tape ./build/poi/*.test.js | tap-spec",
-    "test.tool": "npm run lint && npm run build.dev && rimraf igo-test.db && NODE_ENV=test tape ./build/tool/*.test.js | tap-spec && NODE_ENV=test tape ./build/toolContext/*.test.js | tap-spec",
-    "test.layer": "npm run lint && npm run build.dev && rimraf igo-test.db && NODE_ENV=test tape ./build/layer/*.test.js | tap-spec && NODE_ENV=test tape ./build/layerContext/*.test.js | tap-spec",
-    "test.context": "npm run lint && npm run build.dev && rimraf igo-test.db && NODE_ENV=test tape ./build/context/*.test.js | tap-spec && NODE_ENV=test tape ./build/contextPermission/*.test.js | tap-spec",
+    "test": "npm run test.poi && npm run test.context && npm run test.tool && npm run test.layer",
+    "test.poi": "cross-env NODE_ENV=test babel-tape-runner ./build/poi/*.test.js | tap-spec",
+    "test.tool": "cross-env NODE_ENV=test babel-tape-runner ./build/tool/*.test.js | tap-spec && cross-env NODE_ENV=test babel-tape-runner ./build/toolContext/*.test.js | tap-spec",
+    "test.layer": "cross-env NODE_ENV=test babel-tape-runner ./build/layer/*.test.js | tap-spec && cross-env NODE_ENV=test babel-tape-runner ./build/layerContext/*.test.js | tap-spec",
+    "test.context": "cross-env NODE_ENV=test babel-tape-runner ./build/context/*.test.js | tap-spec && cross-env NODE_ENV=test babel-tape-runner ./build/contextPermission/*.test.js | tap-spec",
     "initDB": "npm run build.dev && rimraf igo.db && node build/initDB.js",
     "changelog": "conventional-changelog -p angular -i CHANGELOG.md -s -r 0",
     "version": "npm run changelog && git add -A CHANGELOG.md",
@@ -36,7 +36,7 @@
   },
   "homepage": "https://gitlab.forge.gouv.qc.ca/igo2/igo2-api#readme",
   "dependencies": {
-    "@igo2/base-api": "~1.2.2",
+    "@igo2/base-api": "^1.2.2",
     "axios": "^0.21.1",
     "tape": "^5.2.2"
   },
@@ -45,7 +45,9 @@
     "@types/jsonwebtoken": "^8.5.0",
     "@types/node": "^16.11.7",
     "@types/tape": "^4.13.0",
+    "babel-tape-runner": "^3.0.0",
     "conventional-changelog-cli": "^2.1.1",
+    "cross-env": "^7.0.3",
     "nodemon": "^3.1.0",
     "rimraf": "^3.0.2",
     "sqlite3": "^5.0.2",
@@ -55,6 +57,6 @@
     "typescript": "^4.6.3"
   },
   "engines": {
-    "node": ">=12.0.0"
+    "node": ">=16.14.0"
   }
 }
