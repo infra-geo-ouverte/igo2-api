@@ -19,6 +19,7 @@
     "start.prod": "npm run build.prod && npm run serve.prod",
     "copyConfigs": "cp ./src/configurations/*.json ./build/configurations/.",
     "lint": "tslint -c tslint.json -t prose src/**/*.ts",
+    "pretest": "rimraf igo-test.db",
     "test": "npm run test.poi && npm run test.context && npm run test.tool && npm run test.layer",
     "test.poi": "cross-env NODE_ENV=test babel-tape-runner ./build/poi/*.test.js | tap-spec",
     "test.tool": "cross-env NODE_ENV=test babel-tape-runner ./build/tool/*.test.js | tap-spec && cross-env NODE_ENV=test babel-tape-runner ./build/toolContext/*.test.js | tap-spec",
