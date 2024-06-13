@@ -2,10 +2,10 @@ import * as Boom from '@hapi/boom';
 
 import { ObjectUtils } from '@igo2/base-api';
 import { UserApi } from '../user';
-import { Layer } from '../layer';
+import { ILayer, Layer, LayerOptions, SourceOptions } from '../layer';
 import { Tool } from '../tool';
 
-import { IContext, ContextDetailed } from './context.interface';
+import { IContext, ContextDetailedOut } from './context.interface';
 import { Context } from './context.model';
 
 export class ContextService {
@@ -71,7 +71,7 @@ export class ContextService {
     user: string,
     includeLayers = false,
     includeTools = false
-  ): Promise<ContextDetailed> {
+  ): Promise<ContextDetailedOut> {
     const include = [];
     if (includeLayers) {
       include.push(Layer);
@@ -95,14 +95,14 @@ export class ContextService {
       throw Boom.notFound();
     }
 
-    let globalTools;
+    let globalTools: Tool[];
     if (includeTools) {
       globalTools = await Tool.findAll({
         where: { global: true }
       });
     }
 
-    let globalLayers;
+    let globalLayers: Layer[];
     if (includeLayers) {
       globalLayers = await Layer.findAll({
         where: { global: true }
@@ -116,28 +116,33 @@ export class ContextService {
     }
   }
 
-  private async contextObjToPlainObj(context, user, globalTools?, globalLayers?): Promise<ContextDetailed> {
+  private async contextObjToPlainObj(context: Context, user: string, globalTools?: Tool[], globalLayers?: Layer[]): Promise<ContextDetailedOut> {
     const profils: string[] = await UserApi.getProfils(user).catch(() => {
       return [];
     });
     profils.push(user);
 
-    let plain: any = context.get();
-    plain.layers = [];
-    plain.tools = [];
-    plain.toolbar = [];
+    const contextDetailed: ContextDetailedOut = {
+      ...context.get(),
+      layers: [],
+      tools: [],
+      toolbar: []
+    };
+
     const toolbar = [];
 
-    for (const tool of context.tools.filter(t => {
+    const toolsFiltered = context.tools.filter(t => {
       return t.profils.length === 0 || t.profils.some(p => profils.includes(p));
-    })) {
+    });
+
+    for (const tool of toolsFiltered) {
       const plainTool = tool.get();
 
-      plainTool.options = Object.assign({}, plainTool.options, plainTool.ToolContext.options);
-      plainTool.ToolContext = null;
+      plainTool.options = Object.assign({}, plainTool.options, (plainTool as any).ToolContext.options);
+      (plainTool as any).ToolContext = null;
       delete plainTool.profils;
 
-      plain.tools.push(plainTool);
+      contextDetailed.tools.push(plainTool);
       if (plainTool.inToolbar) {
         toolbar.push(plainTool);
       }
@@ -148,22 +153,22 @@ export class ContextService {
     })) {
       const plainTool = tool.get();
       delete plainTool.profils;
-      if (plain.tools.findIndex((t) => t.name === plainTool.name) === -1) {
-        plain.tools.push(plainTool);
+      if (contextDetailed.tools.findIndex((t) => t.name === plainTool.name) === -1) {
+        contextDetailed.tools.push(plainTool);
         if (plainTool.inToolbar) {
           toolbar.push(plainTool);
         }
       }
     }
 
-    plain.toolbar = toolbar.sort((t1, t2) => t1.order - t2.order).map((t) => t.name);
+    contextDetailed.toolbar = toolbar.sort((t1, t2) => t1.order - t2.order).map((t) => t.name);
 
     if ((!context.layers || !context.layers.length) && !globalLayers) {
-      return ObjectUtils.removeNull(plain);
+      return ObjectUtils.removeNull(contextDetailed);
     }
 
     const promises = [];
-    const plainLayers = [];
+    const plainLayers: ILayer[] = [];
 
     for (const layer of context.layers) {
       const plainL = layer.get();
@@ -171,10 +176,10 @@ export class ContextService {
       promises.push(UserApi.verifyPermissionByUrl(plainL.sourceOptions?.url, profils));
     }
 
-    for (const layer of globalLayers) {
-      const plainL = layer.get();
+    for (const globalLayer of globalLayers) {
+      const plainL = globalLayer.get();
       if (plainLayers.findIndex((l) => l.id === plainL.id) === -1) {
-        plainL.LayerContext = {};
+        (plainL as any).LayerContext = {};
         plainLayers.push(plainL);
         promises.push(UserApi.verifyPermissionByUrl(plainL.sourceOptions?.url, profils));
       }
@@ -189,34 +194,40 @@ export class ContextService {
             layers: plainLayer.layers
           },
           (plainLayer.sourceOptions || {}).params,
-          (plainLayer.LayerContext.sourceOptions || {}).params
+          ((plainLayer as any).LayerContext.sourceOptions || {}).params
         );
 
-        const sourceOptions = Object.assign(
+        const sourceOptions: SourceOptions = Object.assign(
           {
             type: plainLayer.type,
             url: plainLayer.url,
             optionsFromCapabilities: true
           },
           plainLayer.sourceOptions,
-          plainLayer.LayerContext.sourceOptions,
+          (plainLayer as any).LayerContext.sourceOptions,
           {
             params
           }
         );
 
-        const layerFormatted = Object.assign({}, plainLayer.layerOptions, plainLayer.LayerContext.layerOptions, {
-          sourceOptions
-        });
+        const layerFormatted: LayerOptions = Object.assign(
+          {},
+          plainLayer.layerOptions,
+          (plainLayer as any).LayerContext.layerOptions,
+          {
+            sourceOptions
+          }
+        );
 
-        plain.layers.push(layerFormatted);
+        contextDetailed.layers.push(layerFormatted);
       }
       i++;
     }
 
-    plain = ObjectUtils.removeNull(plain);
-    plain.layers = plain.layers.sort((a, b) => (a.zIndex < b.zIndex ? -1 : a.zIndex > b.zIndex ? 1 : 0));
+    contextDetailed.layers = contextDetailed.layers.sort((a, b) =>
+      a.zIndex < b.zIndex ? -1 : a.zIndex > b.zIndex ? 1 : 0
+    );
 
-    return ObjectUtils.removeNull(plain);
+    return ObjectUtils.removeNull(contextDetailed);
   }
 }
