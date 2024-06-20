@@ -33,71 +33,61 @@ export class LayerService {
       layer.url = urlObj.path;
     }
 
-    return await Layer
-      .update(layer, {
-        where: {
-          id: id
-        }
-      })
-      .then((count: [number]) => {
-        if (!count[0]) {
-          throw Boom.notFound();
-        }
-        return { id: id };
-      });
+    return await Layer.update(layer, {
+      where: {
+        id: id
+      }
+    }).then((count: [number]) => {
+      if (!count[0]) {
+        throw Boom.notFound();
+      }
+      return { id: id };
+    });
   }
 
   public async delete(id: string): Promise<void> {
-    return await Layer
-      .destroy({
-        where: {
-          id: id
-        }
-      })
-      .then((count: number) => {
-        if (!count) {
-          throw Boom.notFound();
-        }
-        return;
-      });
+    return await Layer.destroy({
+      where: {
+        id: id
+      }
+    }).then((count: number) => {
+      if (!count) {
+        throw Boom.notFound();
+      }
+      return;
+    });
   }
 
-  public async get(): Promise<Layer[]> {
-    return await Layer
-      .findAll()
-      .then((layers: Layer[]) => {
-        const plainLayers = layers.map(layer =>
-          ObjectUtils.removeNull(layer.get())
-        );
+  public async get(): Promise<ILayer[]> {
+    return Layer.findAll().then((layers: Layer[]) => {
+      const plainLayers = layers.map((layer) => ObjectUtils.removeNull(layer.get()));
 
-        return plainLayers;
-      });
+      return plainLayers;
+    });
   }
 
-  public async getBaseLayers(): Promise<Layer[]> {
-    return await Layer
-      .findAll({
-        where: {
-          layerOptions: {
-            baseLayer: true
-          }
+  public async getBaseLayers(): Promise<ILayer[]> {
+    return Layer.findAll({
+      where: {
+        layerOptions: {
+          baseLayer: true
         }
-      })
-      .then((layers: Layer[]) => {
-        const plainLayers = layers.map(layer => {
-          const plainLayer = layer.get();
-          Object.assign(plainLayer, plainLayer.layerOptions);
+      }
+    }).then((layers: Layer[]) => {
+      const plainLayers = layers.map((layer) => {
+        const plainLayer = layer.get();
+        Object.assign(plainLayer, plainLayer.layerOptions);
 
-          plainLayer.layerOptions = null;
+        plainLayer.layerOptions = null;
 
-          return ObjectUtils.removeNull(plainLayer);
-        });
-        // TODO verify permission
-        return plainLayers;
+        return ObjectUtils.removeNull(plainLayer);
       });
+      // TODO verify permission
+      return plainLayers;
+    });
   }
 
-  public async getById(id: string, user: string): Promise<Layer> {
+  public async getById(id: string, user: string): Promise<ILayer> {
     const layer = await Layer.findOne({
       where: {
         id: id
@@ -113,10 +103,7 @@ export class LayerService {
     });
     profils.push(user);
 
-    const isAllowed = await UserApi.verifyPermissionByUrl(
-      layerPlain.url,
-      profils
-    );
+    const isAllowed = await UserApi.verifyPermissionByUrl(layerPlain.url, profils);
 
     if (!isAllowed) {
       throw Boom.forbidden();
@@ -124,7 +111,7 @@ export class LayerService {
     return layerPlain;
   }
 
-  public async getBySource(options: SourceOptions | undefined, layerId?: string): Promise<Layer> {
+  public async getBySource(options: SourceOptions | undefined, layerId?: string): Promise<ILayer> {
     options = options ?? {};
     const localhost = ServerConfigs.localhost;
     const hosts = localhost ? localhost.hosts : [];
@@ -147,15 +134,13 @@ export class LayerService {
       where[Op.or].unshift({ id: layerId });
     }
 
-    return await Layer
-      .findOne({
-        where: where
-      })
-      .then((layerFound: Layer) => {
-        if (!layerFound) {
-          throw Boom.notFound();
-        }
-        return ObjectUtils.removeNull(layerFound.get());
-      });
+    return Layer.findOne({
+      where: where
+    }).then((layerFound: Layer) => {
+      if (!layerFound) {
+        throw Boom.notFound();
+      }
+      return ObjectUtils.removeNull(layerFound.get());
+    });
   }
 }

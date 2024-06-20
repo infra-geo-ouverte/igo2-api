@@ -5,11 +5,11 @@ import { UserApi } from '../user';
 import { ILayer, Layer, LayerOptions, SourceOptions } from '../layer';
 import { Tool } from '../tool';
 
-import { IContext, ContextDetailedOut } from './context.interface';
+import { ContextDetailedOut, ContextDetailed, IContext } from './context.interface';
 import { Context } from './context.model';
 
 export class ContextService {
-  public async create(context: IContext): Promise<Context> {
+  public async create(context: ContextDetailed): Promise<Context> {
     return await Context.create(context).catch((error) => {
       if (error?.data?.name === 'SequelizeUniqueConstraintError') {
         const message = 'URI must be unique.';
@@ -22,7 +22,7 @@ export class ContextService {
     });
   }
 
-  public async update(id: string, context: IContext): Promise<{ id: string }> {
+  public async update(id: string, context: ContextDetailed): Promise<{ id: string }> {
     return await Context.update(context, {
       where: {
         id: id
@@ -59,8 +59,8 @@ export class ContextService {
     });
   }
 
-  public async get(): Promise<Context[]> {
-    return await Context.findAll().then((contexts: Context[]) => {
+  public async get(): Promise<IContext[]> {
+    return Context.findAll().then((contexts: Context[]) => {
       const plainContexts = contexts.map((context) => ObjectUtils.removeNull(context.get()));
       return plainContexts;
     });
@@ -116,7 +116,12 @@ export class ContextService {
     }
   }
 
-  private async contextObjToPlainObj(context: Context, user: string, globalTools?: Tool[], globalLayers?: Layer[]): Promise<ContextDetailedOut> {
+  private async contextObjToPlainObj(
+    context: Context,
+    user: string,
+    globalTools?: Tool[],
+    globalLayers?: Layer[]
+  ): Promise<ContextDetailedOut> {
     const profils: string[] = await UserApi.getProfils(user).catch(() => {
       return [];
     });
@@ -131,8 +136,8 @@ export class ContextService {
 
     const toolbar = [];
 
-    const toolsFiltered = context.tools.filter(t => {
-      return t.profils.length === 0 || t.profils.some(p => profils.includes(p));
+    const toolsFiltered = context.tools.filter((t) => {
+      return t.profils.length === 0 || t.profils.some((p) => profils.includes(p));
     });
 
     for (const tool of toolsFiltered) {
@@ -148,8 +153,8 @@ export class ContextService {
       }
     }
 
-    for (const tool of globalTools.filter(t => {
-      return t.profils.length === 0 || t.profils.some(p => profils.includes(p));
+    for (const tool of globalTools.filter((t) => {
+      return t.profils.length === 0 || t.profils.some((p) => profils.includes(p));
     })) {
       const plainTool = tool.get();
       delete plainTool.profils;
@@ -211,7 +216,9 @@ export class ContextService {
         );
 
         const layerFormatted: LayerOptions = Object.assign(
-          {},
+          {
+            id: plainLayer.id
+          },
           plainLayer.layerOptions,
           (plainLayer as any).LayerContext.layerOptions,
           {

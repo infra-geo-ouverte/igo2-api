@@ -30,7 +30,7 @@ export class UserIgoService {
   }
 
   public async delete(userId: string): Promise<void> {
-    return await UserIgo
+    return UserIgo
       .destroy({
         where: {
           userId: userId
@@ -44,8 +44,8 @@ export class UserIgoService {
       });
   }
 
-  public async get(userId: string): Promise<UserIgo> {
-    return await UserIgo
+  public async get(userId: string): Promise<IUserIgo> {
+    return UserIgo
       .findOne({
         where: {
           userId: userId

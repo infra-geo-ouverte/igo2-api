@@ -7,6 +7,7 @@ import * as Boom from '@hapi/boom';
 import { getServerConfig } from '../configurations';
 import { ObjectUtils } from '@igo2/base-api';
 import { User } from './user.model';
+import { IUser } from './user.interface';
 
 const ServerConfigs = getServerConfig();
 
@@ -161,7 +162,7 @@ export class UserApi {
       });
   }
 
-  static async getAllUsers(limit: number = 10, filter?: string): Promise<User[]> {
+  static async getAllUsers(limit: number = 10, filter?: string): Promise<IUser[]> {
     const Utils = Sequelize.Utils;
     const opts: any = filter
       ? {
@@ -182,7 +183,7 @@ export class UserApi {
 
     opts.limit = limit;
 
-    return await User.findAll(opts).then((users: User[]) => {
+    return User.findAll(opts).then((users) => {
       return users.map(u => ObjectUtils.removeNull(u.get()));
     });
   }

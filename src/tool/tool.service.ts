@@ -45,13 +45,13 @@ export class ToolService {
     });
   }
 
-  public async get(user: string): Promise<Tool[]> {
+  public async get(user: string): Promise<ITool[]> {
     const profils: string[] = await UserApi.getProfils(user).catch(() => {
       return [];
     });
     profils.push(user);
 
-    return await Tool.findAll().then((tools: Tool[]) => {
+    return Tool.findAll().then((tools: Tool[]) => {
       const plainTools = tools.filter(t => {
         return t.profils.length === 0 || t.profils.some(p => profils.includes(p));
       }).map((tool) => ObjectUtils.removeNull(tool.get()));
@@ -59,13 +59,13 @@ export class ToolService {
     });
   }
 
-  public async getById(id: string, user: string): Promise<Tool> {
+  public async getById(id: string, user: string): Promise<ITool> {
     const profils: string[] = await UserApi.getProfils(user).catch(() => {
       return [];
     });
     profils.push(user);
 
-    return await Tool.findOne({
+    return Tool.findOne({
       where: {
         id: id
       }

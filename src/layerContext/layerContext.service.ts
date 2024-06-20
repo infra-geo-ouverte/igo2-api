@@ -70,8 +70,8 @@ export class LayerContextService {
     });
   }
 
-  public async getByContextId(contextId: string): Promise<LayerContext[]> {
-    return await LayerContext.findAll({
+  public async getByContextId(contextId: string): Promise<ILayerContext[]> {
+    return LayerContext.findAll({
       where: {
         contextId: contextId
       },
@@ -84,8 +84,8 @@ export class LayerContextService {
     });
   }
 
-  public async getById(contextId: string, layerId: string): Promise<LayerContext> {
-    return await LayerContext.findOne({
+  public async getById(contextId: string, layerId: string): Promise<ILayerContext> {
+    return LayerContext.findOne({
       where: {
         layerId: layerId,
         contextId: contextId
@@ -124,8 +124,8 @@ export class LayerContextService {
     }
   }
 
-  private async getLayerOrCreate(layer: ILayer): Promise<Layer> {
-    let layerDB: Layer;
+  private async getLayerOrCreate(layer: ILayer): Promise<ILayer | Layer> {
+    let layerDB: ILayer;
 
     try {
       layerDB = await this.layerService.getBySource(layer.sourceOptions, layer.id);

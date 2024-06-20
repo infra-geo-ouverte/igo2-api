@@ -73,8 +73,8 @@ export class ContextPermissionService {
     });
   }
 
-  public async getById(id: string): Promise<ContextPermission> {
-    return await ContextPermission.findOne({
+  public async getById(id: string): Promise<IContextPermission> {
+    return ContextPermission.findOne({
       where: {
         id: id
       }
@@ -86,8 +86,8 @@ export class ContextPermissionService {
     });
   }
 
-  public async getByContextId(contextId): Promise<ContextPermission[]> {
-    return await ContextPermission.findAll({
+  public async getByContextId(contextId): Promise<IContextPermission[]> {
+    return ContextPermission.findAll({
       where: {
         contextId: contextId
       }

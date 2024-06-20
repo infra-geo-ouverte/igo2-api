@@ -2,7 +2,7 @@ import * as Boom from '@hapi/boom';
 
 import { ObjectUtils } from '@igo2/base-api';
 
-import { ContextHidden } from './index';
+import { ContextHidden, IContextHidden } from './index';
 
 export class ContextHiddenService {
   public async hide(user: string, contextId: string): Promise<ContextHidden> {
@@ -35,8 +35,8 @@ export class ContextHiddenService {
     });
   }
 
-  public async get(user: string): Promise<ContextHidden[]> {
-    return await ContextHidden.findAll({
+  public async get(user: string): Promise<IContextHidden[]> {
+    return ContextHidden.findAll({
       where: {
         user
       }
@@ -48,8 +48,8 @@ export class ContextHiddenService {
     });
   }
 
-  public async getById(user: string, contextId: string): Promise<ContextHidden> {
-    return await ContextHidden.findOne({
+  public async getById(user: string, contextId: string): Promise<IContextHidden> {
+    return ContextHidden.findOne({
       where: {
         user,
         contextId

@@ -67,8 +67,8 @@ export class ToolContextService {
     });
   }
 
-  public async getByContextId(contextId: string): Promise<ToolContext[]> {
-    return await ToolContext.findAll({
+  public async getByContextId(contextId: string): Promise<IToolContext[]> {
+    return ToolContext.findAll({
       where: {
         contextId: contextId
       }
@@ -80,8 +80,8 @@ export class ToolContextService {
     });
   }
 
-  public async getById(contextId: string, toolId: string): Promise<ToolContext> {
-    return await ToolContext.findOne({
+  public async getById(contextId: string, toolId: string): Promise<IToolContext> {
+    return ToolContext.findOne({
       where: {
         toolId: toolId,
         contextId: contextId
