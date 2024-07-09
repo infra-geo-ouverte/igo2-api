@@ -1,4 +1,6 @@
 export interface SourceOptions {
+  type?: string;
+  url?: string;
   version?: string;
   params?: { [key: string]: any };
   [key: string]: any;

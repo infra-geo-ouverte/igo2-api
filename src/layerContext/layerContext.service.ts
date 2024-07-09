@@ -110,11 +110,13 @@ export class LayerContextService {
         return;
       }
 
+      // The type, url and params should not be saved for LayerContext
+      const { type, url, params, ...sourceOptions } = layer.sourceOptions;
       const layerContext = await this.create({
         contextId: contextId,
         layerId: String(layerDB.id),
         layerOptions: layer.layerOptions ?? {},
-        sourceOptions: layer.sourceOptions
+        sourceOptions
       });
 
       return layerContext;
