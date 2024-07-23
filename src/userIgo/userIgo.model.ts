@@ -16,6 +16,7 @@ export class UserIgo extends Model<IUserIgo> {
   @Column
   id: number;
 
+  @AllowNull(true)
   @Column
   defaultContextId: number;
 

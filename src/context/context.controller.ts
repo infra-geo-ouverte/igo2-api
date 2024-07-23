@@ -336,6 +336,7 @@ export class ContextController {
     const userIGO = await this.userIgoService.get(userId).catch(() => {});
 
     if (userIGO) {
+      userIGO.defaultContextId = userIGO.defaultContextId === userIgoToCreate.defaultContextId ? null : userIgoToCreate.defaultContextId;
       return await this.userIgoService.update(userId, userIgoToCreate).catch(handleError);
     } else {
       userIgoToCreate.userId = userId;
