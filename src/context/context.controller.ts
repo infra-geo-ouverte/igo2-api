@@ -332,15 +332,22 @@ export class ContextController {
 
   public async setDefaultContext(request: Hapi.Request, _h: Hapi.ResponseToolkit) {
     const userId = request.headers['x-consumer-custom-id'];
-    const userIgoToCreate: IUserIgo = request.payload as IUserIgo;
-    const userIGO = await this.userIgoService.get(userId).catch(() => {});
+    const user: IUserIgo = request.payload as IUserIgo;
+    const userDb = await this.userIgoService.get(userId);
 
-    if (userIGO) {
-      userIGO.defaultContextId = userIGO.defaultContextId === userIgoToCreate.defaultContextId ? null : userIgoToCreate.defaultContextId;
-      return await this.userIgoService.update(userId, userIgoToCreate).catch(handleError);
+    if (userDb) {
+      user.defaultContextId = userDb?.defaultContextId === user.defaultContextId ? null : userDb?.defaultContextId;
+      return this.userIgoService
+        .update(userId, user)
+        .then(() => user.defaultContextId)
+        .catch(handleError);
     } else {
-      userIgoToCreate.userId = userId;
-      return await this.userIgoService.create(userIgoToCreate).catch(handleError);
+      user.userId = userId;
+
+      return this.userIgoService
+        .create(user)
+        .then(() => user.defaultContextId)
+        .catch(handleError);
     }
   }
 }
