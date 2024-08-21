@@ -1,3 +1,13 @@
+## [1.8.5](https://gitlab.forge.gouv.qc.ca/igo2/igo2-api/compare/1.8.4...1.8.5) (2024-08-21)
+
+
+### Bug Fixes
+
+* **context:** set and remove default context ([9e52f59](https://gitlab.forge.gouv.qc.ca/igo2/igo2-api/commit/9e52f59788bd5e779f8209766338c33be18d1cc4))
+* **Wss:** centralize wss options logic and add it to detailed context ([4036a80](https://gitlab.forge.gouv.qc.ca/igo2/igo2-api/commit/4036a80ba29ac55ebe1223bf5bab6fe4ff07ae89))
+
+
+
 ## [1.8.4](https://gitlab.forge.gouv.qc.ca/igo2/igo2-api/compare/1.8.3...1.8.4) (2024-07-10)
 
 
