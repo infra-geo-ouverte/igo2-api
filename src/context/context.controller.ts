@@ -54,7 +54,7 @@ export class ContextController {
       properties = JSON.parse(request.payload);
     }
 
-    const context = await this.contextService.getById(id, owner, true, true).catch(handleError);
+    const context = await this.contextService.getDetailedById(id, owner, request.headers).catch(handleError);
 
     Object.assign(context, properties);
     const newContext = {
@@ -103,7 +103,7 @@ export class ContextController {
   public async getById(request: Hapi.Request, _h: Hapi.ResponseToolkit) {
     const owner = request.headers['x-consumer-username'];
     const id = request.params.contextId;
-    const context = await this.contextService.getById(id, owner).catch(handleError);
+    const context = await this.contextService.getById(id).catch(handleError);
     const permission = await this.contextPermissionService.getPermission(context, owner);
 
     if (!permission) {
@@ -298,7 +298,7 @@ export class ContextController {
     const owner = request.headers['x-consumer-username'];
     const id = request.params.contextId;
 
-    const contextDetails = await this.contextService.getById(id, owner, true, true).catch(handleError);
+    const contextDetails = await this.contextService.getDetailedById(id, owner, request.headers).catch(handleError);
 
     const permission = await this.contextPermissionService.getPermission(contextDetails, owner).catch(handleError);
 
@@ -336,6 +336,7 @@ export class ContextController {
     const userIGO = await this.userIgoService.get(userId).catch(() => {});
 
     if (userIGO) {
+      userIGO.defaultContextId = userIGO.defaultContextId === userIgoToCreate.defaultContextId ? null : userIgoToCreate.defaultContextId;
       return await this.userIgoService.update(userId, userIgoToCreate).catch(handleError);
     } else {
       userIgoToCreate.userId = userId;
