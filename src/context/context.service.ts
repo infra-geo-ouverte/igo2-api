@@ -3,10 +3,12 @@ import * as Boom from '@hapi/boom';
 import { ObjectUtils } from '@igo2/base-api';
 import { UserApi } from '../user';
 import { ILayer, Layer, LayerOptions, SourceOptions } from '../layer';
-import { Tool } from '../tool';
+import { ITool, Tool } from '../tool';
 
 import { ContextDetailedOut, ContextDetailed, IContext } from './context.interface';
 import { Context } from './context.model';
+import { ILayerContext } from '../layerContext';
+import { LayerWss } from '../layer/layer-wss';
 
 export class ContextService {
   public async create(context: ContextDetailed): Promise<Context> {
@@ -66,20 +68,7 @@ export class ContextService {
     });
   }
 
-  public async getById(
-    id: string,
-    user: string,
-    includeLayers = false,
-    includeTools = false
-  ): Promise<ContextDetailedOut> {
-    const include = [];
-    if (includeLayers) {
-      include.push(Layer);
-    }
-    if (includeTools) {
-      include.push(Tool);
-    }
-
+  public async getById(id: string): Promise<ContextDetailedOut> {
     let where: any = { id: id };
 
     if (isNaN(id as any)) {
@@ -87,7 +76,6 @@ export class ContextService {
     }
 
     const context = await Context.findOne({
-      include: include,
       where: where
     });
 
@@ -95,46 +83,54 @@ export class ContextService {
       throw Boom.notFound();
     }
 
-    let globalTools: Tool[];
-    if (includeTools) {
-      globalTools = await Tool.findAll({
-        where: { global: true }
-      });
-    }
-
-    let globalLayers: Layer[];
-    if (includeLayers) {
-      globalLayers = await Layer.findAll({
-        where: { global: true }
-      });
-    }
-
-    if (includeLayers || includeTools) {
-      return await this.contextObjToPlainObj(context, user, globalTools, globalLayers);
-    } else {
-      return ObjectUtils.removeNull(context.get());
-    }
+    return ObjectUtils.removeNull(context.get());
   }
 
-  private async contextObjToPlainObj(
-    context: Context,
-    user: string,
-    globalTools?: Tool[],
-    globalLayers?: Layer[]
-  ): Promise<ContextDetailedOut> {
+  public async getDetailedById(id: string, user: string, headers: object): Promise<ContextDetailedOut> {
+    let where: any = { id: id };
+
+    if (isNaN(id as any)) {
+      where = { uri: id };
+    }
+
+    const context = await Context.findOne({
+      include: [Layer, Tool],
+      where: where
+    });
+
+    if (!context) {
+      throw Boom.notFound();
+    }
+
+    const globalTools: Tool[] = await Tool.findAll({
+      where: { global: true }
+    });
+
+    const globalLayers: Layer[] = await Layer.findAll({
+      where: { global: true }
+    });
+
     const profils: string[] = await UserApi.getProfils(user).catch(() => {
       return [];
     });
     profils.push(user);
 
+    const [toolbar, tools] = this.formatTools(context, profils, globalTools);
+
+    const layers = await this.formatLayers(context.layers, profils, globalLayers, headers);
+
     const contextDetailed: ContextDetailedOut = {
       ...context.get(),
-      layers: [],
-      tools: [],
-      toolbar: []
+      layers,
+      tools,
+      toolbar
     };
+    return ObjectUtils.removeNull(contextDetailed);
+  }
 
-    const toolbar = [];
+  private formatTools(context: Context, profils: string[], globalTools?: Tool[]): [string[], ITool[]] {
+    const toolbar: ITool[] = [];
+    const tools: ITool[] = [];
 
     const toolsFiltered = context.tools.filter((t) => {
       return t.profils.length === 0 || t.profils.some((p) => profils.includes(p));
@@ -147,7 +143,7 @@ export class ContextService {
       (plainTool as any).ToolContext = null;
       delete plainTool.profils;
 
-      contextDetailed.tools.push(plainTool);
+      tools.push(plainTool);
       if (plainTool.inToolbar) {
         toolbar.push(plainTool);
       }
@@ -158,27 +154,33 @@ export class ContextService {
     })) {
       const plainTool = tool.get();
       delete plainTool.profils;
-      if (contextDetailed.tools.findIndex((t) => t.name === plainTool.name) === -1) {
-        contextDetailed.tools.push(plainTool);
+      if (tools.findIndex((t) => t.name === plainTool.name) === -1) {
+        tools.push(plainTool);
         if (plainTool.inToolbar) {
           toolbar.push(plainTool);
         }
       }
     }
 
-    contextDetailed.toolbar = toolbar.sort((t1, t2) => t1.order - t2.order).map((t) => t.name);
+    const toolbarName = toolbar.sort((t1, t2) => t1.order - t2.order).map((t) => t.name);
+    return [toolbarName, tools];
+  }
 
-    if ((!context.layers || !context.layers.length) && !globalLayers) {
-      return ObjectUtils.removeNull(contextDetailed);
-    }
+  private async formatLayers(
+    layers: Layer[],
+    profils: string[],
+    globalLayers: Layer[],
+    headers: object
+  ): Promise<LayerOptions[]> {
+    const layersOptions: LayerOptions[] = [];
 
-    const promises = [];
+    const permissions: Promise<boolean>[] = [];
     const plainLayers: ILayer[] = [];
 
-    for (const layer of context.layers) {
+    for (const layer of layers) {
       const plainL = layer.get();
       plainLayers.push(plainL);
-      promises.push(UserApi.verifyPermissionByUrl(plainL.sourceOptions?.url, profils));
+      permissions.push(UserApi.verifyPermissionByUrl(plainL.sourceOptions?.url, profils));
     }
 
     for (const globalLayer of globalLayers) {
@@ -186,55 +188,51 @@ export class ContextService {
       if (plainLayers.findIndex((l) => l.id === plainL.id) === -1) {
         (plainL as any).LayerContext = {};
         plainLayers.push(plainL);
-        promises.push(UserApi.verifyPermissionByUrl(plainL.sourceOptions?.url, profils));
+        permissions.push(UserApi.verifyPermissionByUrl(plainL.sourceOptions?.url, profils));
       }
     }
 
-    const promisesResult = await Promise.all(promises);
+    const permissionsResult = await Promise.all(permissions);
+
     let i = 0;
     for (const plainLayer of plainLayers) {
-      if (promisesResult[i]) {
-        const params = Object.assign(
-          {
-            layers: plainLayer.layers
-          },
-          (plainLayer.sourceOptions || {}).params,
-          ((plainLayer as any).LayerContext.sourceOptions || {}).params
-        );
+      if (permissionsResult[i]) {
 
-        const sourceOptions: SourceOptions = Object.assign(
-          {
-            type: plainLayer.type,
-            url: plainLayer.url,
-            optionsFromCapabilities: true
-          },
-          plainLayer.sourceOptions,
-          (plainLayer as any).LayerContext.sourceOptions,
-          {
-            params
-          }
-        );
+        if (!plainLayer.global && plainLayer.type === 'wms') {
+          await LayerWss.setWssOptions(plainLayer, headers);
+        }
 
-        const layerFormatted: LayerOptions = Object.assign(
-          {
-            id: plainLayer.id
-          },
-          plainLayer.layerOptions,
-          (plainLayer as any).LayerContext.layerOptions,
-          {
-            sourceOptions
-          }
-        );
+        const layerMerged = this.mergeLayer(plainLayer, (plainLayer as any).LayerContext);
 
-        contextDetailed.layers.push(layerFormatted);
+        layersOptions.push(layerMerged);
       }
       i++;
     }
 
-    contextDetailed.layers = contextDetailed.layers.sort((a, b) =>
-      a.zIndex < b.zIndex ? -1 : a.zIndex > b.zIndex ? 1 : 0
-    );
+    return layersOptions.sort((a, b) => (a.zIndex < b.zIndex ? -1 : a.zIndex > b.zIndex ? 1 : 0));
+  }
 
-    return ObjectUtils.removeNull(contextDetailed);
+  private mergeLayer(layer: ILayer, layerContext: ILayerContext): LayerOptions {
+    const params = {
+      layers: layer.layers,
+      ...(layer.sourceOptions?.params ?? {}),
+      ...(layerContext.sourceOptions?.params ?? {})
+    };
+
+    const sourceOptions: SourceOptions = {
+      type: layer.type,
+      url: layer.url,
+      optionsFromCapabilities: true,
+      ...(layer.sourceOptions ?? {}),
+      ...(layerContext.sourceOptions ?? {}),
+      params
+    };
+
+    return {
+      id: layer.id,
+      ...layer.layerOptions,
+      ...(layer as any).LayerContext.layerOptions,
+      sourceOptions
+    };
   }
 }

@@ -1,17 +1,10 @@
 import * as Hapi from '@hapi/hapi';
-import * as URL from 'url';
-import * as https from 'https';
-import axios from 'axios';
-import * as Boom from '@hapi/boom';
-
-import { getServerConfig } from '../configurations';
 import { handleError } from '../utils';
 
 import { UserApi } from '../user/api';
 import { LayerService } from './layer.service';
 import { ILayer } from './layer.interface';
-
-const ServerConfigs = getServerConfig();
+import { LayerWss } from './layer-wss';
 
 export class LayerController {
   private layerService: LayerService;
@@ -79,57 +72,14 @@ export class LayerController {
   }
 
   public async getOptions(request: Hapi.Request, _h: Hapi.ResponseToolkit) {
-    const query: any = request.query;
+    const query = request.query;
 
-    const localhost = ServerConfigs.localhost;
-    const hosts = localhost ? localhost.hosts : [];
-    const wssUri = localhost ? localhost.wssUri : undefined;
-    const urlObj = URL.parse(query.url || '');
-    const urlHost = urlObj && urlObj.hostname ? urlObj.protocol + '//' + urlObj.hostname : '';
-    const isInWssUri = wssUri && urlObj.pathname.substr(0, wssUri.length) === wssUri;
-
-    let permission: any = {};
-    if (ServerConfigs.wssApi && (!urlHost || hosts.indexOf(urlHost) !== -1) && isInWssUri) {
-      const theme = query.url.substring(query.url.lastIndexOf('/') + 1, query.url.lastIndexOf('.fcgi'));
-      https.globalAgent.options.rejectUnauthorized = false;
-      permission = await axios
-        .get(`${ServerConfigs.wssApi}layers/${query.layers}/allowed?theme=${theme}`, {
-          headers: request.headers
-        })
-        .then((p) => p.data)
-        .catch((e) => {
-          throw Boom.badImplementation(e);
-        });
-
-      if (query.type === 'wms') {
-        if (!permission.wmsAllowed) {
-          return {};
-        }
-      } else if (query.type === 'wfs') {
-        if (!permission.wfsAllowed) {
-          return {};
-        }
-      }
-    }
-
-    const userId = request.headers['x-consumer-id'];
-    const username = request.headers['x-consumer-username'];
-
-    const profils: string[] = await UserApi.getProfils(userId, request.headers['x-consumer-groups']).catch(() => {
-      return [];
-    });
-    profils.push(username);
-
-    const isAllowed = await UserApi.verifyPermissionByUrl(
-      query.url,
-      profils
-    );
-
+    const isAllowed = await this.urlAllowed(query.url, request.headers);
     if (!isAllowed) {
       return {};
     }
 
-    const options = await this.layerService
+    const layer: ILayer = await this.layerService
       .getBySource({
         type: query.type,
         url: query.url,
@@ -145,27 +95,22 @@ export class LayerController {
       })
       .catch(handleError);
 
-    if (query.type === 'wms' && permission.wfsAllowed) {
-      options.layerOptions = Object.assign(
-        {
-          workspace: {
-            enabled: true
-          }
-        },
-        options.layerOptions
-      );
-
-      options.sourceOptions = Object.assign(
-        {
-          urlWfs: options.url,
-          paramsWFS: {
-            featureTypes: options.layers
-          }
-        },
-        options.sourceOptions
-      );
+    if (query.type === 'wms') {
+      await LayerWss.setWssOptions(layer, request.headers);
     }
 
-    return options;
+    return layer;
+  }
+
+  private async urlAllowed(url: string, headers: object): Promise<boolean> {
+    const userId = headers['x-consumer-id'];
+    const username = headers['x-consumer-username'];
+
+    const profils: string[] = await UserApi.getProfils(userId, headers['x-consumer-groups']).catch(() => {
+      return [];
+    });
+    profils.push(username);
+
+    return UserApi.verifyPermissionByUrl(url, profils);
   }
 }
