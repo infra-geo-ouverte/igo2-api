@@ -1,3 +1,13 @@
+## [1.8.6](https://gitlab.forge.gouv.qc.ca/igo2/igo2-api/compare/1.8.5...1.8.6) (2024-08-21)
+
+
+### Bug Fixes
+
+* **context:** toggle default context ([6506926](https://gitlab.forge.gouv.qc.ca/igo2/igo2-api/commit/6506926ac62b072506d4f5dfe69b67df8943ab58))
+* **context:** toggle default context and return the id ([b6dadbc](https://gitlab.forge.gouv.qc.ca/igo2/igo2-api/commit/b6dadbc983a44d08396d08a7998dbf7a53a8c76f))
+
+
+
 ## [1.8.5](https://gitlab.forge.gouv.qc.ca/igo2/igo2-api/compare/1.8.4...1.8.5) (2024-08-21)
 
 
