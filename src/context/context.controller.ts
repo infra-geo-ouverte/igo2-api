@@ -336,10 +336,12 @@ export class ContextController {
     const userDb = await this.userIgoService.get(userId);
 
     if (userDb) {
-      user.defaultContextId = userDb?.defaultContextId === user.defaultContextId ? null : userDb?.defaultContextId;
+      const newId = userDb?.defaultContextId === user.defaultContextId ? null : user?.defaultContextId;
       return this.userIgoService
-        .update(userId, user)
-        .then(() => user.defaultContextId)
+        .update(userId, {
+          defaultContextId: newId
+        })
+        .then(() => newId)
         .catch(handleError);
     } else {
       user.userId = userId;
