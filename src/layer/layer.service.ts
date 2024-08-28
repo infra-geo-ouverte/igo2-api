@@ -9,12 +9,16 @@ import { getUrlPath } from '../utils/url.utils';
 
 export class LayerService {
   public async create(layer: ILayerIn): Promise<Layer> {
-    layer.url = getUrlPath(layer.url);
+    if (layer.url) {
+      layer.url = getUrlPath(layer.url);
+    }
     return await Layer.create(layer);
   }
 
   public async update(id: string, layer: ILayer): Promise<{ id: string }> {
-    layer.url = getUrlPath(layer.url);
+    if (layer.url) {
+      layer.url = getUrlPath(layer.url);
+    }
     return await Layer.update(layer, {
       where: {
         id: id
@@ -94,8 +98,9 @@ export class LayerService {
   }
 
   public async getBySource(options: SourceOptions, layerId?: string): Promise<ILayer> {
-    options.url = getUrlPath(options.url);
-
+    if (options.url) {
+      options.url = getUrlPath(options.url);
+    }
     const where: any = {
       [Op.or]: [
         {
