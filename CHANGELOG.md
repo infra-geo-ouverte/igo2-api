@@ -1,3 +1,13 @@
+## [1.8.7](https://gitlab.forge.gouv.qc.ca/igo2/igo2-api/compare/1.8.6...1.8.7) (2024-08-28)
+
+
+### Bug Fixes
+
+* **layer:** add absolute url for urlWfs ([95b8d62](https://gitlab.forge.gouv.qc.ca/igo2/igo2-api/commit/95b8d62642a1e751a0e63b3f8ac5f7749e08c0f7))
+* **layer:** test for url.utils ([10e2bd4](https://gitlab.forge.gouv.qc.ca/igo2/igo2-api/commit/10e2bd4434f30485c48d171dd9105eaf082f9aeb))
+
+
+
 ## [1.8.6](https://gitlab.forge.gouv.qc.ca/igo2/igo2-api/compare/1.8.5...1.8.6) (2024-08-21)
 
 
