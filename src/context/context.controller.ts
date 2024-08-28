@@ -54,7 +54,7 @@ export class ContextController {
       properties = JSON.parse(request.payload);
     }
 
-    const context = await this.contextService.getDetailedById(id, owner, request.headers).catch(handleError);
+    const context = await this.contextService.getDetailedById(id, owner, request).catch(handleError);
 
     Object.assign(context, properties);
     const newContext = {
@@ -298,7 +298,7 @@ export class ContextController {
     const owner = request.headers['x-consumer-username'];
     const id = request.params.contextId;
 
-    const contextDetails = await this.contextService.getDetailedById(id, owner, request.headers).catch(handleError);
+    const contextDetails = await this.contextService.getDetailedById(id, owner, request).catch(handleError);
 
     const permission = await this.contextPermissionService.getPermission(contextDetails, owner).catch(handleError);
 

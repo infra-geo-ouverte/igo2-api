@@ -96,7 +96,7 @@ export class LayerController {
       .catch(handleError);
 
     if (query.type === 'wms') {
-      await LayerWss.setWssOptions(layer, request.headers);
+      await LayerWss.setWssOptions(layer, request);
     }
 
     return layer;

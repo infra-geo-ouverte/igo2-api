@@ -5,6 +5,8 @@ import * as Boom from '@hapi/boom';
 
 import { getServerConfig } from '../configurations';
 import { ILayer } from './layer.interface';
+import { getUrlHost } from '../utils/url.utils';
+import { Request } from '@hapi/hapi';
 
 interface LayerPermission {
   wmsAllowed?: boolean;
@@ -14,14 +16,14 @@ interface LayerPermission {
 const ServerConfigs = getServerConfig();
 
 export class LayerWss {
-  static async setWssOptions(layer: ILayer, headers: object): Promise<ILayer> {
-    const permissions = await LayerWss.getPermissions(layer, headers);
+  static async setWssOptions(layer: ILayer, request: Request): Promise<ILayer> {
+    const permissions = await LayerWss.getPermissions(layer, request.headers);
     if (!permissions) {
       return layer;
     }
 
     if (layer.type === 'wms') {
-      LayerWss.setWmsOption(layer, permissions);
+      LayerWss.setWmsOption(layer, permissions, request.query.url);
     }
 
     return layer;
@@ -41,7 +43,7 @@ export class LayerWss {
       const theme = layer.url.substring(layer.url.lastIndexOf('/') + 1, layer.url.lastIndexOf('.fcgi'));
       https.globalAgent.options.rejectUnauthorized = false;
       try {
-        const url = `${ServerConfigs.wssApi}layers/${layer.layers}/allowed?theme=${theme}`
+        const url = `${ServerConfigs.wssApi}layers/${layer.layers}/allowed?theme=${theme}`;
         const { data: permission } = await axios.get(url, {
           headers: {
             'x-consumer-id': headers['x-consumer-id'],
@@ -67,7 +69,7 @@ export class LayerWss {
     }
   }
 
-  private static setWmsOption(layer: ILayer, permissions: LayerPermission): void {
+  private static setWmsOption(layer: ILayer, permissions: LayerPermission, queryUrl: string): void {
     if (permissions.wfsAllowed) {
       layer.layerOptions = {
         workspace: {
@@ -77,11 +79,10 @@ export class LayerWss {
       };
 
       layer.sourceOptions = {
-        urlWfs: layer.url,
+        urlWfs: getUrlHost(queryUrl) + layer.url,
         paramsWFS: {
           featureTypes: layer.layers
-        },
-        ...layer.sourceOptions
+        }
       };
     }
   }

@@ -9,6 +9,7 @@ import { ContextDetailedOut, ContextDetailed, IContext } from './context.interfa
 import { Context } from './context.model';
 import { ILayerContext } from '../layerContext';
 import { LayerWss } from '../layer/layer-wss';
+import { Request } from '@hapi/hapi';
 
 export class ContextService {
   public async create(context: ContextDetailed): Promise<Context> {
@@ -86,7 +87,7 @@ export class ContextService {
     return ObjectUtils.removeNull(context.get());
   }
 
-  public async getDetailedById(id: string, user: string, headers: object): Promise<ContextDetailedOut> {
+  public async getDetailedById(id: string, user: string, request: Request): Promise<ContextDetailedOut> {
     let where: any = { id: id };
 
     if (isNaN(id as any)) {
@@ -117,7 +118,7 @@ export class ContextService {
 
     const [toolbar, tools] = this.formatTools(context, profils, globalTools);
 
-    const layers = await this.formatLayers(context.layers, profils, globalLayers, headers);
+    const layers = await this.formatLayers(context.layers, profils, globalLayers, request);
 
     const contextDetailed: ContextDetailedOut = {
       ...context.get(),
@@ -170,7 +171,7 @@ export class ContextService {
     layers: Layer[],
     profils: string[],
     globalLayers: Layer[],
-    headers: object
+    request: Request
   ): Promise<LayerOptions[]> {
     const layersOptions: LayerOptions[] = [];
 
@@ -197,9 +198,8 @@ export class ContextService {
     let i = 0;
     for (const plainLayer of plainLayers) {
       if (permissionsResult[i]) {
-
         if (!plainLayer.global && plainLayer.type === 'wms') {
-          await LayerWss.setWssOptions(plainLayer, headers);
+          await LayerWss.setWssOptions(plainLayer, request);
         }
 
         const layerMerged = this.mergeLayer(plainLayer, (plainLayer as any).LayerContext);
