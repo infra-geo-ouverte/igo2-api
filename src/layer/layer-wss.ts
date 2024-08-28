@@ -79,7 +79,7 @@ export class LayerWss {
       };
 
       layer.sourceOptions = {
-        urlWfs: getUrlHost(queryUrl) + layer.url,
+        urlWfs: layer.url ? getUrlHost(queryUrl) + layer.url : undefined,
         paramsWFS: {
           featureTypes: layer.layers
         }
