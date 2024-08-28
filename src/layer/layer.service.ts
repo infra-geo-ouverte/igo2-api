@@ -1,38 +1,20 @@
 import * as Boom from '@hapi/boom';
-import * as URL from 'url';
 import { Op } from 'sequelize';
 
 import { ObjectUtils } from '@igo2/base-api';
-import { getServerConfig } from '../configurations';
 import { UserApi } from '../user';
-
 import { ILayer, ILayerIn, SourceOptions } from './layer.interface';
 import { Layer } from './layer.model';
-
-const ServerConfigs = getServerConfig();
+import { getUrlPath } from '../utils/url.utils';
 
 export class LayerService {
   public async create(layer: ILayerIn): Promise<Layer> {
-    const localhost = ServerConfigs.localhost;
-    const hosts = localhost ? localhost.hosts : [];
-    const urlObj = URL.parse(layer.url || '');
-    const url = urlObj ? urlObj.protocol + '//' + urlObj.hostname : '';
-    if (url && hosts.indexOf(url) !== -1) {
-      layer.url = urlObj.path;
-    }
-
+    layer.url = getUrlPath(layer.url);
     return await Layer.create(layer);
   }
 
   public async update(id: string, layer: ILayer): Promise<{ id: string }> {
-    const localhost = ServerConfigs.localhost;
-    const hosts = localhost ? localhost.hosts : [];
-    const urlObj = URL.parse(layer.url || '');
-    const url = urlObj ? urlObj.protocol + '//' + urlObj.hostname : '';
-    if (url && hosts.indexOf(url) !== -1) {
-      layer.url = urlObj.path;
-    }
-
+    layer.url = getUrlPath(layer.url);
     return await Layer.update(layer, {
       where: {
         id: id
@@ -111,21 +93,14 @@ export class LayerService {
     return layerPlain;
   }
 
-  public async getBySource(options: SourceOptions | undefined, layerId?: string): Promise<ILayer> {
-    options = options ?? {};
-    const localhost = ServerConfigs.localhost;
-    const hosts = localhost ? localhost.hosts : [];
-    const urlObj = URL.parse(options.url || '');
-    const url = urlObj ? urlObj.protocol + '//' + urlObj.hostname : '';
-    if (url && hosts.indexOf(url) !== -1) {
-      options.url = urlObj.path;
-    }
+  public async getBySource(options: SourceOptions, layerId?: string): Promise<ILayer> {
+    options.url = getUrlPath(options.url);
 
     const where: any = {
       [Op.or]: [
         {
           type: options.type,
-          url: options.url || null,
+          url: options.url,
           layers: (options.params || {}).layers || (options.params || {}).LAYERS || null
         }
       ]
