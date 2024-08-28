@@ -15,7 +15,7 @@ export function getUrlPath(url: string): string | undefined {
 export function getUrlHost(url: string): string | undefined {
   const urlObj = parse(url);
 
-  const { hosts = [] } = ServerConfigs.localhost;
+  const hosts = ServerConfigs.localhost?.hosts ?? [];
   const hostUrl = urlObj.protocol + '//' + urlObj.hostname;
   if (hosts.indexOf(hostUrl) === -1) {
     return;
