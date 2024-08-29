@@ -1,3 +1,12 @@
+## [1.8.10](https://gitlab.forge.gouv.qc.ca/igo2/igo2-api/compare/1.8.9...1.8.10) (2024-08-29)
+
+
+### Bug Fixes
+
+* **layer:** add all source options ([b5f1f96](https://gitlab.forge.gouv.qc.ca/igo2/igo2-api/commit/b5f1f965d79e4eb6d61386c3ad6d4546f11494ef))
+
+
+
 ## [1.8.9](https://gitlab.forge.gouv.qc.ca/igo2/igo2-api/compare/1.8.8...1.8.9) (2024-08-29)
 
 
