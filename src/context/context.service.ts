@@ -1,19 +1,20 @@
 import * as Boom from '@hapi/boom';
+import { Request } from '@hapi/hapi';
+import { Transaction } from 'sequelize';
 
-import { ObjectUtils } from '@igo2/base-api';
+import { ObjectUtils, uuid } from '@igo2/base-api';
 import { UserApi } from '../user';
 import { ILayer, Layer, LayerOptions, SourceOptions } from '../layer';
 import { ITool, Tool } from '../tool';
 
-import { ContextDetailedOut, ContextDetailed, IContext } from './context.interface';
+import { ContextDetailedOut, ContextDetailed, IContext, IContextOut, Scope } from './context.interface';
 import { Context } from './context.model';
 import { ILayerContext } from '../layerContext';
 import { LayerWss } from '../layer/layer-wss';
-import { Request } from '@hapi/hapi';
 
 export class ContextService {
-  public async create(context: ContextDetailed): Promise<Context> {
-    return await Context.create(context).catch((error) => {
+  public async create(context: ContextDetailed, transaction?: Transaction): Promise<Context> {
+    return await Context.create(context, {transaction}).catch((error) => {
       if (error?.data?.name === 'SequelizeUniqueConstraintError') {
         const message = 'URI must be unique.';
         throw Boom.conflict(message);
@@ -23,6 +24,19 @@ export class ContextService {
       }
       throw Boom.badImplementation(error);
     });
+  }
+
+  public async clone(id: string, extraProperties: Partial<IContext>, transaction: Transaction): Promise<Context> {
+    const { id: _id, ...context } = await this.getById(id);
+    return this.create(
+      {
+        ...context,
+        ...extraProperties,
+        scope: Scope[Scope.private] as any,
+        uri: uuid()
+      },
+      transaction
+    );
   }
 
   public async update(id: string, context: ContextDetailed): Promise<{ id: string }> {
@@ -69,7 +83,7 @@ export class ContextService {
     });
   }
 
-  public async getById(id: string): Promise<ContextDetailedOut> {
+  public async getById(id: string): Promise<IContextOut> {
     let where: any = { id: id };
 
     if (isNaN(id as any)) {
@@ -84,10 +98,10 @@ export class ContextService {
       throw Boom.notFound();
     }
 
-    return ObjectUtils.removeNull(context.get());
+    return ObjectUtils.removeNull(context.get()) as IContextOut;
   }
 
-  public async getDetailedById(id: string, user: string, request: Request): Promise<ContextDetailedOut> {
+  public async getDetailedById(id: number, user: string, request: Request): Promise<ContextDetailedOut> {
     let where: any = { id: id };
 
     if (isNaN(id as any)) {
@@ -120,8 +134,10 @@ export class ContextService {
 
     const layers = await this.formatLayers(context.layers, profils, globalLayers, request);
 
+    const contextDb = context.get();
     const contextDetailed: ContextDetailedOut = {
-      ...context.get(),
+      ...contextDb,
+      id: contextDb.id!,
       layers,
       tools,
       toolbar
