@@ -1,4 +1,5 @@
 import * as Boom from '@hapi/boom';
+import { Transaction } from 'sequelize';
 
 import { ObjectUtils } from '@igo2/base-api';
 
@@ -9,8 +10,8 @@ import { LayerContext } from './layerContext.model';
 export class LayerContextService {
   private layerService: LayerService = new LayerService();
 
-  public async create(layerContext: ILayerContext): Promise<LayerContext> {
-    return await LayerContext.create(layerContext).catch((error) => {
+  public async create(layerContext: ILayerContext, transaction?: Transaction): Promise<LayerContext> {
+    return await LayerContext.create(layerContext, {transaction}).catch((error) => {
       if (error?.data?.name === 'SequelizeUniqueConstraintError') {
         const message = 'The pair contextId and layerId must be unique.';
         throw Boom.conflict(message);
@@ -26,7 +27,7 @@ export class LayerContextService {
     });
   }
 
-  public async update(contextId: string, layerId: string, layerContext: ILayerContext): Promise<ILayerContext> {
+  public async update(contextId: number, layerId: string, layerContext: ILayerContext): Promise<ILayerContext> {
     return await LayerContext.update(layerContext, {
       where: {
         layerId: layerId,
@@ -41,6 +42,12 @@ export class LayerContextService {
         contextId: contextId
       };
     });
+  }
+
+  public async cloneByContextId(id: number, newId: number, transaction: Transaction): Promise<LayerContext[]> {
+    const layers = await this.getByContextId(id);
+    const requests$ = layers.map(({ id, ...layer }) => this.create({ ...layer, contextId: newId }, transaction));
+    return Promise.all(requests$);
   }
 
   public async delete(contextId: string, layerId: string): Promise<void> {
@@ -70,7 +77,7 @@ export class LayerContextService {
     });
   }
 
-  public async getByContextId(contextId: string): Promise<ILayerContext[]> {
+  public async getByContextId(contextId: number): Promise<ILayerContext[]> {
     return LayerContext.findAll({
       where: {
         contextId: contextId
@@ -84,7 +91,7 @@ export class LayerContextService {
     });
   }
 
-  public async getById(contextId: string, layerId: string): Promise<ILayerContext> {
+  public async getById(contextId: number, layerId: string): Promise<ILayerContext> {
     return LayerContext.findOne({
       where: {
         layerId: layerId,
@@ -98,12 +105,12 @@ export class LayerContextService {
     });
   }
 
-  public async bulkCreate(contextId: string, layers: ILayer[]): Promise<(LayerContext | undefined)[]> {
+  public async bulkCreate(contextId: number, layers: ILayer[]): Promise<(LayerContext | undefined)[]> {
     const promises = layers.map((layer) => this._createLayerContext(layer, contextId));
     return Promise.all(promises);
   }
 
-  private async _createLayerContext(layer: ILayer, contextId: string): Promise<LayerContext | undefined> {
+  private async _createLayerContext(layer: ILayer, contextId: number): Promise<LayerContext | undefined> {
     try {
       const layerDB = await this.getLayerOrCreate(layer);
       if (layerDB.global && !layer.layerOptions.visible) {

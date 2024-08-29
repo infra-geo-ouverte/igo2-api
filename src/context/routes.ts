@@ -226,7 +226,7 @@ export default function(server: Hapi.Server) {
   server.route({
     method: 'POST',
     path: '/contexts/{contextId}/clone',
-    handler: contextController.clone,
+    handler: contextController.cloneDetailed,
     options: {
       tags: ['api', 'contexts'],
       description: 'Clone a context.',

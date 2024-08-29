@@ -18,7 +18,7 @@ interface Map {
 }
 
 export interface IContext {
-  id?: string;
+  id?: number;
   uri: string;
   scope: Scope;
   title: string;
@@ -34,7 +34,12 @@ export interface ContextDetailed extends IContext {
   toolbar?: string[];
 }
 
+export interface IContextOut extends IContext {
+  id: number;
+}
+
 export interface ContextDetailedOut extends IContext {
+  id: number;
   tools?: ITool[];
   layers?: LayerOptions[];
   toolbar?: string[];

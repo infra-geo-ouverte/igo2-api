@@ -1,9 +1,8 @@
 import * as Hapi from '@hapi/hapi';
 import * as Boom from '@hapi/boom';
 import { Op } from 'sequelize';
-import { ObjectUtils, uuid } from '@igo2/base-api';
+import { database, ObjectUtils } from '@igo2/base-api';
 import { handleError } from '../utils';
-
 import { UserApi } from '../user';
 import { UserIgoService, IUserIgo } from '../userIgo';
 import { TypePermission, ContextPermissionService, ContextPermission } from '../contextPermission';
@@ -12,7 +11,7 @@ import { ToolContextService } from '../toolContext/toolContext.service';
 import { LayerContextService } from '../layerContext/layerContext.service';
 import { ContextAccessService } from '../contextAccess/contextAccess.service';
 
-import { IContext, ContextService, Context, Scope, ContextDetailed } from './index';
+import { IContext, ContextService, Context, ContextDetailed } from './index';
 
 export class ContextController {
   private contextService: ContextService;
@@ -46,35 +45,29 @@ export class ContextController {
     return h.response(context).code(201);
   }
 
-  public async clone(request: Hapi.Request, h: Hapi.ResponseToolkit) {
+  public async cloneDetailed(request: Hapi.Request, h: Hapi.ResponseToolkit) {
     const owner = request.headers['x-consumer-username'];
     const id = request.params.contextId;
-    let properties = request.payload;
+
+    let properties: Partial<IContext> = request.payload as any;
     if (typeof request.payload === 'string') {
       properties = JSON.parse(request.payload);
     }
 
-    const context = await this.contextService.getDetailedById(id, owner, request).catch(handleError);
+    const context = await database.sequelize.transaction(async (t) => {
+      const context = await this.contextService.clone(id, { ...properties, owner }, t);
+      await this.layerContextService.cloneByContextId(id, context.id, t);
+      await this.toolContextService.cloneByContextId(id, context.id, t);
 
-    Object.assign(context, properties);
-    const newContext = {
-      scope: Scope[Scope.private],
-      uri: uuid(),
-      title: context.title,
-      icon: context.icon,
-      map: context.map,
-      tools: context.tools,
-      layers: context.layers.map((l) => {
-        const layerOptions = Object.assign({}, l);
-        delete layerOptions.sourceOptions;
-        return {
-          layerOptions: layerOptions,
-          sourceOptions: l.sourceOptions
-        };
-      })
-    };
-    (request as any).payload = newContext;
-    return await this.create(request, h);
+      return context;
+    });
+
+    const contextDetailed = await this.contextService.getDetailedById(context.id, owner, request);
+    if (!contextDetailed) {
+      throw Boom.notFound(`No context found for ${context.id}`);
+    }
+
+    return h.response(contextDetailed).code(201);
   }
 
   public async update(request: Hapi.Request, _h: Hapi.ResponseToolkit) {
