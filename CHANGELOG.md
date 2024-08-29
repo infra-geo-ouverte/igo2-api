@@ -1,3 +1,13 @@
+## [1.8.9](https://gitlab.forge.gouv.qc.ca/igo2/igo2-api/compare/1.8.8...1.8.9) (2024-08-29)
+
+
+### Bug Fixes
+
+* **context:** clone the exact copy not the detailed GET ([56e795d](https://gitlab.forge.gouv.qc.ca/igo2/igo2-api/commit/56e795d9eecce4078637d6439caa2c0e848c8f7c))
+* **context:** transactionnal commit change before fetch ([de36881](https://gitlab.forge.gouv.qc.ca/igo2/igo2-api/commit/de368810bfa3695f191d66482e601c66730f372b))
+
+
+
 ## [1.8.8](https://gitlab.forge.gouv.qc.ca/igo2/igo2-api/compare/1.8.7...1.8.8) (2024-08-29)
 
 
