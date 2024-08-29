@@ -54,13 +54,18 @@ export class ContextController {
       properties = JSON.parse(request.payload);
     }
 
-    const contextDetailed = await database.sequelize.transaction(async (t) => {
+    const context = await database.sequelize.transaction(async (t) => {
       const context = await this.contextService.clone(id, { ...properties, owner }, t);
       await this.layerContextService.cloneByContextId(id, context.id, t);
       await this.toolContextService.cloneByContextId(id, context.id, t);
 
-      return this.contextService.getDetailedById(context.id, owner, request);
+      return context;
     });
+
+    const contextDetailed = await this.contextService.getDetailedById(context.id, owner, request);
+    if (!contextDetailed) {
+      throw Boom.notFound(`No context found for ${context.id}`);
+    }
 
     return h.response(contextDetailed).code(201);
   }
