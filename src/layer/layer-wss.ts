@@ -23,7 +23,7 @@ export class LayerWss {
     }
 
     if (layer.type === 'wms') {
-      LayerWss.setWmsOption(layer, permissions, request.query.url);
+      LayerWss.setWmsOption(layer, permissions, request.query?.url);
     }
 
     return layer;
@@ -69,7 +69,7 @@ export class LayerWss {
     }
   }
 
-  private static setWmsOption(layer: ILayer, permissions: LayerPermission, queryUrl: string): void {
+  private static setWmsOption(layer: ILayer, permissions: LayerPermission, queryUrl: string | undefined): void {
     if (permissions.wfsAllowed) {
       layer.layerOptions = {
         workspace: {
@@ -79,7 +79,7 @@ export class LayerWss {
       };
 
       layer.sourceOptions = {
-        urlWfs: layer.url ? getUrlHost(queryUrl) + layer.url : undefined,
+        urlWfs: layer.url && queryUrl ? getUrlHost(queryUrl) + layer.url : undefined,
         paramsWFS: {
           featureTypes: layer.layers
         }
