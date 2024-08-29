@@ -1,3 +1,13 @@
+## [1.8.8](https://gitlab.forge.gouv.qc.ca/igo2/igo2-api/compare/1.8.7...1.8.8) (2024-08-29)
+
+
+### Bug Fixes
+
+* **layer:** check if url exist in query params ([983292d](https://gitlab.forge.gouv.qc.ca/igo2/igo2-api/commit/983292dea5ea27be2d2a8185579ddbb105b62374))
+* **url:** adjust code for test ([33abf78](https://gitlab.forge.gouv.qc.ca/igo2/igo2-api/commit/33abf788608116d194343043873e5907548c3e81))
+
+
+
 ## [1.8.7](https://gitlab.forge.gouv.qc.ca/igo2/igo2-api/compare/1.8.6...1.8.7) (2024-08-28)
 
 
