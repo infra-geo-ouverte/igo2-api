@@ -1,3 +1,12 @@
+## [1.8.11](https://gitlab.forge.gouv.qc.ca/igo2/igo2-api/compare/1.8.10...1.8.11) (2024-08-30)
+
+
+### Bug Fixes
+
+* **wss:** let's the SourceOptions override ([5d720f7](https://gitlab.forge.gouv.qc.ca/igo2/igo2-api/commit/5d720f7ee1b9be23e25bb3b4c6141abbc4821765))
+
+
+
 ## [1.8.10](https://gitlab.forge.gouv.qc.ca/igo2/igo2-api/compare/1.8.9...1.8.10) (2024-08-29)
 
 
