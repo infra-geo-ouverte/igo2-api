@@ -9,7 +9,7 @@ export function getUrlPath(url: string): string | undefined {
     return parse(url).path;
   }
 
-  return url;
+  return;
 }
 
 export function getUrlHost(url: string): string | undefined {
