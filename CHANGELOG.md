@@ -1,3 +1,12 @@
+## [1.8.12](https://gitlab.forge.gouv.qc.ca/igo2/igo2-api/compare/1.8.11...1.8.12) (2024-09-03)
+
+
+### Bug Fixes
+
+* **layer:** url path should return the original if no host ([7904134](https://gitlab.forge.gouv.qc.ca/igo2/igo2-api/commit/79041343fa83e504f52687a23e2162b42904f5ef))
+
+
+
 ## [1.8.11](https://gitlab.forge.gouv.qc.ca/igo2/igo2-api/compare/1.8.10...1.8.11) (2024-08-30)
 
 
