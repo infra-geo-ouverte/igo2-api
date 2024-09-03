@@ -1,3 +1,7 @@
+## [1.8.13](https://gitlab.forge.gouv.qc.ca/igo2/igo2-api/compare/1.8.12...1.8.13) (2024-09-03)
+
+
+
 ## [1.8.12](https://gitlab.forge.gouv.qc.ca/igo2/igo2-api/compare/1.8.11...1.8.12) (2024-09-03)
 
 
