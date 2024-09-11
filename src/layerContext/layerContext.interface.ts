@@ -1,9 +1,14 @@
-import { SourceOptions, LayerOptions } from '../layer';
+import { SourceOptions, AnyLayerOptionsWithoutSource, ILayer } from '../layer';
+
+export interface ILayerWithContext extends ILayer {
+  id: number;
+  LayerContext?: ILayerContext
+}
 
 export interface ILayerContext {
-  id?: string;
-  layerId: string;
+  id?: number;
+  layerId?: number;
   contextId: number;
-  layerOptions?: LayerOptions;
-  sourceOptions?: SourceOptions;
+  layerOptions?: AnyLayerOptionsWithoutSource;
+  sourceOptions?: Partial<SourceOptions>;
 }

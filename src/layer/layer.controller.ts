@@ -5,6 +5,7 @@ import { UserApi } from '../user/api';
 import { LayerService } from './layer.service';
 import { ILayer } from './layer.interface';
 import { LayerWss } from './layer-wss';
+import { convertLayerToOptions, isLayerItemOptions } from './layer.utils';
 
 export class LayerController {
   private layerService: LayerService;
@@ -95,13 +96,14 @@ export class LayerController {
       })
       .catch(handleError);
 
-    if (query.type === 'wms') {
-      await LayerWss.setWssOptions(layer, request);
+    const options = convertLayerToOptions(layer);
+    if (query.type === 'wms' && isLayerItemOptions(options)) {
+      await LayerWss.setWssOptions(options, request);
     }
 
-    return layer;
+    return options;
   }
-
+ 
   private async urlAllowed(url: string, headers: object): Promise<boolean> {
     const userId = headers['x-consumer-id'];
     const username = headers['x-consumer-username'];

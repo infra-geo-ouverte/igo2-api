@@ -4,7 +4,7 @@ import axios from 'axios';
 import * as Boom from '@hapi/boom';
 
 import { getServerConfig } from '../configurations';
-import { ILayer } from './layer.interface';
+import { LayerOptions } from './layer.interface';
 import { getUrlHost } from '../utils/url.utils';
 import { Request } from '@hapi/hapi';
 
@@ -16,34 +16,35 @@ interface LayerPermission {
 const ServerConfigs = getServerConfig();
 
 export class LayerWss {
-  static async setWssOptions(layer: ILayer, request: Request): Promise<ILayer> {
+  static async setWssOptions(layer: LayerOptions, request: Request): Promise<LayerOptions> {
     const permissions = await LayerWss.getPermissions(layer, request.headers);
     if (!permissions) {
       return layer;
     }
 
-    if (layer.type === 'wms') {
+    if (layer.sourceOptions.type === 'wms') {
       LayerWss.setWmsOption(layer, permissions, request.query?.url);
     }
 
     return layer;
   }
 
-  private static async getPermissions(layer: ILayer, headers: object): Promise<LayerPermission | undefined> {
+  private static async getPermissions(layer: LayerOptions, headers: object): Promise<LayerPermission | undefined> {
     const localhost = ServerConfigs.localhost;
     const wssUri = localhost ? localhost.wssUri : undefined;
     const hosts = localhost ? localhost.hosts : [];
 
-    const urlObj = URL.parse(layer.url || '');
+    const url = layer.sourceOptions.url;
+    const urlObj = URL.parse(url || '');
     const urlHost = urlObj && urlObj.hostname ? urlObj.protocol + '//' + urlObj.hostname : '';
 
     const isInWssUri = wssUri && urlObj.pathname?.substr(0, wssUri.length) === wssUri;
 
     if (ServerConfigs.wssApi && (!urlHost || hosts.indexOf(urlHost) !== -1) && isInWssUri) {
-      const theme = layer.url.substring(layer.url.lastIndexOf('/') + 1, layer.url.lastIndexOf('.fcgi'));
+      const theme = url.substring(url.lastIndexOf('/') + 1, url.lastIndexOf('.fcgi'));
       https.globalAgent.options.rejectUnauthorized = false;
       try {
-        const url = `${ServerConfigs.wssApi}layers/${layer.layers}/allowed?theme=${theme}`;
+        const url = `${ServerConfigs.wssApi}layers/${layer.sourceOptions.params.layers}/allowed?theme=${theme}`;
         const { data: permission } = await axios.get(url, {
           headers: {
             'x-consumer-id': headers['x-consumer-id'],
@@ -69,21 +70,25 @@ export class LayerWss {
     }
   }
 
-  private static setWmsOption(layer: ILayer, permissions: LayerPermission, queryUrl: string | undefined): void {
+  private static setWmsOption(layer: LayerOptions, permissions: LayerPermission, queryUrl: string | undefined): void {
     if (permissions.wfsAllowed) {
-      layer.layerOptions = {
+      layer = {
+        ...layer,
         workspace: {
-          enabled: true
-        },
-        ...layer.layerOptions
+          enabled: true,
+          ...layer.workspace ?? {}
+        }
       };
 
+
+      const sourceOptions = layer.sourceOptions;
       layer.sourceOptions = {
-        urlWfs: layer.url && queryUrl ? getUrlHost(queryUrl) + layer.url : undefined,
+        ...sourceOptions,
+        urlWfs: sourceOptions.url && queryUrl ? getUrlHost(queryUrl) + sourceOptions.url : undefined,
         paramsWFS: {
-          featureTypes: layer.layers
-        },
-        ...layer.sourceOptions
+          featureTypes: sourceOptions.params?.layers,
+          ...sourceOptions.paramsWFS
+        }
       };
     }
   }

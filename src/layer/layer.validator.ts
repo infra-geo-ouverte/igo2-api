@@ -7,11 +7,7 @@ export class LayerValidator {
       baseLayer: Joi.boolean(),
       opacity: Joi.number(),
       visible: Joi.boolean(),
-      extent: Joi.array().items(
-        Joi.number()
-          .min(4)
-          .max(4)
-      ),
+      extent: Joi.array().length(4).items(Joi.number()),
       zIndex: Joi.number(),
       minResolution: Joi.number(),
       maxResolution: Joi.number()

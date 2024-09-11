@@ -31,17 +31,17 @@ export class LayerContext extends Model<ILayerContext> {
   @Column({ type: DataType.JSON })
   sourceOptions: { [key: string]: any };
 
-  @Index({ name: 'tool_context_contextId_layerId', unique: true })
+  @Index({ name: 'layer_context_contextId_layerId', unique: true })
   @Index
   @ForeignKey(() => Context)
   @AllowNull(false)
   @Column
   contextId: number;
 
-  @Index({ name: 'tool_context_contextId_layerId', unique: true })
+  @Index({ name: 'layer_context_contextId_layerId', unique: true })
   @Index
   @ForeignKey(() => Layer)
-  @AllowNull(false)
+  @AllowNull(true)
   @Column
-  layerId: number;
+  layerId?: number;
 }
