@@ -23,7 +23,7 @@ export class LayerWss {
     }
 
     if (layer.sourceOptions.type === 'wms') {
-      LayerWss.setWmsOption(layer, permissions, request.query?.url);
+      layer = LayerWss.setWmsOption(layer, permissions, request.query?.url);
     }
 
     return layer;
@@ -70,16 +70,19 @@ export class LayerWss {
     }
   }
 
-  private static setWmsOption(layer: LayerOptions, permissions: LayerPermission, queryUrl: string | undefined): void {
+  private static setWmsOption(
+    layer: LayerOptions,
+    permissions: LayerPermission,
+    queryUrl: string | undefined
+  ): LayerOptions {
     if (permissions.wfsAllowed) {
       layer = {
         ...layer,
         workspace: {
           enabled: true,
-          ...layer.workspace ?? {}
+          ...(layer.workspace ?? {})
         }
       };
-
 
       const sourceOptions = layer.sourceOptions;
       layer.sourceOptions = {
@@ -91,5 +94,7 @@ export class LayerWss {
         }
       };
     }
+
+    return layer;
   }
 }

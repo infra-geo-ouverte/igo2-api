@@ -227,14 +227,14 @@ export class ContextService {
     const allLayerOptions: AnyLayerOptionsOut[] = [];
     for (const plainLayer of allLayers) {
       const { LayerContext = undefined, ...layer } = plainLayer;
-      const layerOptions = this.mergeLayerToOptions(layer, LayerContext);
+      let layerOptions = this.mergeLayerToOptions(layer, LayerContext);
       const hasPermission = await this.validateLayerPermissions(layerOptions, profils);
       if (!hasPermission) {
         continue;
       }
 
       if (!plainLayer.global && isLayerItemOptions(layerOptions) && layerOptions.sourceOptions.type === 'wms') {
-        await LayerWss.setWssOptions(layerOptions, request);
+        layerOptions = await LayerWss.setWssOptions(layerOptions, request) as AnyLayerOptionsOut;
       }
 
       allLayerOptions.push(layerOptions);

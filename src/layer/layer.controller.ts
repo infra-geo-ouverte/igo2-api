@@ -3,7 +3,7 @@ import { handleError } from '../utils';
 
 import { UserApi } from '../user/api';
 import { LayerService } from './layer.service';
-import { ILayer } from './layer.interface';
+import { AnyLayerOptionsOut, ILayer } from './layer.interface';
 import { LayerWss } from './layer-wss';
 import { convertLayerToOptions, isLayerItemOptions } from './layer.utils';
 
@@ -96,9 +96,9 @@ export class LayerController {
       })
       .catch(handleError);
 
-    const options = convertLayerToOptions(layer);
+    let options = convertLayerToOptions(layer);
     if (query.type === 'wms' && isLayerItemOptions(options)) {
-      await LayerWss.setWssOptions(options, request);
+      options = (await LayerWss.setWssOptions(options, request)) as AnyLayerOptionsOut;
     }
 
     return options;
