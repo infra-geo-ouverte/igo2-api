@@ -240,7 +240,7 @@ export class ContextService {
       allLayerOptions.push(layerOptions);
     }
 
-    const tree = new LayerTree().fromFlatList(allLayerOptions);
+    const tree = new LayerTree<AnyLayerOptionsOut>().fromFlatList(allLayerOptions);
     return tree.data;
   }
 

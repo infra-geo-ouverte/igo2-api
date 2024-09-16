@@ -45,7 +45,16 @@ export function convertLayerToOptions(layer: ILayer): AnyLayerOptionsOut {
 }
 
 export function convertLayerContextToOptions(layer: ILayerContext): AnyLayerOptionsOut {
-  const { id, layerId, sourceOptions, layerOptions, ...restLayer } = layer;
+  const {
+    id,
+    layerId,
+    sourceOptions,
+    contextId,
+    createdAt = null,
+    updatedAt = null,
+    layerOptions,
+    ...restLayer
+  } = layer;
 
   const options = {
     ...restLayer,

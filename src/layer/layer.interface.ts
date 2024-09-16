@@ -9,6 +9,7 @@ export interface SourceOptions {
 }
 
 export type AnyLayerOptionsOut = (LayerOptions | LayerGroupOptions) & { id: number };
+export type AnyLayerOptionsWithLayerId = (LayerOptions & { layerId: number }) | LayerGroupOptions;
 export type AnyLayerOptions = LayerOptions | LayerGroupOptions;
 export type AnyLayerOptionsWithoutSource = Omit<LayerOptions, 'sourceOptions'> | LayerGroupOptions;
 
@@ -89,7 +90,7 @@ interface WorkspaceQueryOptions {
 
 export type AnySourceOptionsParams = WFSDataSourceOptionsParams | WMSDataSourceOptionsParams;
 
- interface WFSDataSourceOptionsParams {
+interface WFSDataSourceOptionsParams {
   version?: string;
   featureTypes: string;
   fieldNameGeometry: string;

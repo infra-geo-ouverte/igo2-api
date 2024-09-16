@@ -1,5 +1,5 @@
 import * as Boom from '@hapi/boom';
-import { Op } from 'sequelize';
+import { Op, Transaction } from 'sequelize';
 
 import { ObjectUtils } from '@igo2/base-api';
 import { UserApi } from '../user';
@@ -10,15 +10,15 @@ import { getUrlPath } from '../utils/url.utils';
 type IQueryBySourceOptions = Pick<SourceOptions, 'type' | 'url'> & { params: Pick<AnySourceOptionsParams, 'layers'> }; 
 
 export class LayerService {
-  public async create(layer: ILayerIn): Promise<Layer> {
-    if(layer.url) {
+  public async create(layer: ILayerIn, transaction?: Transaction): Promise<Layer> {
+    if (layer.url) {
       layer.url = getUrlPath(layer.url);
     }
-    return await Layer.create(layer);
+    return await Layer.create(layer, { transaction });
   }
 
   public async update(id: string, layer: ILayer): Promise<{ id: string }> {
-    if(layer.url) {
+    if (layer.url) {
       layer.url = getUrlPath(layer.url);
     }
     return await Layer.update(layer, {

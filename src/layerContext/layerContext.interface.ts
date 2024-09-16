@@ -5,10 +5,15 @@ export interface ILayerWithContext extends ILayer {
   LayerContext?: ILayerContext
 }
 
-export interface ILayerContext {
+export interface ILayerContext extends Partial<Metadata> {
   id?: number;
   layerId?: number;
   contextId: number;
   layerOptions?: AnyLayerOptionsWithoutSource;
   sourceOptions?: Partial<SourceOptions>;
 }
+
+interface Metadata {
+  updatedAt: Date;
+  createdAt: Date;
+} 
