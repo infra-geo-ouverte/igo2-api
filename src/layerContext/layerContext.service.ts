@@ -70,7 +70,9 @@ export class LayerContextService {
         layerId
       };
     });
-    return this.bulkClone(newId, layersOptions, transaction);
+    
+    const tree = new LayerTree<AnyLayerOptionsWithLayerId>().fromFlatList(layersOptions);
+    return this.bulkClone(newId, tree.data, transaction);
   }
 
   public async delete(contextId: number, layerId: string): Promise<void> {
@@ -137,8 +139,7 @@ export class LayerContextService {
     layers: AnyLayerOptionsWithLayerId[],
     transaction?: Transaction
   ): Promise<(LayerContext | LayerContext[])[]> {
-    const tree = new LayerTree<AnyLayerOptionsWithLayerId>().fromFlatList(layers);
-    const promises = tree.data.map((layer) => this.cloneAnyLayerContext(layer, contextId, transaction));
+    const promises = layers.map((layer) => this.cloneAnyLayerContext(layer, contextId, transaction));
     return Promise.all(promises);
   }
 
