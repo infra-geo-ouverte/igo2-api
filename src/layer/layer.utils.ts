@@ -78,3 +78,7 @@ export function formatSourceOptionsFromLayer(options: Partial<SourceOptions>): S
     }
   };
 }
+
+export function getParamsLayers(options: SourceOptions): string | undefined {
+  return options.params?.layers ?? options.params?.['LAYERS'];
+}

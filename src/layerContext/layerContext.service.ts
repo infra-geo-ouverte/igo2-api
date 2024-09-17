@@ -15,7 +15,7 @@ import {
 } from '../layer';
 import { ILayerContext } from './layerContext.interface';
 import { LayerContext } from './layerContext.model';
-import { convertLayerContextToOptions, isLayerGroupOptions, isLayerItemOptions } from '../layer/layer.utils';
+import { convertLayerContextToOptions, getParamsLayers, isLayerGroupOptions, isLayerItemOptions } from '../layer/layer.utils';
 import { getAncestorId } from '../utils/tree/tree.utils';
 import { LayerTree } from '../layer/layer-tree';
 
@@ -266,12 +266,11 @@ export class LayerContextService {
       }
     }
 
-    const params = layer.sourceOptions.params;
     return this.layerService.create(
       {
         type: layer.sourceOptions.type as LayerType,
         url: layer.sourceOptions.url,
-        layers: params ? params.layers : undefined
+        layers: getParamsLayers(layer.sourceOptions)
       },
       transaction
     );

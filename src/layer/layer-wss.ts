@@ -7,6 +7,7 @@ import { getServerConfig } from '../configurations';
 import { LayerOptions } from './layer.interface';
 import { getUrlHost } from '../utils/url.utils';
 import { Request } from '@hapi/hapi';
+import { getParamsLayers } from './layer.utils';
 
 interface LayerPermission {
   wmsAllowed?: boolean;
@@ -44,7 +45,8 @@ export class LayerWss {
       const theme = url.substring(url.lastIndexOf('/') + 1, url.lastIndexOf('.fcgi'));
       https.globalAgent.options.rejectUnauthorized = false;
       try {
-        const url = `${ServerConfigs.wssApi}layers/${layer.sourceOptions.params.layers}/allowed?theme=${theme}`;
+        const layers = getParamsLayers(layer.sourceOptions);
+        const url = `${ServerConfigs.wssApi}layers/${layers}/allowed?theme=${theme}`;
         const { data: permission } = await axios.get(url, {
           headers: {
             'x-consumer-id': headers['x-consumer-id'],
@@ -89,7 +91,7 @@ export class LayerWss {
         ...sourceOptions,
         urlWfs: sourceOptions.url && queryUrl ? getUrlHost(queryUrl) + sourceOptions.url : undefined,
         paramsWFS: {
-          featureTypes: sourceOptions.params?.layers,
+          featureTypes: getParamsLayers(sourceOptions),
           ...sourceOptions.paramsWFS
         }
       };
