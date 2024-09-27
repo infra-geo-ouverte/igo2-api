@@ -89,12 +89,16 @@ export class LayerWss {
       const sourceOptions = layer.sourceOptions;
       layer.sourceOptions = {
         ...sourceOptions,
-        urlWfs: sourceOptions.url && queryUrl ? getUrlHost(queryUrl) + sourceOptions.url : undefined,
         paramsWFS: {
           featureTypes: getParamsLayers(sourceOptions),
           ...sourceOptions.paramsWFS
         }
       };
+
+      if (sourceOptions.url) {
+        const host = getUrlHost(queryUrl ?? '');
+        layer.sourceOptions.urlWfs = (host ?? '') + sourceOptions.url;
+      }
     }
 
     return layer;
