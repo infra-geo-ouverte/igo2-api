@@ -11,6 +11,7 @@ import {
   BelongsToMany,
   HasMany
 } from 'sequelize-typescript';
+import { NonAttribute } from 'sequelize';
 
 import { Layer } from '../layer';
 import { LayerContext } from '../layerContext';
@@ -60,7 +61,14 @@ export class Context extends Model<IContext> {
   map: { [key: string]: any };
 
   @BelongsToMany(() => Layer, () => LayerContext)
-  layers: Layer[];
+  layers?: Layer[];
+
+  @HasMany(() => LayerContext, {
+    scope: {
+      layerId: null
+    }
+  })
+  declare layersSystem?: NonAttribute<LayerContext[]>;
 
   @BelongsToMany(() => Tool, () => ToolContext)
   tools: Tool[];

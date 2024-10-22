@@ -1,20 +1,26 @@
 import * as Boom from '@hapi/boom';
-import { Op } from 'sequelize';
+import { Op, Transaction } from 'sequelize';
 
 import { ObjectUtils } from '@igo2/base-api';
 import { UserApi } from '../user';
-import { ILayer, ILayerIn, SourceOptions } from './layer.interface';
+import { AnySourceOptionsParams, ILayer, ILayerIn, SourceOptions } from './layer.interface';
 import { Layer } from './layer.model';
 import { getUrlPath } from '../utils/url.utils';
 
+type IQueryBySourceOptions = Pick<SourceOptions, 'type' | 'url'> & { params: Pick<AnySourceOptionsParams, 'layers'> }; 
+
 export class LayerService {
-  public async create(layer: ILayerIn): Promise<Layer> {
-    layer.url = getUrlPath(layer.url ?? '');
-    return await Layer.create(layer);
+  public async create(layer: ILayerIn, transaction?: Transaction): Promise<Layer> {
+    if (layer.url) {
+      layer.url = getUrlPath(layer.url);
+    }
+    return await Layer.create(layer, { transaction });
   }
 
   public async update(id: string, layer: ILayer): Promise<{ id: string }> {
-    layer.url = getUrlPath(layer.url ?? '');
+    if (layer.url) {
+      layer.url = getUrlPath(layer.url);
+    }
     return await Layer.update(layer, {
       where: {
         id: id
@@ -93,7 +99,7 @@ export class LayerService {
     return layerPlain;
   }
 
-  public async getBySource(options: SourceOptions, layerId?: string): Promise<ILayer> {
+  public async getBySource(options: IQueryBySourceOptions, layerId?: number): Promise<ILayer> {
     if (options.url) {
       options.url = getUrlPath(options.url);
     }
@@ -102,7 +108,7 @@ export class LayerService {
         {
           type: options.type,
           url: options.url ?? '',
-          layers: (options.params || {}).layers || (options.params || {}).LAYERS || null
+          layers: (options.params || {})['layers'] || (options.params || {})['LAYERS'] || null
         }
       ]
     };

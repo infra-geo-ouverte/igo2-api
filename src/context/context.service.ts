@@ -4,17 +4,31 @@ import { Transaction } from 'sequelize';
 
 import { ObjectUtils, uuid } from '@igo2/base-api';
 import { UserApi } from '../user';
-import { ILayer, Layer, LayerOptions, SourceOptions } from '../layer';
+import { AnyLayerOptions, ILayer, Layer, AnyLayerOptionsOut } from '../layer';
 import { ITool, Tool } from '../tool';
 
-import { ContextDetailedOut, ContextDetailed, IContext, IContextOut, Scope } from './context.interface';
+import {
+  ContextDetailedDto,
+  ContextDetailed,
+  IContext,
+  IContextOut,
+  Scope,
+  ContextDetailedIn
+} from './context.interface';
 import { Context } from './context.model';
-import { ILayerContext } from '../layerContext';
+import { ILayerContext, ILayerWithContext, LayerContext } from '../layerContext';
+import {
+  convertLayerContextToOptions,
+  convertLayerToOptions,
+  isLayerGroupOptions,
+  isLayerItemOptions
+} from '../layer/layer.utils';
 import { LayerWss } from '../layer/layer-wss';
+import { LayerTree } from '../layer/layer-tree';
 
 export class ContextService {
-  public async create(context: ContextDetailed, transaction?: Transaction): Promise<Context> {
-    return await Context.create(context, {transaction}).catch((error) => {
+  public async create(context: ContextDetailedIn, transaction?: Transaction): Promise<Context> {
+    return await Context.create(context, { transaction }).catch((error) => {
       if (error?.data?.name === 'SequelizeUniqueConstraintError') {
         const message = 'URI must be unique.';
         throw Boom.conflict(message);
@@ -39,7 +53,7 @@ export class ContextService {
     );
   }
 
-  public async update(id: string, context: ContextDetailed): Promise<{ id: string }> {
+  public async update(id: string, context: ContextDetailedIn): Promise<{ id: string }> {
     return await Context.update(context, {
       where: {
         id: id
@@ -83,7 +97,7 @@ export class ContextService {
     });
   }
 
-  public async getById(id: string): Promise<IContextOut> {
+  public async getById(id: string): Promise<ContextDetailedDto> {
     let where: any = { id: id };
 
     if (isNaN(id as any)) {
@@ -101,7 +115,7 @@ export class ContextService {
     return ObjectUtils.removeNull(context.get()) as IContextOut;
   }
 
-  public async getDetailedById(id: number, user: string, request: Request): Promise<ContextDetailedOut> {
+  public async getDetailedById(id: number, user: string, request: Request): Promise<ContextDetailedDto> {
     let where: any = { id: id };
 
     if (isNaN(id as any)) {
@@ -109,7 +123,12 @@ export class ContextService {
     }
 
     const context = await Context.findOne({
-      include: [Layer, Tool],
+      include: [
+        Layer,
+        // Get system layers
+        LayerContext,
+        Tool
+      ],
       where: where
     });
 
@@ -132,17 +151,16 @@ export class ContextService {
 
     const [toolbar, tools] = this.formatTools(context, profils, globalTools);
 
-    const layers = await this.formatLayers(context.layers, profils, globalLayers, request);
+    const layers = await this.formatLayers(context.get({ plain: true }), profils, globalLayers, request);
 
-    const contextDb = context.get();
-    const contextDetailed: ContextDetailedOut = {
-      ...contextDb,
-      id: contextDb.id!,
-      layers,
+    const { layersSystem, ...restContextDetailed } = context.get({ plain: true }) as ContextDetailed;
+    return ObjectUtils.removeNull({
+      ...restContextDetailed,
+      id: restContextDetailed.id!,
+      layers: this.sortLayersByZindex(layers),
       tools,
       toolbar
-    };
-    return ObjectUtils.removeNull(contextDetailed);
+    });
   }
 
   private formatTools(context: Context, profils: string[], globalTools?: Tool[]): [string[], ITool[]] {
@@ -184,71 +202,75 @@ export class ContextService {
   }
 
   private async formatLayers(
-    layers: Layer[],
+    { layers = [], layersSystem = [] }: ContextDetailed,
     profils: string[],
     globalLayers: Layer[],
     request: Request
-  ): Promise<LayerOptions[]> {
-    const layersOptions: LayerOptions[] = [];
-
-    const permissions: Promise<boolean>[] = [];
-    const plainLayers: ILayer[] = [];
-
-    for (const layer of layers) {
-      const plainL = layer.get();
-      plainLayers.push(plainL);
-      permissions.push(UserApi.verifyPermissionByUrl(plainL.sourceOptions?.url, profils));
-    }
+  ): Promise<AnyLayerOptionsOut[]> {
+    const allLayers: ILayerWithContext[] = [
+      ...layers,
+      ...layersSystem.map((layerContext) => ({
+        id: layerContext.id!,
+        type: layerContext.layerOptions.type,
+        layerOptions: layerContext.layerOptions
+      }))
+    ];
 
     for (const globalLayer of globalLayers) {
-      const plainL = globalLayer.get();
-      if (plainLayers.findIndex((l) => l.id === plainL.id) === -1) {
-        (plainL as any).LayerContext = {};
-        plainLayers.push(plainL);
-        permissions.push(UserApi.verifyPermissionByUrl(plainL.sourceOptions?.url, profils));
+      const layer = globalLayer.get();
+      const absent = allLayers.findIndex((l) => l.id === layer.id) === -1;
+      if (absent) {
+        allLayers.push(layer);
       }
     }
 
-    const permissionsResult = await Promise.all(permissions);
-
-    let i = 0;
-    for (const plainLayer of plainLayers) {
-      if (permissionsResult[i]) {
-        if (!plainLayer.global && plainLayer.type === 'wms') {
-          await LayerWss.setWssOptions(plainLayer, request);
-        }
-
-        const layerMerged = this.mergeLayer(plainLayer, (plainLayer as any).LayerContext);
-
-        layersOptions.push(layerMerged);
+    const allLayerOptions: AnyLayerOptionsOut[] = [];
+    for (const plainLayer of allLayers) {
+      const { LayerContext = undefined, ...layer } = plainLayer;
+      let layerOptions = this.mergeLayerToOptions(layer, LayerContext);
+      const hasPermission = await this.validateLayerPermissions(layerOptions, profils);
+      if (!hasPermission) {
+        continue;
       }
-      i++;
+
+      if (!plainLayer.global && isLayerItemOptions(layerOptions) && layerOptions.sourceOptions.type === 'wms') {
+        layerOptions = await LayerWss.setWssOptions(layerOptions, request) as AnyLayerOptionsOut;
+      }
+
+      allLayerOptions.push(layerOptions);
     }
 
-    return layersOptions.sort((a, b) => (a.zIndex < b.zIndex ? -1 : a.zIndex > b.zIndex ? 1 : 0));
+    const tree = new LayerTree<AnyLayerOptionsOut>().fromFlatList(allLayerOptions);
+    return tree.data;
   }
 
-  private mergeLayer(layer: ILayer, layerContext: ILayerContext): LayerOptions {
-    const params = {
-      layers: layer.layers,
-      ...(layer.sourceOptions?.params ?? {}),
-      ...(layerContext.sourceOptions?.params ?? {})
-    };
+  private mergeLayerToOptions(layer: ILayer, layerContext: ILayerContext | undefined): AnyLayerOptionsOut {
+    const layerOptions = convertLayerToOptions(layer);
+    const layerContextOptions = layerContext ? convertLayerContextToOptions(layerContext) : {};
 
-    const sourceOptions: SourceOptions = {
-      type: layer.type,
-      url: layer.url,
-      optionsFromCapabilities: true,
-      ...(layer.sourceOptions ?? {}),
-      ...(layerContext.sourceOptions ?? {}),
-      params
-    };
+    return ObjectUtils.mergeDeep(layerOptions, layerContextOptions) as AnyLayerOptionsOut;
+  }
 
-    return {
-      id: layer.id,
-      ...layer.layerOptions,
-      ...(layer as any).LayerContext.layerOptions,
-      sourceOptions
-    };
+  /** Recursive */
+  private sortLayersByZindex(layers: AnyLayerOptions[]): AnyLayerOptions[] {
+    return layers
+      .map((layer) => {
+        if (isLayerGroupOptions(layer)) {
+          this.sortLayersByZindex(layer.children);
+        }
+        return layer;
+      })
+      .sort(this.compareZindex);
+  }
+
+  private compareZindex(a: AnyLayerOptions, b: AnyLayerOptions): number {
+    return a.zIndex < b.zIndex ? -1 : a.zIndex > b.zIndex ? 1 : 0;
+  }
+
+  private async validateLayerPermissions(layer: AnyLayerOptions, profils: string[]): Promise<boolean> {
+    if (isLayerGroupOptions(layer)) {
+      return true;
+    }
+    return UserApi.verifyPermissionByUrl(layer.sourceOptions?.url, profils);
   }
 }

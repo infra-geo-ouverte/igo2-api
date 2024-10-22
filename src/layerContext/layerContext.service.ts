@@ -3,15 +3,27 @@ import { Transaction } from 'sequelize';
 
 import { ObjectUtils } from '@igo2/base-api';
 
-import { LayerService, ILayer, Layer } from '../layer';
+import {
+  LayerService,
+  ILayer,
+  Layer,
+  AnyLayerOptions,
+  LayerOptions,
+  LayerGroupOptions,
+  LayerType,
+  AnyLayerOptionsWithLayerId
+} from '../layer';
 import { ILayerContext } from './layerContext.interface';
 import { LayerContext } from './layerContext.model';
+import { convertLayerContextToOptions, getParamsLayers, isLayerGroupOptions, isLayerItemOptions } from '../layer/layer.utils';
+import { getAncestorId } from '../utils/tree/tree.utils';
+import { LayerTree } from '../layer/layer-tree';
 
 export class LayerContextService {
   private layerService: LayerService = new LayerService();
 
   public async create(layerContext: ILayerContext, transaction?: Transaction): Promise<LayerContext> {
-    return await LayerContext.create(layerContext, {transaction}).catch((error) => {
+    return LayerContext.create(layerContext, { transaction }).catch((error) => {
       if (error?.data?.name === 'SequelizeUniqueConstraintError') {
         const message = 'The pair contextId and layerId must be unique.';
         throw Boom.conflict(message);
@@ -27,8 +39,8 @@ export class LayerContextService {
     });
   }
 
-  public async update(contextId: number, layerId: string, layerContext: ILayerContext): Promise<ILayerContext> {
-    return await LayerContext.update(layerContext, {
+  public async update(contextId: number, layerId: number, layerContext: ILayerContext): Promise<ILayerContext> {
+    return LayerContext.update(layerContext, {
       where: {
         layerId: layerId,
         contextId: contextId
@@ -44,13 +56,26 @@ export class LayerContextService {
     });
   }
 
-  public async cloneByContextId(id: number, newId: number, transaction: Transaction): Promise<LayerContext[]> {
+  public async cloneByContextId(
+    id: number,
+    newId: number,
+    transaction: Transaction
+  ): Promise<(LayerContext | LayerContext[])[]> {
     const layers = await this.getByContextId(id);
-    const requests$ = layers.map(({ id, ...layer }) => this.create({ ...layer, contextId: newId }, transaction));
-    return Promise.all(requests$);
+
+    const layersOptions = layers.map(({ layerId, ...restLayer }) => {
+      const options = convertLayerContextToOptions(restLayer);
+      return {
+        ...options,
+        layerId
+      };
+    });
+    
+    const tree = new LayerTree<AnyLayerOptionsWithLayerId>().fromFlatList(layersOptions);
+    return this.bulkClone(newId, tree.data, transaction);
   }
 
-  public async delete(contextId: string, layerId: string): Promise<void> {
+  public async delete(contextId: number, layerId: string): Promise<void> {
     return await LayerContext.destroy({
       where: {
         layerId: layerId,
@@ -64,16 +89,11 @@ export class LayerContextService {
     });
   }
 
-  public async deleteByContextId(contextId: string): Promise<void> {
-    return await LayerContext.destroy({
+  public async deleteByContextId(contextId: number): Promise<number> {
+    return LayerContext.destroy({
       where: {
         contextId: contextId
       }
-    }).then((count: number) => {
-      if (!count) {
-        throw Boom.notFound();
-      }
-      return;
     });
   }
 
@@ -105,52 +125,154 @@ export class LayerContextService {
     });
   }
 
-  public async bulkCreate(contextId: number, layers: ILayer[]): Promise<(LayerContext | undefined)[]> {
-    const promises = layers.map((layer) => this._createLayerContext(layer, contextId));
+  public async bulkCreate(
+    contextId: number,
+    layers: AnyLayerOptions[],
+    transaction?: Transaction
+  ): Promise<(LayerContext | LayerContext[])[]> {
+    const promises = layers.map((layer) => this.createAnyLayerContext(layer, contextId, transaction));
     return Promise.all(promises);
   }
 
-  private async _createLayerContext(layer: ILayer, contextId: number): Promise<LayerContext | undefined> {
-    try {
-      const layerDB = await this.getLayerOrCreate(layer);
-      if (layerDB.global && !layer.layerOptions.visible) {
-        return;
-      }
+  private async bulkClone(
+    contextId: number,
+    layers: AnyLayerOptionsWithLayerId[],
+    transaction?: Transaction
+  ): Promise<(LayerContext | LayerContext[])[]> {
+    const promises = layers.map((layer) => this.cloneAnyLayerContext(layer, contextId, transaction));
+    return Promise.all(promises);
+  }
 
-      // The type, url and params should not be saved for LayerContext
-      const { type, url, params, ...sourceOptions } = layer.sourceOptions;
-      const layerContext = await this.create({
-        contextId: contextId,
-        layerId: String(layerDB.id),
-        layerOptions: layer.layerOptions ?? {},
-        sourceOptions
+  private async cloneAnyLayerContext(
+    layer: AnyLayerOptionsWithLayerId,
+    contextId: number,
+    transaction?: Transaction
+  ): Promise<LayerContext | LayerContext[]> {
+    return layer.type === 'group'
+      ? this.cloneLayerContextGroup(layer as LayerGroupOptions, contextId, transaction)
+      : this.cloneLayerContext(layer, contextId, transaction);
+  }
+
+  private async cloneLayerContext(
+    { id, layerId, sourceOptions, ...layer }: LayerOptions & { layerId: number },
+    contextId: number,
+    transaction?: Transaction
+  ): Promise<LayerContext> {
+    const layerContext: ILayerContext = {
+      layerId,
+      layerOptions: layer,
+      sourceOptions,
+      contextId: contextId
+    };
+
+    return this.create(layerContext, transaction);
+  }
+
+  private async cloneLayerContextGroup(
+    { id, children, ...layer }: LayerGroupOptions,
+    contextId: number,
+    transaction?: Transaction
+  ): Promise<LayerContext | LayerContext[]> {
+    const layerContext: ILayerContext = {
+      layerOptions: layer,
+      contextId: contextId
+    };
+    const layerContextDb = await this.create(layerContext, transaction);
+
+    if (children?.length) {
+      children.forEach((child) => {
+        child.parentId = this.getParentId(layerContextDb);
       });
 
-      return layerContext;
-    } catch (error) {
-      // Ignore error
-      return;
+      await this.bulkClone(contextId, children as AnyLayerOptionsWithLayerId[], transaction);
+    }
+
+    return layerContextDb;
+  }
+
+  private async createAnyLayerContext(
+    layer: AnyLayerOptions,
+    contextId: number,
+    transaction?: Transaction
+  ): Promise<LayerContext | LayerContext[]> {
+    if (isLayerItemOptions(layer)) {
+      return this.createLayerContext(layer, contextId, transaction);
+    } else if (isLayerGroupOptions(layer)) {
+      return this.createLayerContextGroup(layer, contextId, transaction);
     }
   }
 
-  private async getLayerOrCreate(layer: ILayer): Promise<ILayer | Layer> {
-    let layerDB: ILayer;
+  private async createLayerContext(
+    layer: LayerOptions,
+    contextId: number,
+    transaction?: Transaction
+  ): Promise<LayerContext> {
+    const layerDB = await this.getLayerOrCreate(layer, transaction);
+    if (layerDB?.global && !layer.visible) {
+      return;
+    }
 
+    const { sourceOptions, ...restLayer } = layer;
+    // The type, url and params should not be saved for LayerContext
+    const { type, url, params, ...restSourceOptions } = sourceOptions;
+
+    const layerContext: ILayerContext = {
+      contextId: contextId,
+      layerId: layerDB?.id,
+      layerOptions: restLayer,
+      sourceOptions: restSourceOptions
+    };
+
+    return this.create(layerContext, transaction);
+  }
+
+  private async createLayerContextGroup(
+    { children, id, ...restLayer }: LayerGroupOptions,
+    contextId: number,
+    transaction?: Transaction
+  ): Promise<LayerContext | LayerContext[]> {
+    const layerContext: ILayerContext = {
+      contextId: contextId,
+      layerOptions: restLayer
+    };
+    const layerContextDb = await this.create(layerContext, transaction);
+
+    if (children?.length) {
+      children.forEach((child) => {
+        child.parentId = this.getParentId(layerContextDb);
+      });
+
+      await this.bulkCreate(contextId, children, transaction);
+    }
+
+    return layerContextDb;
+  }
+
+  private getParentId(layerContext: LayerContext): string {
+    return getAncestorId(String(layerContext.id), layerContext.layerOptions?.parentId);
+  }
+
+  /**
+   * Try to get the layer by source options or create if it's doesn't exist
+   */
+  private async getLayerOrCreate(layer: LayerOptions, transaction?: Transaction): Promise<ILayer | Layer | undefined> {
     try {
-      layerDB = await this.layerService.getBySource(layer.sourceOptions, layer.id);
-    } catch (error) {
-      // ignore error
-    }
-
-    if (layerDB) {
+      const layerDB = await this.layerService.getBySource(layer.sourceOptions, layer.id);
       return layerDB;
+    } catch (error) {
+      // Mute for 404
+      if (error instanceof Boom.Boom && error.output.statusCode !== 404) {
+        throw error;
+      }
     }
 
-    const params = layer.sourceOptions.params;
-    return this.layerService.create({
-      type: layer.sourceOptions.type,
-      url: layer.sourceOptions.url,
-      layers: params ? params.layers || params.LAYERS : undefined
-    });
+    return this.layerService.create(
+      {
+        type: layer.sourceOptions.type as LayerType,
+        url: layer.sourceOptions.url,
+        layers: getParamsLayers(layer.sourceOptions)
+      },
+      transaction
+    );
   }
 }

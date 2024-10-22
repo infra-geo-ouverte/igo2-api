@@ -3,8 +3,9 @@ import { handleError } from '../utils';
 
 import { UserApi } from '../user/api';
 import { LayerService } from './layer.service';
-import { ILayer } from './layer.interface';
+import { AnyLayerOptionsOut, ILayer } from './layer.interface';
 import { LayerWss } from './layer-wss';
+import { convertLayerToOptions, isLayerItemOptions } from './layer.utils';
 
 export class LayerController {
   private layerService: LayerService;
@@ -95,13 +96,14 @@ export class LayerController {
       })
       .catch(handleError);
 
-    if (query.type === 'wms') {
-      await LayerWss.setWssOptions(layer, request);
+    let options = convertLayerToOptions(layer);
+    if (query.type === 'wms' && isLayerItemOptions(options)) {
+      options = (await LayerWss.setWssOptions(options, request)) as AnyLayerOptionsOut;
     }
 
-    return layer;
+    return options;
   }
-
+ 
   private async urlAllowed(url: string, headers: object): Promise<boolean> {
     const userId = headers['x-consumer-id'];
     const username = headers['x-consumer-username'];
