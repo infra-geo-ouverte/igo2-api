@@ -116,4 +116,5 @@ interface WMSDataSourceOptionsParams {
   DPI?: number;
   MAP_RESOLUTION?: number;
   FORMAT_OPTIONS?: string;
+  STYLES?: string
 }
