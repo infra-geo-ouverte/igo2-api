@@ -35,10 +35,10 @@ L'API de igo2 est basé sur la librairie @igo2/base-api. Plusieurs fonctionnalit
 
 
 ## 💾 Démarrage
-Pour démarrer l'application en local on doit préalablement préparer l'infrastructure. Un docker compose est disponible pour assembler l'infrastructure.
+Pour démarrer l'application en local on doit préalablement préparer l'infrastructure.
 
 ### Infrastructure
-Il est conseillé de développer directement dans le DevContainer. 
+Il est conseillé de développer directement dans le DevContainer. Notez que la base de donnée doit être manuellement populé avec un replica, demandé à un administrateur du projet de vous fournir le replica.
 
 #### DevContainer
 Assurez-vous que votre éditeur de code supporte les DevContainer (VsCode/IntelliJ). Dans VsCode, il y a plusieurs moyen d'ouvrir le DevContainer, via le raccourci du clavier: `ctrl + shift + p` et sélectionner le menu `Dev Containers: Reopen in Container` ou une des variantes pour le builder.
@@ -47,7 +47,7 @@ Assurez-vous que votre éditeur de code supporte les DevContainer (VsCode/Intell
 Vous pouvez aussi lancer directement le docker compose qui se situe dans le dossier `.devcontainer`.
 
 ### Démarrer l'application
-Lancer une installation au besoin `npm ci` et ensuite le `npm run start`.
+Lancer le `npm run start`.
 
 
 ## 🌎 Contribution
