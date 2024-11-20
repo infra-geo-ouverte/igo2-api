@@ -12,7 +12,7 @@ if (!fromHost || !toHost) {
   process.exit(1);
 }
 
-Config.readConfig(__dirname, `../configurations/config.${process.env.NODE_ENV || 'dev'}.json`);
+Config.readConfig(__dirname, `../configurations/config.${process.env.NODE_ENV || 'local'}.json`);
 const dbConfig = Config.getDatabaseConfig() as IPostgresConfiguration;
 const user =  dbConfig.username;
 const password = dbConfig.password;

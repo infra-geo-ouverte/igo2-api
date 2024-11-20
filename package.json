@@ -12,6 +12,7 @@
     "tsc": "tsc",
     "tsc-watch": "tsc -w",
     "start": "nodemon",
+    "start.dev": "NODE_ENV=dev nodemon",
     "build.dev": "rimraf build && npm run tsc && npm run copyConfigs",
     "serve.dev": "node build/index.js",
     "build.prod": "rimraf build && NODE_ENV=prod npm run tsc && npm run copyConfigs",
