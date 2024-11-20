@@ -2,8 +2,13 @@ version: '3.8'
 
 name: msp-igo2-api
 
+x-timezone-policy: &timezone-policy
+  environment:
+    - TZ=Canada/Eastern
+
 services:
   app:
+    <<: [ *timezone-policy ]
     build:
       context: .
       dockerfile: Dockerfile
@@ -21,6 +26,7 @@ services:
     # (Adding the "ports" property to this file will not forward from a Codespace.)
 
   db:
+    <<: [ *timezone-policy ]
     image: postgis/postgis:latest
     restart: unless-stopped
     volumes:
