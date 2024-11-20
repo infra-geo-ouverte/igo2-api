@@ -26,7 +26,7 @@ L'API de igo2 est basé sur la librairie @igo2/base-api. Plusieurs fonctionnalit
 
 | Commande| Description |
 | -------- | ----------- |
-| `start` | Démarrer l'API en mode Watch sur les fichiers Typescript. Ce mode de développement en LOCAL nécessite que le Docker pour l'infrastructure est monté. (DevContainer) |
+| `start` | Démarrer l'API en mode Watch sur les fichiers Typescript. Ce mode de développement en LOCAL nécessite que le DevContainer soit monté. |
 | `start.dev` | Démarrer l'API, connecté à l'environnement de TEST/DEV en mode Watch sur les fichiers Typescript. |
 | `build.prod` | Compiler en Javascript |
 | `serve.prod` | Démarrer l'API en mode compilé  |
