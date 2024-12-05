@@ -1,3 +1,5 @@
+import { OgcFiltersOptions } from './filter/layer-filter.interface';
+
 export interface SourceOptions {
   type?: string;
   url?: string;
@@ -6,6 +8,7 @@ export interface SourceOptions {
   optionsFromCapabilities?: boolean;
   params: Partial<AnySourceOptionsParams>;
   paramsWFS?: WFSDataSourceOptionsParams;
+  ogcFilters?: OgcFiltersOptions;
 }
 
 export type AnyLayerOptionsOut = (LayerOptions | LayerGroupOptions) & { id: number };
@@ -16,7 +19,7 @@ export type AnyLayerOptionsWithoutSource = Omit<LayerOptions, 'sourceOptions'> |
 export interface LayerOptions extends BaseLayerOptions {
   baseLayer?: boolean;
   workspace?: WorkspaceOptions;
-  sourceOptions: SourceOptions;
+  sourceOptions?: SourceOptions;
 }
 
 export interface LayerGroupOptions extends Omit<BaseLayerOptions, 'title'> {
@@ -113,4 +116,5 @@ interface WMSDataSourceOptionsParams {
   DPI?: number;
   MAP_RESOLUTION?: number;
   FORMAT_OPTIONS?: string;
+  STYLES?: string
 }

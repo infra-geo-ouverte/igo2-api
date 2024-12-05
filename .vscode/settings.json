@@ -1,0 +1,25 @@
+{
+  "sqltools.connections": [
+    {
+      "previewLimit": 50,
+      "server": "spssogl97d.sso.msp.gouv.qc.ca",
+      "port": 5432,
+      "askForPassword": true,
+      "driver": "PostgreSQL",
+      "group": "IGO",
+      "name": "Dev",
+      "database": "igo",
+      "username": "igo"
+    },
+    {
+      "previewLimit": 50,
+      "server": "db",
+      "port": 5432,
+      "driver": "PostgreSQL",
+      "name": "Local",
+      "database": "postgres",
+      "username": "postgres",
+      "password": "postgres"
+    }
+  ]
+}

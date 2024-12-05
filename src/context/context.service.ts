@@ -4,7 +4,7 @@ import { Transaction } from 'sequelize';
 
 import { ObjectUtils, uuid } from '@igo2/base-api';
 import { UserApi } from '../user';
-import { AnyLayerOptions, ILayer, Layer, AnyLayerOptionsOut } from '../layer';
+import { Layer, AnyLayerOptionsOut } from '../layer';
 import { ITool, Tool } from '../tool';
 
 import {
@@ -16,15 +16,12 @@ import {
   ContextDetailedIn
 } from './context.interface';
 import { Context } from './context.model';
-import { ILayerContext, ILayerWithContext, LayerContext } from '../layerContext';
-import {
-  convertLayerContextToOptions,
-  convertLayerToOptions,
-  isLayerGroupOptions,
-  isLayerItemOptions
-} from '../layer/layer.utils';
+import { ILayerWithContext, LayerContext } from '../layerContext';
+import { isLayerItemOptions, sortLayersByZindex, validateLayerPermissions } from '../layer/layer.utils';
 import { LayerWss } from '../layer/layer-wss';
 import { LayerTree } from '../layer/layer-tree';
+
+import { LayerEntity } from '../layer/layer';
 
 export class ContextService {
   public async create(context: ContextDetailedIn, transaction?: Transaction): Promise<Context> {
@@ -157,7 +154,7 @@ export class ContextService {
     return ObjectUtils.removeNull({
       ...restContextDetailed,
       id: restContextDetailed.id!,
-      layers: this.sortLayersByZindex(layers),
+      layers: sortLayersByZindex(layers),
       tools,
       toolbar
     });
@@ -226,51 +223,23 @@ export class ContextService {
 
     const allLayerOptions: AnyLayerOptionsOut[] = [];
     for (const plainLayer of allLayers) {
-      const { LayerContext = undefined, ...layer } = plainLayer;
-      let layerOptions = this.mergeLayerToOptions(layer, LayerContext);
-      const hasPermission = await this.validateLayerPermissions(layerOptions, profils);
+      const { LayerContext = undefined, ...restLayer } = plainLayer;
+      const layer = new LayerEntity(restLayer);
+      layer.mergeLayerContext(LayerContext);
+
+      const hasPermission = await validateLayerPermissions(layer.options, profils);
       if (!hasPermission) {
         continue;
       }
 
-      if (!plainLayer.global && isLayerItemOptions(layerOptions) && layerOptions.sourceOptions.type === 'wms') {
-        layerOptions = await LayerWss.setWssOptions(layerOptions, request) as AnyLayerOptionsOut;
+      if (!plainLayer.global && isLayerItemOptions(layer.options) && layer.options.sourceOptions.type === 'wms') {
+        layer.options = (await LayerWss.setWssOptions(layer.options, request)) as AnyLayerOptionsOut;
       }
 
-      allLayerOptions.push(layerOptions);
+      allLayerOptions.push(layer.options);
     }
 
     const tree = new LayerTree<AnyLayerOptionsOut>().fromFlatList(allLayerOptions);
     return tree.data;
-  }
-
-  private mergeLayerToOptions(layer: ILayer, layerContext: ILayerContext | undefined): AnyLayerOptionsOut {
-    const layerOptions = convertLayerToOptions(layer);
-    const layerContextOptions = layerContext ? convertLayerContextToOptions(layerContext) : {};
-
-    return ObjectUtils.mergeDeep(layerOptions, layerContextOptions) as AnyLayerOptionsOut;
-  }
-
-  /** Recursive */
-  private sortLayersByZindex(layers: AnyLayerOptions[]): AnyLayerOptions[] {
-    return layers
-      .map((layer) => {
-        if (isLayerGroupOptions(layer)) {
-          this.sortLayersByZindex(layer.children);
-        }
-        return layer;
-      })
-      .sort(this.compareZindex);
-  }
-
-  private compareZindex(a: AnyLayerOptions, b: AnyLayerOptions): number {
-    return a.zIndex < b.zIndex ? -1 : a.zIndex > b.zIndex ? 1 : 0;
-  }
-
-  private async validateLayerPermissions(layer: AnyLayerOptions, profils: string[]): Promise<boolean> {
-    if (isLayerGroupOptions(layer)) {
-      return true;
-    }
-    return UserApi.verifyPermissionByUrl(layer.sourceOptions?.url, profils);
   }
 }

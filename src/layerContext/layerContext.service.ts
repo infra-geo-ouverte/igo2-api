@@ -223,6 +223,12 @@ export class LayerContextService {
       sourceOptions: restSourceOptions
     };
 
+    if (params && 'STYLES' in params) {
+      layerContext.sourceOptions.params = {
+        STYLES: params.STYLES
+      }
+    }
+
     return this.create(layerContext, transaction);
   }
 

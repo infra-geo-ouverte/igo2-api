@@ -1,4 +1,5 @@
 import { ILayerContext } from '../layerContext';
+import { UserApi } from '../user';
 import {
   AnyLayerOptions,
   AnyLayerOptionsOut,
@@ -81,4 +82,27 @@ export function formatSourceOptionsFromLayer(options: Partial<SourceOptions>): S
 
 export function getParamsLayers(options: SourceOptions): string | undefined {
   return options.params?.layers ?? options.params?.['LAYERS'];
+}
+
+/** Recursive */
+export function sortLayersByZindex(layers: AnyLayerOptions[]): AnyLayerOptions[] {
+  return layers
+    .map((layer) => {
+      if (isLayerGroupOptions(layer)) {
+        sortLayersByZindex(layer.children);
+      }
+      return layer;
+    })
+    .sort(compareZindex);
+}
+
+export function compareZindex(a: AnyLayerOptions, b: AnyLayerOptions): number {
+  return a.zIndex < b.zIndex ? -1 : a.zIndex > b.zIndex ? 1 : 0;
+}
+
+export async function validateLayerPermissions(layer: AnyLayerOptions, profils: string[]): Promise<boolean> {
+  if (isLayerGroupOptions(layer)) {
+    return true;
+  }
+  return UserApi.verifyPermissionByUrl(layer.sourceOptions?.url, profils);
 }

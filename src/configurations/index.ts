@@ -7,7 +7,7 @@ const configs = new nconf.Provider({
   argv: true,
   store: {
     type: 'file',
-    file: path.join(__dirname, `./config.${process.env.NODE_ENV || 'dev'}.json`)
+    file: path.join(__dirname, `./config.${process.env.NODE_ENV || 'local'}.json`)
   }
 });
 

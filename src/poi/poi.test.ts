@@ -4,7 +4,7 @@ import { User } from '../user';
 
 import { Server, Config } from '@igo2/base-api';
 
-Config.readConfig(`${__dirname}/../`, `configurations/config.${process.env.NODE_ENV || 'dev'}.json`);
+Config.readConfig(`${__dirname}/../`, `configurations/config.${process.env.NODE_ENV || 'local'}.json`);
 
 const serverConfigs = Config.getServerConfig();
 const testConfigs = Configs.getTestConfig();
