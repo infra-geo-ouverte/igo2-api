@@ -1,3 +1,24 @@
+# [1.10.0](https://gitlab.forge.gouv.qc.ca/igo2/igo2-api/compare/1.9.0...1.10.0) (2024-12-05)
+
+
+### Bug Fixes
+
+* add layerOptions from wss ([a4fd700](https://gitlab.forge.gouv.qc.ca/igo2/igo2-api/commit/a4fd7008c595560aa9f35d5d687593647bb9b3aa))
+* context clone handle group ([8eca616](https://gitlab.forge.gouv.qc.ca/igo2/igo2-api/commit/8eca61645f7c1a0e6b8d38ed7f829bd3ee7474ee))
+* **LayerContext:** clone rebuild exact tree ([c62d870](https://gitlab.forge.gouv.qc.ca/igo2/igo2-api/commit/c62d8707d403ddd6d27379f8cee1ada6a1ef45d2))
+* **layer:** don't try url path if it's undefined. ([bc957ed](https://gitlab.forge.gouv.qc.ca/igo2/igo2-api/commit/bc957edc9383705a2d9dfb5cc0a991c9e137da56))
+* **Layer:** handle params.layers or params.LAYERS ([05b6c4f](https://gitlab.forge.gouv.qc.ca/igo2/igo2-api/commit/05b6c4f43e568c4952f9deb928b146a286b5557d))
+* missing host on urlWfs is allowed ([6336dcf](https://gitlab.forge.gouv.qc.ca/igo2/igo2-api/commit/6336dcf5dbfa05f35c32d04c95486e78619aef54))
+
+
+### Features
+
+* **context:** add the possibility to save layer group ([6ad3b66](https://gitlab.forge.gouv.qc.ca/igo2/igo2-api/commit/6ad3b663bb7b223063fd72c122d08dbb4403c8a5))
+* **context:** save ogcFilter option with context layer ([e9298ca](https://gitlab.forge.gouv.qc.ca/igo2/igo2-api/commit/e9298ca8e24f132046592b504ee1c7585775cd12))
+* **layerContext:** save selected legend in context ([e6b7a50](https://gitlab.forge.gouv.qc.ca/igo2/igo2-api/commit/e6b7a50fdbb34808cf59997884619a60e58eab89))
+
+
+
 ## [1.8.14](https://gitlab.forge.gouv.qc.ca/igo2/igo2-api/compare/1.8.13...1.8.14) (2024-09-03)
 
 
