@@ -1,3 +1,12 @@
+## [1.10.1](https://gitlab.forge.gouv.qc.ca/igo2/igo2-api/compare/1.10.0...1.10.1) (2024-12-10)
+
+
+### Bug Fixes
+
+* **context:** saved ogc filter merging error ([390a3e8](https://gitlab.forge.gouv.qc.ca/igo2/igo2-api/commit/390a3e809cbd7e65bf90259fe359fc2a2ffadde3))
+
+
+
 # [1.10.0](https://gitlab.forge.gouv.qc.ca/igo2/igo2-api/compare/1.9.0...1.10.0) (2024-12-05)
 
 
