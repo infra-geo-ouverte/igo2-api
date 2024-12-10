@@ -31,7 +31,7 @@ export function isFilterAttributeOptions(
 /** Recursive */
 export function searchFilter(
   filters: LogicalArrayOptions | AnyBaseOgcFilterOptions,
-  propertyName: string
+  propertyName: string | undefined
 ): LogicalArrayOptions | AnyBaseOgcFilterOptions | undefined {
   if (isLogicalArray(filters)) {
     if (Array.isArray(filters.filters)) {
