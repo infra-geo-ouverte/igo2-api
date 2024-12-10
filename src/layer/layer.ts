@@ -35,7 +35,7 @@ export class LayerEntity {
     if (
       !isLayerGroupOptions(layerContextOptions) &&
       this.sourceOptions?.ogcFilters &&
-      layerContext?.sourceOptions?.ogcFilters
+      layerContext?.sourceOptions?.ogcFilters && layerContextOptions.sourceOptions
     ) {
       layerContextOptions.sourceOptions.ogcFilters = this.mergeOgcFilter(
         this.sourceOptions.ogcFilters,
@@ -73,24 +73,24 @@ export class LayerEntity {
   }
 
   private compareOgcSelectorFields(layerSelector: OgcSelector, contextSelector: OgcSelector): SelectorGroup[] {
-    return contextSelector.groups.map((contextGroup) => this.mergeOgcSelectorField(layerSelector, contextGroup));
+    return contextSelector.groups.map((contextGroup) => this.mergeOgcSelectorField(layerSelector, contextGroup)).filter(Boolean) as SelectorGroup[];
   }
 
-  private mergeOgcSelectorField(layerSelector: OgcSelector, contextGroup: SelectorGroup): SelectorGroup {
+  private mergeOgcSelectorField(layerSelector: OgcSelector, contextGroup: SelectorGroup): SelectorGroup | undefined {
     const group = this.getLayerGroup(layerSelector, contextGroup);
 
-    if (!group.ids) {
+    if (!group?.ids) {
       return undefined;
     }
 
     // Initial filter of contextBundles that match group ids
-    let contextBundles = this.getContextSelectorBundlesByLayerIds(group.ids, contextGroup.computedSelectors);
+    let contextBundles = this.getContextSelectorBundlesByLayerIds(group.ids, contextGroup.computedSelectors ?? []);
 
     contextBundles = contextBundles
       .map((contextBundle) => this.mergeSelectorBundle(layerSelector, contextBundle))
-      .filter(Boolean);
+      .filter(Boolean) as OgcSelectorBundle[];
 
-    const otherLayerBundles = this.getLayerBundlesMissingInContextBundles(contextBundles, layerSelector.bundles, group);
+    const otherLayerBundles = this.getLayerBundlesMissingInContextBundles(contextBundles, layerSelector.bundles ?? [], group);
 
     // Return merged group
     return {
@@ -111,14 +111,14 @@ export class LayerEntity {
     return contextSelectors.filter((selector) => ids.includes(selector.id));
   }
 
-  private mergeSelectorBundle(layerSelector: OgcSelector, contextBundle: OgcSelectorBundle): OgcSelectorBundle {
-    const layerBundle: OgcSelectorBundle = layerSelector.bundles.find((bundle) => bundle.id === contextBundle.id);
+  private mergeSelectorBundle(layerSelector: OgcSelector, contextBundle: OgcSelectorBundle): OgcSelectorBundle | undefined {
+    const layerBundle: OgcSelectorBundle | undefined = layerSelector.bundles?.find((bundle) => bundle.id === contextBundle.id);
     if (!layerBundle) {
       return undefined;
     }
     // Map over selectors in the layerBundle
-    const updatedSelectors = layerBundle.selectors.map((layerSelectorBundle: OgcPushButton | Selector) => {
-      const contextSelector = contextBundle.selectors.find(
+    const updatedSelectors = layerBundle.selectors?.map((layerSelectorBundle: OgcPushButton | Selector) => {
+      const contextSelector = contextBundle.selectors?.find(
         (selector) => selector.title === layerSelectorBundle.title
       ) as Selector | OgcPushButton;
 
@@ -191,6 +191,6 @@ export class LayerEntity {
   }
 }
 
-function isEmpty(value: string): boolean {
+function isEmpty(value: string | undefined): boolean {
   return value === null || value === undefined || value === '';
 }

@@ -194,7 +194,7 @@ export class ContextService {
       }
     }
 
-    const toolbarName = toolbar.sort((t1, t2) => t1.order - t2.order).map((t) => t.name);
+    const toolbarName = toolbar.sort((t1, t2) => (t1.order ?? 0) - (t2.order ?? 0)).map((t) => t.name);
     return [toolbarName, tools];
   }
 
@@ -208,7 +208,7 @@ export class ContextService {
       ...layers,
       ...layersSystem.map((layerContext) => ({
         id: layerContext.id!,
-        type: layerContext.layerOptions.type,
+        type: layerContext.layerOptions?.type!,
         layerOptions: layerContext.layerOptions
       }))
     ];
@@ -232,7 +232,7 @@ export class ContextService {
         continue;
       }
 
-      if (!plainLayer.global && isLayerItemOptions(layer.options) && layer.options.sourceOptions.type === 'wms') {
+      if (!plainLayer.global && isLayerItemOptions(layer.options) && layer.options.sourceOptions?.type === 'wms') {
         layer.options = (await LayerWss.setWssOptions(layer.options, request)) as AnyLayerOptionsOut;
       }
 
