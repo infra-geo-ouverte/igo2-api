@@ -1,0 +1,10 @@
+{
+  "name": "scripts",
+  "scripts": {
+    "copy-package": "node --import tsx src/copy-package.mts",
+    "db:nuke": "node --import tsx ../.devcontainer/database/scripts/db-nuke.ts"
+  },
+  "devDependencies": {
+    "testcontainers": "^11.0.0"
+  }
+}

@@ -1,163 +1,153 @@
-import * as Hapi from '@hapi/hapi';
+import { captureException } from '@sentry/node';
 
-import * as Boom from '@hapi/boom';
-import { handleError, HapiRequestToUser } from '../utils';
-
+import { AppInstance, AppReply, AppRequest } from '../app.interface';
+import {
+  CreateLayerSchema,
+  DeleteLayerSchema,
+  GetLayerAdminOptionSchema,
+  GetLayerOptionSchema,
+  GetLayerSchema,
+  LayerMigrateBatchSchema,
+  LayerMigrateSchema,
+  UpdateLayerSchema
+} from './layer.schema';
 import { LayerService } from './layer.service';
-import { ILayer, SourceOptions } from './layer.interface';
-import * as Configs from '../configurations';
-import { IDatabaseConfiguration } from '../configurations';
+
 export class LayerController {
   private layerService: LayerService;
 
-  constructor () {
-    this.layerService = new LayerService();
+  constructor(app: AppInstance) {
+    this.layerService = new LayerService(app);
   }
 
-  public async create (request: Hapi.Request, h: Hapi.ResponseToolkit) {
-    const layerToCreate: ILayer = request.payload as ILayer;
-    layerToCreate.type = layerToCreate.sourceOptions.type || 'wms';
-    layerToCreate.url = layerToCreate.sourceOptions.url;
-    const params = layerToCreate.sourceOptions.params;
-    layerToCreate.layers = params ? params.layers || params.LAYERS : undefined;
+  create = async (
+    request: AppRequest<typeof CreateLayerSchema>,
+    reply: AppReply<typeof CreateLayerSchema>
+  ) => {
+    const layerToCreate = request.body;
 
-    const res = await this.layerService.create(layerToCreate).catch(handleError);
+    const res = await this.layerService.create(layerToCreate);
+    return reply.code(201).send(res);
+  };
 
-    return h.response(res).code(201);
-  }
-
-  public async update (request: Hapi.Request, _h: Hapi.ResponseToolkit) {
+  update = async (
+    request: AppRequest<typeof UpdateLayerSchema>,
+    reply: AppReply<typeof UpdateLayerSchema>
+  ) => {
     const id = request.params.id;
-    const layerToUpdate: ILayer = request.payload as ILayer;
-    layerToUpdate.type = layerToUpdate.sourceOptions.type || 'wms';
-    layerToUpdate.url = layerToUpdate.sourceOptions.url;
-    const params = layerToUpdate.sourceOptions.params;
-    layerToUpdate.layers = params ? params.layers || params.LAYERS : undefined;
-
-    return await this.layerService.update(id, layerToUpdate).catch(handleError);
-  }
-
-  public async delete (request: Hapi.Request, h: Hapi.ResponseToolkit) {
-    const id = request.params.id;
-
-    await this.layerService.delete(id).catch(handleError);
-
-    return h.response().code(204);
-  }
-
-  public async getById (request: Hapi.Request, _h: Hapi.ResponseToolkit) {
-    const id = request.params.id;
-    const requestedUser = HapiRequestToUser(request);
-    const user = requestedUser.sourceId;
-
-    return await this.layerService.getById(id, user).catch(handleError);
-  }
-
-  public async get (_request: Hapi.Request, _h: Hapi.ResponseToolkit) {
-    return await this.layerService.get().catch(handleError);
-  }
-
-  public async search (request: Hapi.Request, _h: Hapi.ResponseToolkit) {
-    if ((Configs.getDatabaseConfig() as IDatabaseConfiguration).dialect !== 'postgres') {
-      const msg = ` You must use a postgresql database. If you want this feature, you check these projects:   
-      https://github.com/nextapps-de/flexsearch
-      https://www.npmjs.com/package/lunr
-      https://www.npmjs.com/package/elasticlunr 
-      or raise a feature request on sequelize for FTS5 support on sqlite. 
-      `;
-      throw Boom.methodNotAllowed(msg);
+    const user = request.user;
+    if (!user) {
+      return reply.forbidden('Accès refusé');
     }
-    const query: any = request.query;
-    return this.layerService.getByMatch(query.q, query.type, query.limit, query.page).catch(handleError);
-  }
+    const profils = user.profils;
 
-  public async searchAndFormatAsItems (request: Hapi.Request, _h: Hapi.ResponseToolkit) {
-    if ((Configs.getDatabaseConfig() as IDatabaseConfiguration).dialect !== 'postgres') {
-      const msg = ` You must use a postgresql database. If you want this feature, you check these projects:   
-      https://github.com/nextapps-de/flexsearch
-      https://www.npmjs.com/package/lunr
-      https://www.npmjs.com/package/elasticlunr 
-      or raise a feature request on sequelize for FTS5 support on sqlite. 
-      `;
-      throw Boom.methodNotAllowed(msg);
+    const layer = await this.layerService.getByIdWithPermission(id, profils);
+    if (!layer) {
+      return reply.notFound();
     }
-    const geoservicesConfig = Configs.getGeoServiceConfig();
-    const getInfoFromCapabilities = geoservicesConfig?.getInfoFromCapabilities === true;
 
-    const query: any = request.query;
-    return this.layerService.getFormattedLayersItemsByMatch(query.q,
-      query.type, query.limit,
-      query.page, getInfoFromCapabilities).catch(handleError);
-  }
+    return this.layerService.update(id, request.body);
+  };
 
-  public async getBaseLayers (_request: Hapi.Request, _h: Hapi.ResponseToolkit) {
-    return await this.layerService.getBaseLayers().catch(handleError);
-  }
+  delete = async (
+    request: AppRequest<typeof DeleteLayerSchema>,
+    reply: AppReply<typeof DeleteLayerSchema>
+  ) => {
+    const id = request.params.id;
+    const user = request.user;
+    if (!user) {
+      return reply.forbidden('Accès refusé');
+    }
+    const profils = user.profils;
 
-  public async getAdminOptions (request: Hapi.Request, _h: Hapi.ResponseToolkit) {
-    const query: any = request.query;
+    const layer = await this.layerService.getByIdWithPermission(id, profils);
+    if (!layer) {
+      return reply.notFound();
+    }
 
-    return await this.layerService
-      .getBySource({
-        sourceOptions: {
-          type: query.type,
-          url: query.url,
-          params: {
-            layers: query.layers
-          }
-        } as SourceOptions
-      })
-      .catch((e) => {
-        if (e.isBoom && e.output.statusCode === 404) {
-          return {};
-        }
-        throw e;
-      })
-      .catch(handleError);
-  }
+    await this.layerService.delete(id);
 
-  public async getOptions (request: Hapi.Request, _h: Hapi.ResponseToolkit) {
-    const query: any = request.query;
+    return reply.code(204).send();
+  };
 
-    const options = await this.layerService
-      .getBySource({
-        sourceOptions: {
-          type: query.type,
-          url: query.url,
-          params: {
-            layers: query.layers
-          }
-        } as SourceOptions
-      })
-      .catch((e) => {
-        if (e.isBoom && e.output.statusCode === 404) {
-          return {};
-        }
-        throw e;
-      })
-      .catch(handleError);
+  getById = async (
+    request: AppRequest<typeof GetLayerSchema>,
+    reply: AppReply<typeof GetLayerSchema>
+  ) => {
+    const id = request.params.id;
+    const profils = request.user?.profils ?? [];
 
-    /* if (query.type === 'wms' && permission.wfsAllowed) {
-      options.layerOptions = Object.assign(
-        {
-          workspace: {
-            enabled: true
-          }
-        },
-        options.layerOptions
-      );
+    const layer = await this.layerService.getByIdWithPermission(id, profils);
+    if (!layer) {
+      return reply.notFound();
+    }
 
-      options.sourceOptions = Object.assign(
-        {
-          urlWfs: options.url,
-          paramsWFS: {
-            featureTypes: options.layers
-          }
-        },
-        options.sourceOptions
-      );
-    } */
+    return layer;
+  };
 
-    return options;
-  }
+  getAll = async () => {
+    return this.layerService.getAll();
+  };
+
+  getBaseLayers = async () => {
+    return this.layerService.getBaseLayers();
+  };
+
+  getAdminOptions = async (
+    request: AppRequest<typeof GetLayerAdminOptionSchema>,
+    reply: AppReply<typeof GetLayerAdminOptionSchema>
+  ) => {
+    const query = request.query;
+
+    const layer = await this.layerService.getBySource({
+      type: query.type,
+      url: query.url,
+      params: {
+        layers: query.layers
+      }
+    });
+    if (!layer) {
+      return reply.notFound();
+    }
+
+    return layer;
+  };
+
+  getOptions = async (request: AppRequest<typeof GetLayerOptionSchema>) => {
+    const profils = request.user?.profils ?? [];
+    const { type, layers, url } = request.query;
+
+    try {
+      await this.layerService.urlAllowed(url, profils);
+    } catch (error) {
+      console.error(error);
+      captureException(error);
+      return {};
+    }
+
+    try {
+      const options = await this.layerService.getOptions(type, layers, url);
+      return options;
+    } catch (error) {
+      console.error(error);
+      captureException(error);
+      return {};
+    }
+  };
+
+  migrateBatch = async (
+    request: AppRequest<typeof LayerMigrateBatchSchema>,
+    reply: AppReply<typeof LayerMigrateBatchSchema>
+  ) => {
+    await this.layerService.migrateBatch(request.body);
+    return reply.code(200).send({});
+  };
+
+  migrateLayer = async (
+    request: AppRequest<typeof LayerMigrateSchema>,
+    reply: AppReply<typeof LayerMigrateSchema>
+  ) => {
+    const layer = await this.layerService.migrateLayer(request.body);
+    return reply.code(200).send(layer);
+  };
 }

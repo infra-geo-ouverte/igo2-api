@@ -1,13 +1,15 @@
+import { catalogModel } from './catalog.model';
+
 export interface ICatalogOptions {
-  regFilters: string[];
+  regFilters?: string[];
+  sortDirection?: string;
+  composite?: Record<string, unknown[]>;
+  [key: string]: unknown;
 }
 
-export interface ICatalog {
-  id?: string;
-  title: string;
-  url: string;
-  options?: ICatalogOptions;
-  order?: number;
-  profils?: string;
-  [key: string]: any;
-}
+export type ICatalog = typeof catalogModel.$inferSelect;
+
+export type ICatalogIn = Omit<
+  typeof catalogModel.$inferInsert,
+  'createdAt' | 'updatedAt'
+>;

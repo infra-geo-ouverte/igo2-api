@@ -1,0 +1,47 @@
+name: igo-api
+
+x-timezone-policy: &timezone-policy
+  environment:
+    - TZ=Canada/Eastern
+
+services:
+  app:
+    <<: [ *timezone-policy ]
+    depends_on:
+      - database
+    build:
+      context: .
+      dockerfile: Dockerfile
+
+    volumes:
+      - ../..:/workspaces:cached
+
+    # Overrides default command so things don't shut down after the process ends.
+    command: /bin/sh -c "while sleep 1000; do :; done"
+
+    # Runs app on the same network as the database container, allows "forwardPorts" in devcontainer.json function.
+    ports:
+      - 127.0.0.1:5000:5000
+    # Use "forwardPorts" in **devcontainer.json** to forward an app port locally.
+    # (Adding the "ports" property to this file will not forward from a Codespace.)
+
+  database:
+    <<: [ *timezone-policy ]
+    build:
+      context: ./database
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: postgres
+      POSTGRES_HOST_AUTH_METHOD: trust
+      POSTGRES_USER: postgres
+    ports:
+      - 127.0.0.1:5491:5432
+    # Add "forwardPorts": ["5491"] to **devcontainer.json** to forward PostgreSQL locally.
+    # (Adding the "ports" property to this file will not forward from a Codespace.)
+
+
+volumes:
+  postgres-data:

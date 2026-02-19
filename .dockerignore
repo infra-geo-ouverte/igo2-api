@@ -1,0 +1,17 @@
+dist
+node_modules
+npm-debug.log
+Dockerfile*
+docker-compose.yml
+.dockerignore
+.editorconfig
+.git
+.gitignore
+.gitlab-ci.yml
+CHANGELOG.md
+dump.rdb
+README.md
+LICENSE
+.aws
+.vscode
+appendonly.aof
