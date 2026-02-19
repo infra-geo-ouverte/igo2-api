@@ -1,87 +1,63 @@
-import * as Boom from '@hapi/boom';
+import { eq } from 'drizzle-orm';
 
-import { ObjectUtils } from '@igo2/base-api';
-
-import { IUser } from './user.interface';
-import { User } from './user.model';
+import { AppDatabase, AppInstance } from '../app.interface';
+import { IUser, IUserIn } from './user.interface';
+import { userModel } from './user.model';
 
 export class UserService {
-  public async create (user: IUser): Promise<User> {
-    return await User
-      .create(user)
-      .then((userCreated: User) => {
-        return ObjectUtils.removeNull(userCreated.get());
-      });
+  private db: AppDatabase;
+
+  constructor(app: AppInstance) {
+    this.db = app.db;
   }
 
-  public async update (
-    id: string,
-    user: IUser
-  ): Promise<{ id: string }> {
-    return await User
-      .update(user, {
-        where: {
-          id
-        }
-      })
-      .then((count: [number]) => {
-        if (!count[0]) {
-          throw Boom.notFound();
-        }
-        return { id };
-      });
+  async create(userIn: IUserIn): Promise<IUser> {
+    const [result] = await this.db.insert(userModel).values(userIn).returning();
+    return result;
   }
 
-  public async delete (id: string): Promise<void> {
-    return await User
-      .destroy({
-        where: {
-          id
-        }
-      })
-      .then((count: number) => {
-        if (!count) {
-          throw Boom.notFound();
-        }
-      });
+  async update(
+    id: number,
+    userIgo: Partial<IUserIn>
+  ): Promise<{ id: number } | undefined> {
+    const [result] = await this.db
+      .update(userModel)
+      .set(userIgo)
+      .where(eq(userModel.id, id))
+      .returning();
+
+    return result;
   }
 
-  public async get (id: string): Promise<User> {
-    return await User
-      .findOne({
-        where: {
-          id
-        }
-      })
-      .then((user: User) => {
-        if (!user) {
-          throw Boom.notFound();
-        }
-        return ObjectUtils.removeNull(user.get());
-      });
+  async delete(id: number): Promise<number> {
+    const result = await this.db
+      .delete(userModel)
+      .where(eq(userModel.id, id))
+      .returning({ id: userModel.id });
+    return result.length;
   }
 
-  public async getUserBySource (
-    sourceId: string,
-    sources: string | string[]
-  ): Promise<User> {
-    if (sources === 'facebook' || sources === 'google') {
-      sources = ['facebook', 'google'];
-    } else if (sources === 'ldap' || sources === 'microsoft' || sources === 'microsoftb2c') {
-      sources = ['ldap', 'microsoft', 'microsoftb2c'];
+  async get(id: number): Promise<IUser | undefined> {
+    const [result] = await this.db
+      .select()
+      .from(userModel)
+      .where(eq(userModel.id, id));
+    return result;
+  }
+
+  async getByExternalId(externalId: number): Promise<IUser | undefined> {
+    const [result] = await this.db
+      .select()
+      .from(userModel)
+      .where(eq(userModel.externalId, externalId));
+    return result;
+  }
+
+  async getOrCreateByExternalId(externalId: number): Promise<IUser> {
+    let user = await this.getByExternalId(externalId);
+    if (!user) {
+      user = await this.create({ externalId });
     }
-    return await User
-      .findOne({
-        where: {
-          sourceId,
-          source: sources
-        }
-      })
-      .then((user: User) => {
-        if (!user) {
-          throw Boom.notFound();
-        }
-        return ObjectUtils.removeNull(user.get());
-      });
+    return user;
   }
 }

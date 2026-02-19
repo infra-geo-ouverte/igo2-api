@@ -1,47 +1,77 @@
-import * as Hapi from '@hapi/hapi';
-
-import { handleError, HapiRequestToUser } from '../utils';
-
+import { AppInstance, AppReply, AppRequest } from '../app.interface';
+import {
+  CreateToolSchema,
+  DeleteToolSchema,
+  GetAllToolSchema,
+  GetToolSchema,
+  UpdateToolSchema
+} from './tool.schema';
 import { ToolService } from './tool.service';
-import { ITool } from './tool.interface';
 
 export class ToolController {
   private toolService: ToolService;
 
-  constructor () {
-    this.toolService = new ToolService();
+  constructor(app: AppInstance) {
+    this.toolService = new ToolService(app);
   }
 
-  public async create (request: Hapi.Request, h: Hapi.ResponseToolkit) {
-    const toolToCreate: ITool = request.payload as ITool;
+  create = async (
+    request: AppRequest<typeof CreateToolSchema>,
+    reply: AppReply<typeof CreateToolSchema>
+  ) => {
+    const toolToCreate = request.body;
+    const res = await this.toolService.create(toolToCreate);
+    return reply.code(201).send(res);
+  };
 
-    const res = await this.toolService.create(toolToCreate).catch(handleError);
-
-    return h.response(res).code(201);
-  }
-
-  public async update (request: Hapi.Request, _h: Hapi.ResponseToolkit) {
+  update = async (
+    request: AppRequest<typeof UpdateToolSchema>,
+    reply: AppReply<typeof UpdateToolSchema>
+  ) => {
     const id = request.params.id;
-    const toolToUpdate: ITool = request.payload as ITool;
+    const profils = request.user!.profils;
 
-    return await this.toolService.update(id, toolToUpdate).catch(handleError);
-  }
+    const tool = await this.toolService.getById(id, profils);
+    if (!tool) {
+      return reply.notFound();
+    }
 
-  public async delete (request: Hapi.Request, h: Hapi.ResponseToolkit) {
+    return this.toolService.update(id, request.body);
+  };
+
+  delete = async (
+    request: AppRequest<typeof DeleteToolSchema>,
+    reply: AppReply<typeof DeleteToolSchema>
+  ) => {
     const id = request.params.id;
+    const profils = request.user!.profils;
 
-    await this.toolService.delete(id).catch(handleError);
-    return h.response().code(204);
-  }
+    const tool = await this.toolService.getById(id, profils);
+    if (!tool) {
+      return reply.notFound();
+    }
 
-  public async getById (request: Hapi.Request, _h: Hapi.ResponseToolkit) {
+    const result = await this.toolService.delete(id);
+    return reply.code(204).send(result);
+  };
+
+  getById = async (
+    request: AppRequest<typeof GetToolSchema>,
+    reply: AppReply<typeof GetToolSchema>
+  ) => {
     const id = request.params.id;
-    const user = HapiRequestToUser(request);
-    return await this.toolService.getById(id, user.id).catch(handleError);
-  }
+    const profils = request.user!.profils;
 
-  public async get (request: Hapi.Request, _h: Hapi.ResponseToolkit) {
-    const user = HapiRequestToUser(request);
-    return await this.toolService.get(user.id).catch(handleError);
-  }
+    const tool = await this.toolService.getById(id, profils);
+    if (!tool) {
+      return reply.notFound();
+    }
+
+    return tool;
+  };
+
+  get = async (request: AppRequest<typeof GetAllToolSchema>) => {
+    const profils = request.user!.profils;
+    return this.toolService.get(profils);
+  };
 }

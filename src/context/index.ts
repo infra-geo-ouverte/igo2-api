@@ -1,10 +1,11 @@
-import * as Hapi from '@hapi/hapi';
-import Routes from './routes';
-
-export function init (server: Hapi.Server) {
-  Routes(server);
-}
-
-export * from './context.model';
+export * from './context.controller';
 export * from './context.interface';
+export * from './context.model';
+export * from './context.route';
+export * from './context.schema';
 export * from './context.service';
+export * from './permission';
+export * from './layer';
+export * from './tool';
+export * from './hidden';
+export * from './access';

@@ -1,35 +1,17 @@
-import {
-  Table, Column, Model, AllowNull, PrimaryKey, UpdatedAt, DataType
-} from 'sequelize-typescript';
-import { IUser } from './user.interface';
+import { index, integer, json, serial } from 'drizzle-orm/pg-core';
 
-@Table({
-  tableName: 'user',
-  timestamps: true,
-  updatedAt: 'loginAt'
-})
-export class User extends Model<IUser> {
-  @PrimaryKey
-  @AllowNull(false)
-  @Column({ type: DataType.TEXT })
-    id: string;
+import { appPgTable } from '../core/database';
+import { metadataTimestampColumns } from '../core/database/model.utils';
+import { IUserPreference } from './user.interface';
 
-  @AllowNull(false)
-  @Column({ type: DataType.STRING(64) })
-    source: string;
-
-  @Column({ type: DataType.STRING(64) })
-    sourceId: string;
-
-  @Column({ type: DataType.STRING(64) })
-    firstName: string;
-
-  @Column({ type: DataType.STRING(64) })
-    lastName: string;
-
-  @Column({ type: DataType.STRING(128) })
-    email: string;
-
-  @UpdatedAt
-    loginAt: Date;
-}
+export const userModel = appPgTable(
+  'user',
+  {
+    id: serial().primaryKey(),
+    defaultContextId: integer(),
+    preference: json().$type<IUserPreference>(),
+    externalId: integer().notNull().unique(),
+    ...metadataTimestampColumns
+  },
+  (table) => [index('idx_user_external_id').on(table.externalId)]
+);

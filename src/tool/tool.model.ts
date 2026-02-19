@@ -1,54 +1,30 @@
 import {
-  Table, Column, Model, AllowNull, PrimaryKey, Unique,
-  AutoIncrement, DataType
-} from 'sequelize-typescript';
-import { ITool } from './tool.interface';
+  boolean,
+  integer,
+  json,
+  serial,
+  text,
+  varchar
+} from 'drizzle-orm/pg-core';
 
-@Table({
-  tableName: 'tool',
-  timestamps: true
-})
-export class Tool extends Model<ITool> {
-  @PrimaryKey
-  @AutoIncrement
-  @AllowNull(false)
-  @Column
-    id: number;
+import { appPgTable } from '../core/database';
+import { metadataTimestampColumns } from '../core/database/model.utils';
+import { IToolOptions } from './tool.interface';
 
-  @Unique
-  @AllowNull(true)
-  @Column({ type: DataType.STRING(64) })
-    name: string;
+export const baseToolModel = {
+  order: integer('order'),
+  options: json('options').$type<IToolOptions>()
+};
 
-  @Column({ type: DataType.STRING(64) })
-    title: string;
-
-  @Column({ type: DataType.STRING(128) })
-    tooltip: string;
-
-  @Column({ type: DataType.STRING(128) })
-    icon: string;
-
-  @Column
-    inToolbar: boolean;
-
-  @Column
-    global: boolean;
-
-  @Column
-    order: number;
-
-  @Column({ type: DataType.JSON })
-    options: { [key: string]: any };
-
-  @Column(DataType.STRING)
-  get profils (): string[] {
-    const profils: string = this.getDataValue('profils') as any;
-    return profils ? profils.split(',') : [];
-  }
-
-  set profils (value: string[]) {
-    const profils: any = value.join(',');
-    this.setDataValue('profils', profils);
-  }
-}
+export const toolModel = appPgTable('tool', {
+  id: serial().primaryKey(),
+  name: varchar({ length: 64 }).unique().notNull(),
+  title: varchar({ length: 64 }),
+  tooltip: varchar({ length: 128 }),
+  icon: varchar({ length: 128 }),
+  inToolbar: boolean(),
+  global: boolean(),
+  profils: text().array(),
+  ...baseToolModel,
+  ...metadataTimestampColumns
+});

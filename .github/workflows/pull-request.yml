@@ -1,0 +1,40 @@
+name: Pull Request Quality Check
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci --include=dev --include=optional --no-audit --prefer-offline
+
+      - name: Audit
+        run: |
+          npm audit --omit dev
+          npm audit signatures
+        continue-on-error: true
+
+      - name: Lint and Format
+        run: |
+          npm run lint
+          npm run format
+
+      - name: Tests
+        run: |
+          npm run test
+          npm run e2e:ci
+
+      - name: Build
+        run: npm run build

@@ -1,16 +1,17 @@
 {
+  "extends": "@tsconfig/node24/tsconfig.json",
   "compilerOptions": {
-    "outDir": "./build",
-    "target": "es6",
-    "module": "commonjs",
-    "moduleResolution": "node",
-    "resolveJsonModule": true,
-    "esModuleInterop": true,
+    "outDir": "dist",
+    "preserveConstEnums": true,
+    "forceConsistentCasingInFileNames": true,
     "sourceMap": true,
+    "inlineSources": true,
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
-    "noUnusedLocals": true,
-    "lib": ["es7", "dom"],
-    "typeRoots": ["./node_modules/@types"]
-  }
+    "useDefineForClassFields": false,
+    "sourceRoot": "/",
+  },
+  "include": [
+    "src/**/*",
+  ]
 }
