@@ -18,7 +18,7 @@
   "forwardPorts": [5000, 5432], // Forward the INTERNAL port
   "portsAttributes": {
     "5432": {
-      "hostPort": 5436, // Map it to the specific EXTERNAL port you want
+      "hostPort": 5491, // Map it to the specific EXTERNAL port you want
       "label": "Database"
     }
   },

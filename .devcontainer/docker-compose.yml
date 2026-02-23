@@ -38,8 +38,8 @@ services:
       POSTGRES_HOST_AUTH_METHOD: trust
       POSTGRES_USER: postgres
     ports:
-      - 127.0.0.1:5436:5432
-    # Add "forwardPorts": ["5436"] to **devcontainer.json** to forward PostgreSQL locally.
+      - 127.0.0.1:5491:5432
+    # Add "forwardPorts": ["5491"] to **devcontainer.json** to forward PostgreSQL locally.
     # (Adding the "ports" property to this file will not forward from a Codespace.)
 
 
