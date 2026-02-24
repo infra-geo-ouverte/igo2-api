@@ -35,7 +35,16 @@ export const GetUsersAndProfilsSchema = {
 export const GetAllProfilSchema = {
   description: 'Get all profiles.',
   response: {
-    200: Type.Array(Type.Pick(SelectProfilSchema, ['name', 'title', 'childs']))
+    200: Type.Array(
+      Type.Intersect([
+        Type.Pick(SelectProfilSchema, ['name', 'title']),
+        Type.Object({
+          childs: Type.Optional(
+            Type.Array(Type.Pick(SelectProfilSchema, ['name', 'title']))
+          )
+        })
+      ])
+    )
   }
 } satisfies FastifySchema;
 
