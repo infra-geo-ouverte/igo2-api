@@ -3,6 +3,7 @@ import { authenticatedAuthorization } from '../auth/authorization/authorization'
 import { addRoutingTagHook } from '../utils/url.utils';
 import {
   hasContextReadPermission,
+  hasContextReadPermissionByUri,
   hasContextWritePermission,
   validateContextHook
 } from './context';
@@ -14,6 +15,7 @@ import {
   GetContextByIdSchema,
   GetContextDefaultSchema,
   GetContextDetailedByIdSchema,
+  GetContextDetailedByUriSchema,
   GetContextsSchema,
   PostContextDefaultSchema,
   UpdateContextSchema
@@ -83,6 +85,14 @@ export const routes = (app: AppInstance) => {
     preHandler: [hasContextReadPermission(app)],
     handler: controller.getDetailsById,
     schema: GetContextDetailedByIdSchema
+  });
+
+  app.route({
+    method: 'GET',
+    url: '/uri/:uri/details',
+    preHandler: [hasContextReadPermissionByUri(app)],
+    handler: controller.getDetailsByUri,
+    schema: GetContextDetailedByUriSchema
   });
 
   app.route({

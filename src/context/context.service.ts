@@ -412,27 +412,23 @@ export class ContextService {
       .map((context) => this.formatContext(context));
   }
 
-  async getById(uri: string): Promise<IContext | undefined>;
-  async getById(id: number): Promise<IContext | undefined>;
-  async getById(value: number | string): Promise<IContext | undefined> {
-    const where = typeof value === 'string' ? { uri: value } : { id: value };
-
+  async getById(id: number): Promise<IContext | undefined> {
     return this.db.query.context.findFirst({
-      where
+      where: { id }
     });
   }
 
   async getByUri(uri: string): Promise<IContext | undefined> {
-    return this.getById(uri);
+    return this.db.query.context.findFirst({
+      where: { uri }
+    });
   }
 
   async getDetailedById(
-    id: number | string,
+    id: number,
     user: IUserWithProfils | undefined
   ): Promise<IContextDetailed | undefined> {
-    const value =
-      typeof id === 'string' && !isNaN(Number(id)) ? Number(id) : id;
-    const where = typeof value === 'string' ? { uri: value } : { id: value };
+    const where = { id };
 
     const context = await this.db.query.context.findFirst({
       where,

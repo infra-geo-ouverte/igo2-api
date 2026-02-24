@@ -55,6 +55,12 @@ export const BASE_SCHEMA_CONTEXT = {
   })
 } satisfies FastifySchema;
 
+export const BASE_SCHEMA_CONTEXT_WITH_URI = {
+  params: Type.Object({
+    uri: Type.String()
+  })
+} satisfies FastifySchema;
+
 export const GetContextDefaultSchema = {
   description: 'Get default context.',
   response: {
@@ -71,6 +77,16 @@ export const PostContextDefaultSchema = {
   response: {
     200: Type.Number(),
     400: { $ref: 'HttpError' }
+  }
+} satisfies FastifySchema;
+
+export const GetContextDetailedByUriSchema = {
+  ...BASE_SCHEMA_CONTEXT_WITH_URI,
+  description: 'Get details of context by context uri.',
+  response: {
+    200: SelectContextDetailedSchema,
+    401: { $ref: 'HttpError' },
+    404: { $ref: 'HttpError' }
   }
 } satisfies FastifySchema;
 

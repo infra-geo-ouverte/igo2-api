@@ -14,6 +14,7 @@ import {
   GetContextByIdSchema,
   GetContextDefaultSchema,
   GetContextDetailedByIdSchema,
+  GetContextDetailedByUriSchema,
   GetContextsSchema,
   PostContextDefaultSchema,
   UpdateContextSchema
@@ -148,6 +149,29 @@ export class ContextController {
     );
   };
 
+  getDetailsByUri = async (
+    request: AppRequest<typeof GetContextDetailedByUriSchema>,
+    reply: AppReply<typeof GetContextDetailedByUriSchema>
+  ) => {
+    const uri = request.params.uri;
+
+    const contextDb = await this.contextService.getByUri(uri);
+    if (!contextDb) {
+      return reply.notFound();
+    }
+
+    const contextDetails = await this.contextService.getDetailedById(
+      contextDb.id,
+      request.user
+    );
+    if (!contextDetails) {
+      return reply.notFound('Context not found');
+    }
+
+    await this.contextAccessService.upsert(contextDetails.id);
+    return contextDetails;
+  };
+
   getDetailsById = async (
     request: AppRequest<typeof GetContextDetailedByIdSchema>,
     reply: AppReply<typeof GetContextDetailedByIdSchema>
@@ -177,7 +201,7 @@ export class ContextController {
 
     let context = await (user.defaultContextId
       ? this.contextService.getById(user.defaultContextId)
-      : this.contextService.getById(DEFAULT_CONTEXT_URI));
+      : this.contextService.getByUri(DEFAULT_CONTEXT_URI));
     if (!context) {
       context = await this.contextService.getByUri(DEFAULT_CONTEXT_URI);
       if (!context) {
