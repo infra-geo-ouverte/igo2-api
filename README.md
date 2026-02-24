@@ -4,53 +4,53 @@ L'API IGO centralise la gestion des contextes, la configuration des couches géo
 
 ## Contenu
 
-| Section                                 | Description                                            |
-| --------------------------------------- | ------------------------------------------------------ |
-| [🚧 Requis](#-requis)                   | Dépendances requises                                   |
-| [🎓 Setup du projet](#-setup-du-projet) | Comment setuper le projet initialement                 |
-| [📜 Commandes](#-commandes-npm)         | Commandes disponible                                   |
-| [💾 Démarrage](#-démarrage)             | Étapes pour démarrer le projet                         |
-| [🔒 Architecture](#-architecture)       | Architecture du projet                                 |
-| [🌎 Contribution](#-contribution)       | Explication minimale du flow de développement          |
-| [🧰 Dépannage](#-dépannage)             | Liste des problèmes possible avec solution pour chaque |
+| Section                                               | Description                                            |
+| ----------------------------------------------------- | ------------------------------------------------------ |
+| [🚧 Prérequis](#-prérequis)                           | Dépendances et programmes requis                       |
+| [🎓 Préparation du projet](#-préparation-du-projet)   | Comment préparer le projet initialement                |
+| [📜 Commandes NPM](#-commandes-npm)                   | Commandes NPM disponibles pour le développement        |
+| [💾 Démarrage](#-démarrage)                           | Étapes pour démarrer le projet                         |
+| [🔒 Architecture](#-architecture)                     | Architecture du projet                                 |
+| [🌎 Contribution](#-contribution)                     | Explication minimale du processus de développement     |
+| [🧰 Dépannage](#-dépannage)                           | Liste des problèmes possibles                          |
 
-## 🚧 Requis
+## 🚧 Prérequis
 
 - [Git]
 - [Node.js] >= 22 qui inclus le [Node Package Manager][npm]
-- IDE: VS Code ou autres avec extensions Eslint, Prettier dans votre IDE
-- [Docker] et WSL pour Windows [WSL 2]
+- IDE: VS Code (ou autre) avec extensions Dev Containers, ESLint et Prettier
+- [Docker] et [WSL 2] pour Windows
 
-## 🎓 Setup du projet
+## 🎓 Préparation du projet
 
-Pour une expérience optimale, nous préconisons l'utilisation de WSL (sur Windows) couplé aux DevContainers. Cette approche automatise l'installation des dépendances, garantit un environnement identique pour tous les développeurs et facilite grandement la prise en main du projet.
+Pour une expérience optimale, il est fortement recommandé d'utiliser WSL2 couplé aux Dev Containers. Cette approche automatise l'installation des dépendances, garantit un environnement identique pour tous les développeurs et facilite grandement la prise en main du projet.
 
+Dans l'IDE, vous pouvez ouvrir le projet dans un Dev Container en faisant `Ctrl+Shift+P` et en sélectionnant `Dev Containers: Reopen in Container`. À la première ouverture du projet, le Dev Container sera monté.
 
 ## 📜 Commandes NPM
 
-| Commande           | Description                                                                                                                           |
-| ------------------ | ------------------------------------------------------------------------------------------------------------------------------------- | --- |
-| `npm start`        | Démarrer l'API en mode Watch sur les fichiers Typescript. Ce mode de développement en LOCAL nécessite que le DevContainer soit monté. |
-| `npm run build`    | Compiler en Javascript                                                                                                                |
-| `npm run lint`     | Analyser les erreurs syntaxiques et les règles de styles pour le code                                                                 |
-| `npm run format`   | Analyser le formattage du code                                                                                                        |
-| `npm run types`    | Analyser la syntaxe du code Typescript                                                                                                |
-| `npm run test`     | Permet de rouler la suite de test                                                                                                     |
-| `npm run e2e`      | Lance les tests End-to-End (E2E). Attention : Efface les données locales                                                              |
-| `npm run e2e:ci`   | Exécute les tests E2E dans un conteneur isolé (préserve votre BD locale)                                                              |
-| `database:restore` | Restaure la base de données locale du DevContainer                                                                                    |     |
+| Commande                   | Description                                                                                                                                     |
+| -------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| `npm start`                | Démarrer l'API en mode Watch sur les fichiers Typescript. Ce mode de développement en LOCAL nécessite que le Dev Container soit monté.        |
+| `npm run build`            | Compiler le projet en Javascript.                                                                                                              |
+| `npm run lint`             | Analyser les erreurs syntaxiques et les règles de styles pour le code.                                                                         |
+| `npm run format`           | Analyser le formattage du code.                                                                                                                |
+| `npm run types`            | Analyser la syntaxe du code Typescript.                                                                                                         |
+| `npm run test`             | Rouler la suite de tests.                                                                                                                      |
+| `npm run e2e`              | Lancer les tests End-to-End (E2E). (Attention : Efface les données locales).                                                                   |
+| `npm run e2e:ci`           | Exécuter les tests E2E dans un conteneur isolé (préserve votre BD locale).                                                                     |
+| `npm run database:restore` | Restaurer la base de données locale du Dev Container.                                                                                          |
 
 ## 💾 Démarrage
 
 1. Infrastructure
 
-   Il est fortement conseillé de développer directement dans le DevContainer.
-   - Docker Compose : Si vous n'utilisez pas les DevContainers, les fichiers de configuration se trouvent dans le dossier .devcontainer.
+   Il est fortement conseillé de développer directement dans le Dev Container.
+   - Docker Compose : Si vous n'utilisez pas les Dev Containers, les fichiers de configuration se trouvent dans le dossier `.devcontainer`.
 
 2. Lancer l'application
-   - Via l'IDE : Dans l'onglet "Run and Debug", sélectionnez la configuration "Start api".
-
-   - Via le terminal : Exécutez npm run start.
+   - Via l'IDE : Dans l'onglet "Run and Debug", sélectionner la configuration "Start API".
+   - Via le terminal : Exécuter `npm run start`.
 
 ## 🔒 Architecture
 
@@ -105,6 +105,8 @@ await app.register(layerPermissionPlugin, {
 
 ### ⚙️ Variables d'environnement requises
 
+Copiez d'abord le fichier `.env.example` et renommez-le `.env`.
+
 Assurez-vous que votre fichier `.env` contient la configuration suivante pour ces modules :
 
 - `AUTH_API` : Point de terminaison du service d'authentification.
@@ -113,20 +115,20 @@ Assurez-vous que votre fichier `.env` contient la configuration suivante pour ce
 
 ## 🌎 Contribution
 
-1. Prendre/assigner une sous-tâche Jira en priorité avant une nouvelle story.
-2. Mettre cette sous-tâche/story en « In progress ».
+1. Prendre/assigner une sous-tâche JIRA en priorité avant un nouveau récit.
+2. Mettre cette sous-tâche/ce récit à « En cours ».
 3. Ensuite:
-   1. Si nouvelle story, faire un kickoff technique avec le tech lead, l’architecte associé et désigneur si nécessaire.
-   2. Pour une sous-tâche, simplement aviser la personne associée à la story liée.
-4. Faire ce qui est demandé dans la story/sous-tâche.
-5. Créer une MR sur Github avec une description la plus claire possible avec des screenshots/vidéos si changement visuel.
-6. Mettre la story/sous-tâche en « Code review » dans Jira.
-7. Une fois approuvé, merger la MR. Si la tâche faite est une sous-tâche, simplement la mettre à « Done » dans Jira. Sinon, mettre la story à « QA » dans Jira.
-8. Si nouvelle story, faire la validation sur la DEV de ce qui a été fait et mettre en « Under review » dans Jira.
+   1. Pour un récit, faire un kickoff technique avec le tech lead, l’architecte associé et désigneur si nécessaire.
+   2. Pour une sous-tâche, simplement aviser la personne associée au récit liée.
+4. Faire ce qui est demandé dans le récit/la sous-tâche.
+5. Créer une MR sur GitHub avec une description la plus claire possible avec des screenshots/vidéos s'il y a changement visuel.
+6. Mettre le récit/la sous-tâche à « En revue » dans JIRA.
+7. Une fois approuvée, merger la MR. Si la tâche faite est une sous-tâche, simplement la mettre à « Terminé » dans JIRA. Sinon, mettre le récit à « En essai » dans JIRA et faire la validation sur la DEV.
+8. Une fois la validation terminée, mettre le récit à « Terminé » dans JIRA.
 
 ## 🧰 Dépannage
 
-- DevContainer - Registre Docker bloqué par le VPN? Fermer votre VPN et relancer le build du DevContainer. Une fois les images Docker téléchargé vous n'aurez plus le problème pour la réouverture.
+- Dev Containers - Le registre Docker est bloqué par le VPN? Arrêtez votre VPN et relancer le build du Dev Container. Une fois les images Docker téléchargées vous n'aurez plus le problème pour la réouverture.
 
 [git]: https://git-scm.com/
 [node.js]: https://nodejs.org/
