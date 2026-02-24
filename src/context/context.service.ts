@@ -6,7 +6,7 @@ import { IProfils } from '../auth';
 import { Transaction } from '../core/database';
 import { LayerService } from '../layer';
 import { sortLayersByZindex } from '../layer/utils/layer.utils';
-import { profilModel } from '../profil';
+import { PUBLIC_PROFIL, profilModel } from '../profil';
 import { IUserWithProfils } from '../user';
 import {
   IContext,
@@ -201,7 +201,7 @@ export class ContextService {
     const permissions = this.parsePermissions(permission);
     const profilsAuthorized = this.getAuthorizedProfils(profils, permissions);
 
-    const hasPublic = profilsAuthorized.includes('public');
+    const hasPublic = !permissions || permissions.includes(PUBLIC_PROFIL.name);
 
     const [ours, shared, public$] = await Promise.all([
       this.getOwnedContexts(userId, showHidden),

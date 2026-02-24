@@ -13,7 +13,7 @@ import {
 } from './profil.schema';
 import { ProfilService } from './profil.service';
 
-const PUBLIC_PROFIL: IProfilChilds = {
+export const PUBLIC_PROFIL: IProfilChilds = {
   name: 'public',
   title: 'Public'
 };
