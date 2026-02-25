@@ -8,14 +8,14 @@ import { hasRequiredProfils } from '../../../auth/authorization';
 import { ILayerPermission } from '../shared/permission.interface';
 import { IApiPlugin, IRouteConfig } from './layer-permission-kong.interface';
 
-export const PermissionClient = axios.create();
+export const LayerPermissionKongClient = axios.create();
 
 export class LayerPermissionKongApi implements ILayerPermission {
   private ogcWsshosts: string[];
   private ogcWssBasePaths: string[];
 
   constructor(private app: AppInstance) {
-    PermissionClient.defaults.baseURL = this.app.env.KONG_API;
+    LayerPermissionKongClient.defaults.baseURL = this.app.env.KONG_API;
 
     this.ogcWsshosts = Value.Decode(StringArray(), app.env.OGC_WSS_HOSTS);
     this.ogcWssBasePaths = app.env.OGC_WSS_BASE_PATHS;
@@ -112,12 +112,14 @@ export class LayerPermissionKongApi implements ILayerPermission {
   }
 
   private async getRoutes(): Promise<IRouteConfig[]> {
-    const res = await PermissionClient.get<{ data: IRouteConfig[] }>('/routes');
+    const res = await LayerPermissionKongClient.get<{ data: IRouteConfig[] }>(
+      '/routes'
+    );
     return res.data.data;
   }
 
   private async getPlugins(id: number): Promise<IApiPlugin[]> {
-    const res = await PermissionClient.get<{ data: IApiPlugin[] }>(
+    const res = await LayerPermissionKongClient.get<{ data: IApiPlugin[] }>(
       `/services/${id}/plugins`
     );
     return res.data.data;

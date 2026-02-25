@@ -35,9 +35,9 @@ export interface IAuthPluginClientConfig {
   client: AxiosInstance;
   options: IAuthPluginClientConfigOptions;
 }
+
 export interface IAuthPluginClientConfigOptions {
   withApiKey?: boolean;
-  /** @deprecated should be remove eventually in favor of withAuthorization */
   withConsumer?: boolean;
   withAuthorization?: boolean;
 }

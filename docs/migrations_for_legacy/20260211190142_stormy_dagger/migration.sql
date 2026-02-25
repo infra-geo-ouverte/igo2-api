@@ -102,3 +102,8 @@ DROP TYPE "enum_context_permission_typePermission";--> statement-breakpoint
 
 -- Missing constraint:
 CREATE UNIQUE INDEX "uq_layer_type_url_layers" ON "layer" ("type","url","layers");--> statement-breakpoint
+
+-- Resync the serial_sequence, it was absent on the legacy system then insert the admin for WSS
+SELECT setval( pg_get_serial_sequence('profil', 'id'), (SELECT MAX(id) FROM "profil") );--> statement-breakpoint
+INSERT INTO profil (name, title) VALUES ('admin', 'Administrateur WSS');--> statement-breakpoint
+

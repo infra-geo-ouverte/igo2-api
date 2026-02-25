@@ -28,7 +28,7 @@ import { LayerWssClient } from './layer';
 import { layerPermissionPlugin } from './layer/permission';
 import {
   LayerPermissionKongApi,
-  PermissionClient
+  LayerPermissionKongClient
 } from './layer/permission/kong-permission';
 import { getPackageVersion } from './utils/version';
 
@@ -87,25 +87,21 @@ export async function buildApp(
       options: {
         clients: [
           {
-            client: LayerWssClient,
-            options: {
-              withAuthorization: true,
-              withConsumer: true
-            }
-          },
-          {
             client: AuthClient,
             options: {
-              withAuthorization: true, // todo remove, when the infra is ready
-              withConsumer: true, // todo remove, when the infra is ready
+              withConsumer: isLocal, // Allow debug with local communication between the API
               withApiKey: true
             }
           },
           {
-            client: PermissionClient,
+            client: LayerWssClient,
             options: {
-              withAuthorization: true, // todo remove, when the infra is ready
-              withConsumer: true, // todo remove, when the infra is ready
+              withAuthorization: true
+            }
+          },
+          {
+            client: LayerPermissionKongClient,
+            options: {
               withApiKey: true
             }
           }
