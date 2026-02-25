@@ -5,6 +5,7 @@ import { resetDatabase } from '../../../../scripts/src/seeder';
 import { buildApp } from '../../../app';
 import { AppInstance } from '../../../app.interface';
 import { HEADERS_USER_1, HEADERS_USER_2 } from '../../../auth/test/auth.mock';
+import { syncUsers } from '../../../user/test/user.mock';
 import { IContext } from '../../context.interface';
 import {
   IContextMockedDataWithPermission,
@@ -20,6 +21,7 @@ test('Context Tool', async (t) => {
     app = await buildApp();
     await resetDatabase(app);
 
+    await syncUsers(app);
     data = await appendContextsWithPermission(app);
   });
 
@@ -143,6 +145,7 @@ test('Context Tool', async (t) => {
   t.test('PATCH', async (t) => {
     t.before(async () => {
       await resetDatabase(app);
+      await syncUsers(app);
       data = await appendContextsWithPermission(app);
     });
 
@@ -226,6 +229,7 @@ test('Context Tool', async (t) => {
   t.test('GET', async (t) => {
     t.before(async () => {
       await resetDatabase(app);
+      await syncUsers(app);
       data = await appendContextsWithPermission(app);
     });
 
@@ -343,6 +347,7 @@ test('Context Tool', async (t) => {
     let context: IContext;
     t.before(async () => {
       await resetDatabase(app);
+      await syncUsers(app);
       data = await appendContextsWithPermission(app);
 
       context = data.user2[7].context;

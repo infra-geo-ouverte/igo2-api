@@ -24,6 +24,15 @@ export const GetUserSchema = {
   }
 } satisfies FastifySchema;
 
+export const SyncUserSchema = {
+  description: 'Sync user.',
+  response: {
+    200: SelectUserSchema,
+    201: SelectUserSchema,
+    404: { $ref: 'HttpError' }
+  }
+} satisfies FastifySchema;
+
 export const DeleteUserSchema = {
   description: 'Delete user.',
   response: {

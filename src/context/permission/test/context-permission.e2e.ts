@@ -10,6 +10,7 @@ import {
   HEADERS_USER_2,
   mockAuthFindMany
 } from '../../../auth/test/auth.mock';
+import { syncUsers } from '../../../user/test/user.mock';
 import { getUser } from '../../../user/test/user.mock';
 import {
   IContextMockedData,
@@ -35,6 +36,7 @@ test('Context Permission', async (t) => {
     app = await buildApp();
     await resetDatabase(app);
 
+    await syncUsers(app);
     data = await appendMockedContexts(app);
   });
 
@@ -161,6 +163,7 @@ test('Context Permission', async (t) => {
 
     t.before(async () => {
       await resetDatabase(app);
+      await syncUsers(app);
       data = await appendContextsWithPermission(app);
     });
 
@@ -231,6 +234,7 @@ test('Context Permission', async (t) => {
 
     t.before(async () => {
       await resetDatabase(app);
+      await syncUsers(app);
       data = await appendContextsWithPermission(app);
     });
 
@@ -292,6 +296,7 @@ test('Context Permission', async (t) => {
 
     t.before(async () => {
       await resetDatabase(app);
+      await syncUsers(app);
       data = await appendContextsWithPermission(app);
     });
     t.test("Should delete it's own context", async (t) => {

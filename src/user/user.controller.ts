@@ -1,19 +1,23 @@
 import { AppInstance, AppReply, AppRequest } from '../app.interface';
+import { IAuthService } from '../auth';
 import { ProfilService } from '../profil';
 import { IUserPreference, IUserWithPermission } from './user.interface';
 import {
   CreateUserSchema,
   DeleteUserSchema,
   GetUserSchema,
+  SyncUserSchema,
   UpdateUserSchema
 } from './user.schema';
 import { UserService } from './user.service';
 
 export class UserController {
+  private authService: IAuthService;
   private userService: UserService;
   private profilIgoService: ProfilService;
 
   constructor(app: AppInstance) {
+    this.authService = app.authService;
     this.userService = new UserService(app);
     this.profilIgoService = new ProfilService(app);
   }
@@ -111,5 +115,24 @@ export class UserController {
       guides,
       hasOsrmPrivateAccess
     } satisfies IUserWithPermission);
+  };
+
+  /**
+   * Un "GET" User avec la possibilité de création si l'utilisateur n'existe pas
+   */
+  sync = async (
+    request: AppRequest<typeof SyncUserSchema>,
+    reply: AppReply<typeof SyncUserSchema>
+  ) => {
+    const user = request.user;
+    if (user) {
+      return user;
+    }
+
+    const consumer = this.authService.getConsumer(request.headers);
+    const userDb = await this.userService.create({
+      externalId: consumer.customId
+    });
+    return reply.code(201).send(userDb);
   };
 }

@@ -5,6 +5,7 @@ import { resetDatabase } from '../../../scripts/src/seeder';
 import { buildApp } from '../../app';
 import { AppInstance } from '../../app.interface';
 import { IUsersHeader, getUserHeaders } from '../../auth/test/auth.mock';
+import { syncUsers } from '../../user/test/user.mock';
 import { IPoi } from '../poi.interface';
 import { POI_MOCK } from './poi.mock';
 
@@ -17,6 +18,7 @@ test('POI', (t) => {
     app = await buildApp();
     await resetDatabase(app);
 
+    await syncUsers(app);
     usersHeader = getUserHeaders();
     poiDb = (await create(usersHeader.user1, POI_MOCK)).json();
   });

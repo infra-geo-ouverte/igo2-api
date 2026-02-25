@@ -1,22 +1,16 @@
-import { IncomingHttpHeaders } from 'node:http2';
-
 import { FastifyPluginAsync, preHandlerHookHandler } from 'fastify';
 
 import fastifyPlugin from 'fastify-plugin';
-import Value from 'typebox/value';
 
 import { AppInstance } from '../../../app.interface';
 import { UserService } from '../../../user';
 import { IAuthPluginConfig } from '../authentication.interface';
 import { apiAuthentication } from './api-authentication';
 import {
-  ConsumerGroups,
   HEADERS_CONSUMER_SCHEMA,
-  HEADERS_CONSUMER_SCHEMA_REF,
-  HeaderAnoymousConsumer,
-  HeaderConsumer,
-  IConsumer
+  HEADERS_CONSUMER_SCHEMA_REF
 } from './header-authentication.interface';
+import { HeaderAuthenticationService } from './header-authentication.service';
 
 /**
  * Factory function to create a Fastify preHandler hook for authorization.
@@ -25,6 +19,8 @@ import {
 export const headerAuthentication: FastifyPluginAsync<IAuthPluginConfig> =
   fastifyPlugin(async (app: AppInstance, config?: IAuthPluginConfig) => {
     app.addSchema(HEADERS_CONSUMER_SCHEMA);
+
+    app.decorate('authService', new HeaderAuthenticationService());
 
     app.addHook('onRoute', (options) => {
       if (!options.schema) {
@@ -49,54 +45,17 @@ export const headerAuthentication: FastifyPluginAsync<IAuthPluginConfig> =
 function headerAuthenticationHook(app: AppInstance): preHandlerHookHandler {
   const userService = new UserService(app);
 
-  return async (request) => {
-    const consumer = getConsumer(request.headers);
+  return async (request, reply) => {
+    const consumer = app.authService.getConsumer(request.headers);
 
     if (!consumer.isAnonymous && !isNaN(consumer.customId)) {
-      const user = await userService.getOrCreateByExternalId(consumer.customId);
-      request.user = { ...user, profils: consumer.groups };
+      const user = await userService.getByExternalId(consumer.customId);
+
+      if (!user && request.routeOptions.url !== '/users/sync') {
+        return reply.forbidden(`L'usager n'existe pas`);
+      }
+
+      request.user = user ? { ...user, profils: consumer.groups } : undefined;
     }
-  };
-}
-
-export function getConsumer(incomingHeaders: IncomingHttpHeaders): IConsumer {
-  const headers = formatHeaders(incomingHeaders);
-
-  const isAnonymous =
-    String(headers[HeaderAnoymousConsumer]).toLowerCase() === 'true';
-
-  const groups = (headers['x-consumer-groups' as HeaderConsumer] ??
-    []) as ConsumerGroups[];
-
-  const customId = Number(headers['x-consumer-custom-id' as HeaderConsumer]);
-
-  return {
-    id: headers['x-consumer-id' as HeaderConsumer] as string,
-    customId,
-    username: headers['x-consumer-username' as HeaderConsumer] as string,
-    groups,
-    isAnonymous
-  };
-}
-
-/**
- * Decodes specific headers (like groups) without mutating the original headers object.
- */
-export function formatHeaders(
-  incomingHeaders: IncomingHttpHeaders
-): IncomingHttpHeaders {
-  const xConsumerGroupsKey = 'x-consumer-groups' satisfies HeaderConsumer;
-  const groupsHeader = incomingHeaders[xConsumerGroupsKey];
-
-  if (!groupsHeader) {
-    return incomingHeaders;
-  }
-
-  return {
-    ...incomingHeaders,
-    [xConsumerGroupsKey]: Value.Decode(
-      HEADERS_CONSUMER_SCHEMA['properties'][xConsumerGroupsKey],
-      groupsHeader
-    )
   };
 }

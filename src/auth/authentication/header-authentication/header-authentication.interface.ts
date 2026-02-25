@@ -4,8 +4,7 @@ import { StringArray } from '@igo2/fastify';
 import { IncomingHttpHeaders } from 'http';
 import { TSchema, Type } from 'typebox';
 
-export const ConsumerGroups = ['admin', 'test'] as const;
-export type ConsumerGroups = (typeof ConsumerGroups)[number] | string;
+import { ConsumerGroups } from '../authentication.interface';
 
 export const HeaderAnoymousConsumer = 'x-anonymous-consumer' as const;
 
@@ -59,13 +58,3 @@ export interface IHeaderConsumerRaw extends IncomingHttpHeaders {
 export const REQUEST_WITH_HEADER_AUTH = {
   headers: HEADERS_CONSUMER_SCHEMA
 } satisfies FastifySchema;
-
-export interface IConsumer {
-  /** Le id externe du proxy web (KONG) de l'usager */
-  id: string;
-  /** Le id interne de l'usager (DB:auth TABLE:user) */
-  customId: number;
-  username: string;
-  groups: ConsumerGroups[];
-  isAnonymous: boolean;
-}

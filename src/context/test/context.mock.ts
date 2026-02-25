@@ -9,7 +9,7 @@ import {
   HEADERS_USER_2,
   findHeaderByCustomId
 } from '../../auth/test/auth.mock';
-import { createProfil } from '../../profil/test/profil-igo.mock';
+import { createProfil } from '../../profil/test/profil.mock';
 import { ITool } from '../../tool';
 import { createMockTool } from '../../tool/test/tool.mock';
 import {

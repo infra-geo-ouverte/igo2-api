@@ -7,6 +7,7 @@ import { AppInstance } from '../../../app.interface';
 import { HEADERS_USER_1, HEADERS_USER_2 } from '../../../auth/test/auth.mock';
 import { ILayer, LayerGroupOptions } from '../../../layer';
 import { LAYER_MOCK_1, createLayer } from '../../../layer/test/layer.mock';
+import { syncUsers } from '../../../user/test/user.mock';
 import { IContextMockedDataWithPermission } from '../../permission/test/context-permission.mock';
 import { IContextLayer } from '../context-layer.interface';
 import { appendContextsDetailledWithLayers } from './context-layer.mock';
@@ -19,6 +20,7 @@ test('Layer context', async (t) => {
     app = await buildApp();
     await resetDatabase(app);
 
+    await syncUsers(app);
     contexts = await appendContextsDetailledWithLayers(app);
   });
 
@@ -226,6 +228,7 @@ test('Layer context', async (t) => {
   t.test('GET', async (t) => {
     t.before(async () => {
       await resetDatabase(app);
+      await syncUsers(app);
       contexts = await appendContextsDetailledWithLayers(app);
     });
 

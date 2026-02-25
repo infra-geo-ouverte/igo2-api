@@ -1,7 +1,26 @@
 import { IncomingHttpHeaders } from 'node:http';
 
 import { AppInstance } from '../../app.interface';
+import { ALL_USERS_HEADERS } from '../../auth/test/auth.mock';
 import { IUser } from '../user.interface';
+
+export async function syncUsers(app: AppInstance) {
+  return Promise.all(ALL_USERS_HEADERS.map((user) => syncUser(app, user)));
+}
+
+async function syncUser(app: AppInstance, headers: IncomingHttpHeaders) {
+  try {
+    const response = await app.inject({
+      method: 'GET',
+      headers,
+      url: '/users/sync'
+    });
+    return response;
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
+}
 
 export async function getUserRaw(
   app: AppInstance,

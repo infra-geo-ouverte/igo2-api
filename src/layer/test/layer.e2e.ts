@@ -12,6 +12,7 @@ import {
   HEADERS_USER_1,
   HEADERS_USER_2
 } from '../../auth/test/auth.mock';
+import { syncUsers } from '../../user/test/user.mock';
 import { ILayer, ILayerIn } from '../layer.interface';
 import { LayerService } from '../layer.service';
 import { IRouteConfig } from '../permission/kong-permission/layer-permission-kong.interface';
@@ -33,6 +34,7 @@ test('Layer', async (t: TestContext) => {
     process.env.OGC_WSS_HOSTS = 'http://restricted-host' as any;
     app = await buildApp();
     await resetDatabase(app);
+    await syncUsers(app);
     layerService = new LayerService(app);
     layers = await appendLayers(app);
   });

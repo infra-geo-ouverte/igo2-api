@@ -34,7 +34,7 @@ export const HEADERS_USER_2: IHeaderConsumerRaw = {
   'x-consumer-groups': 'all, another'
 };
 
-const ALL_HEADERS = [
+export const ALL_USERS_HEADERS = [
   HEADERS_ADMIN,
   HEADERS_ANONYMOUS,
   HEADERS_USER_1,
@@ -44,7 +44,7 @@ const ALL_HEADERS = [
 export function findHeaderByCustomId(
   id: number
 ): IHeaderConsumerRaw | undefined {
-  return ALL_HEADERS.find(
+  return ALL_USERS_HEADERS.find(
     (header) => header['x-consumer-custom-id'] === id.toString()
   );
 }

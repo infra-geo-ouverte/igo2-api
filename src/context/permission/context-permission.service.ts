@@ -38,6 +38,8 @@ export class ContextPermissionService {
       await this.verifyPermissionsForProfil(contextPermission, user);
     } else if (isContextPermissionUserIn(contextPermission)) {
       const { userExternalId } = contextPermission;
+      // L'utilisateur peut ne pas exister dans la table USER s'il ne s'est jamais connecté
+      // il est important de conserver le getOrCreate
       const userInternal =
         await this.userService.getOrCreateByExternalId(userExternalId);
       if (!userInternal) {

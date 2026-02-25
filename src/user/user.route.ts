@@ -1,11 +1,15 @@
 import { AppInstance } from '../app.interface';
-import { authenticatedAuthorization } from '../auth/authorization/authorization';
+import {
+  authenticatedAuthorization,
+  consumerAuthorization
+} from '../auth/authorization/authorization';
 import { addRoutingTagHook } from '../utils/url.utils';
 import { UserController } from './user.controller';
 import {
   CreateUserSchema,
   DeleteUserSchema,
   GetUserSchema,
+  SyncUserSchema,
   UpdateUserSchema
 } from './user.schema';
 
@@ -20,6 +24,14 @@ export const routes = (app: AppInstance) => {
     preHandler: authenticatedAuthorization,
     handler: controller.get,
     schema: GetUserSchema
+  });
+
+  app.route({
+    method: 'GET',
+    url: '/sync',
+    preHandler: consumerAuthorization(app),
+    handler: controller.sync,
+    schema: SyncUserSchema
   });
 
   app.route({

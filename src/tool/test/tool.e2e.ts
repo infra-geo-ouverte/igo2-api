@@ -10,6 +10,7 @@ import {
   HEADERS_ANONYMOUS,
   HEADERS_USER_1
 } from '../../auth/test/auth.mock';
+import { syncUsers } from '../../user/test/user.mock';
 import { ITool } from '../tool.interface';
 import { TOOL_MOCK, appendTools, createMockTool } from './tool.mock';
 
@@ -21,6 +22,7 @@ test('Tool', (t) => {
     app = await buildApp();
     await resetDatabase(app);
 
+    await syncUsers(app);
     tools = await appendTools(app);
   });
 
@@ -138,6 +140,7 @@ test('Tool', (t) => {
   t.test('GET by id', async (t) => {
     t.before(async () => {
       await resetDatabase(app);
+      await syncUsers(app);
       tools = await appendTools(app);
     });
 

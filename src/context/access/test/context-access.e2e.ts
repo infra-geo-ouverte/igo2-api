@@ -1,12 +1,13 @@
 import test from 'node:test';
 
 import { eq } from 'drizzle-orm';
+import { IncomingHttpHeaders } from 'http';
 
 import { resetDatabase } from '../../../../scripts/src/seeder';
 import { buildApp } from '../../../app';
 import { AppInstance } from '../../../app.interface';
-import { IHeaderConsumerRaw } from '../../../auth/authentication/header-authentication';
 import { HEADERS_USER_1, HEADERS_USER_2 } from '../../../auth/test/auth.mock';
+import { syncUsers } from '../../../user/test/user.mock';
 import { IContext } from '../../context.interface';
 import {
   IContextMockedDataWithPermission,
@@ -19,14 +20,15 @@ test('Context Access', async (t) => {
   let app: AppInstance;
   let data: IContextMockedDataWithPermission;
 
-  t.before(async () => {
+  t.beforeEach(async () => {
     app = await buildApp();
     await resetDatabase(app);
 
+    await syncUsers(app);
     data = await appendContextsWithPermission(app);
   });
 
-  t.after(async () => {
+  t.afterEach(async () => {
     await app.close();
   });
 
@@ -50,9 +52,6 @@ test('Context Access', async (t) => {
   // ===================================
 
   t.test('Should increment calls on subsequent retrievals', async (t) => {
-    await resetDatabase(app);
-    data = await appendContextsWithPermission(app);
-
     const context: IContext = data.user1[1].context;
 
     // First retrieval
@@ -74,9 +73,6 @@ test('Context Access', async (t) => {
   // ===================================
 
   t.test('Should update accessedAt timestamp on each retrieval', async (t) => {
-    await resetDatabase(app);
-    data = await appendContextsWithPermission(app);
-
     const context: IContext = data.user2[4].context;
 
     // First retrieval
@@ -112,9 +108,6 @@ test('Context Access', async (t) => {
   // ===================================
 
   t.test('Should handle multiple users accessing same context', async (t) => {
-    await resetDatabase(app);
-    data = await appendContextsWithPermission(app);
-
     const context: IContext = data.user2[4].context;
 
     // User 1 accesses
@@ -137,9 +130,6 @@ test('Context Access', async (t) => {
   t.test(
     'Should handle context access for different contexts independently',
     async (t) => {
-      await resetDatabase(app);
-      data = await appendContextsWithPermission(app);
-
       const context1: IContext = data.user1[1].context;
       const context2: IContext = data.user2[2].context;
 
@@ -167,7 +157,7 @@ test('Context Access', async (t) => {
   // ===================================
 
   async function getContextDetails(
-    headers: IHeaderConsumerRaw,
+    headers: IncomingHttpHeaders,
     contextId: number
   ) {
     const response = await app.inject({

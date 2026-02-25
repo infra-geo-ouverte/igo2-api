@@ -13,10 +13,8 @@ import {
 } from '../../auth/test/auth.mock';
 import { LayerGroupOptions, LayerOptions } from '../../layer';
 import { LAYER_MOCK_1 } from '../../layer/test/layer.mock';
-import {
-  PROFIL_ADMIN_MOCK,
-  createProfil
-} from '../../profil/test/profil-igo.mock';
+import { PROFIL_ADMIN_MOCK, createProfil } from '../../profil/test/profil.mock';
+import { syncUsers } from '../../user/test/user.mock';
 import { DeepPartial } from '../../utils/typescript';
 import {
   IContext,
@@ -46,6 +44,7 @@ test('Context', async (t) => {
     app = await buildApp();
     await resetDatabase(app);
 
+    await syncUsers(app);
     await createProfil(app, HEADERS_ADMIN, PROFIL_ADMIN_MOCK);
   });
 
@@ -98,6 +97,7 @@ test('Context', async (t) => {
   t.test('Creates detailled', async (t) => {
     t.before(async () => {
       await resetDatabase(app);
+      await syncUsers(app);
     });
 
     // let idContextWithLayer;
@@ -143,6 +143,7 @@ test('Context', async (t) => {
     let data: IContextMockedDataWithPermission;
     t.before(async () => {
       await resetDatabase(app);
+      await syncUsers(app);
       data = await appendContextsWithPermission(app);
     });
 
@@ -207,6 +208,7 @@ test('Context', async (t) => {
     let data: IContextMockedDataWithPermission;
     t.before(async () => {
       await resetDatabase(app);
+      await syncUsers(app);
       data = await appendContextsWithPermission(app);
     });
 
@@ -252,6 +254,7 @@ test('Context', async (t) => {
     let data: IContextMockedDataWithPermission;
     t.before(async () => {
       await resetDatabase(app);
+      await syncUsers(app);
       data = await appendContextsWithPermission(app);
     });
 
@@ -277,6 +280,7 @@ test('Context', async (t) => {
     let data: IContextMockedDataWithPermission;
     t.before(async () => {
       await resetDatabase(app);
+      await syncUsers(app);
       data = await appendContextsWithPermission(app);
     });
 
@@ -347,6 +351,7 @@ test('Context', async (t) => {
   test('GET List', async (t) => {
     t.before(async () => {
       await resetDatabase(app);
+      await syncUsers(app);
       await appendContextsWithPermission(app);
     });
 
@@ -396,6 +401,7 @@ test('Context', async (t) => {
 
     t.before(async () => {
       await resetDatabase(app);
+      await syncUsers(app);
       contexts = await appendContextsDetailledWithLayers(app);
     });
 

@@ -5,6 +5,7 @@ import { resetDatabase } from '../../../scripts/src/seeder';
 import { buildApp } from '../../app';
 import { AppInstance } from '../../app.interface';
 import { HEADERS_ADMIN } from '../../auth/test/auth.mock';
+import { syncUsers } from '../../user/test/user.mock';
 import { IProfil } from '../profil.interface';
 
 test('Profil IGO', async (t) => {
@@ -13,6 +14,7 @@ test('Profil IGO', async (t) => {
   t.before(async () => {
     app = await buildApp();
     await resetDatabase(app);
+    await syncUsers(app);
   });
 
   t.after(async () => {

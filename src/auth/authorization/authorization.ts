@@ -1,5 +1,6 @@
 import type { preHandlerAsyncHookHandler } from 'fastify';
 
+import { AppInstance } from '../../app.interface';
 import { IProfils } from '../authentication';
 
 export const ADMIN_GROUP = 'igo-admin' as const;
@@ -10,6 +11,19 @@ export const authenticatedAuthorization = createAuthorizationHook();
 // Example: adminAuthorization only requires the highest-level 'admin' group
 export const adminAuthorization = createAuthorizationHook([ADMIN_GROUP]);
 
+// Factory function to create a Fastify preHandler hook to validate consumer access.
+export const consumerAuthorization = (
+  app: AppInstance
+): preHandlerAsyncHookHandler => {
+  return async (request, reply) => {
+    // Extract the standardized identity (Authentication step)
+    const consumer = app.authService.getConsumer(request.headers);
+
+    if (!consumer || consumer.isAnonymous) {
+      return reply.forbidden('Missing authorization: Access denied.');
+    }
+  };
+};
 /**
  * Factory function to create a Fastify preHandler hook for authorization.
  * @param groups - A list of consumer groups that are authorized.
