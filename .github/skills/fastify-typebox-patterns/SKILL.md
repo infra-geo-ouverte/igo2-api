@@ -1,5 +1,5 @@
 ---
-name: Fastify and TypeBox Routing Patterns
+name: fastify-typebox-patterns
 description: Guidelines for defining routes, schemas, and controllers using Fastify and TypeBox in the project.
 ---
 

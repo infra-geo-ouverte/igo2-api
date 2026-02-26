@@ -1,5 +1,5 @@
 ---
-name: Drizzle ORM and TypeBox Patterns
+name: drizzle-patterns
 description: Guidelines for defining Drizzle models, schemas, and migrations in the project.
 ---
 

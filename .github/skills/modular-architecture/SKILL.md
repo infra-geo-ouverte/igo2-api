@@ -1,3 +1,8 @@
+---
+name: modular-architecture
+description: Modular Domain Architecture & Clean Code Standards
+---
+
 # Modular Domain Architecture & Clean Code Standards
 
 This document defines the project's directory structure, naming conventions, and core engineering principles to ensure a maintainable and scalable codebase.
