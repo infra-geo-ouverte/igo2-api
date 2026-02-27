@@ -137,10 +137,16 @@ export class LayerWss {
       return layer;
     }
 
-    const urlWfs =
-      queryUrl && sourceOptions.url
-        ? (getUrlHost(queryUrl, this.hosts) ?? '') + sourceOptions.url
-        : undefined;
+    let urlWfs: string | undefined;
+    if (queryUrl && sourceOptions.url) {
+      const host = getUrlHost(queryUrl, this.hosts);
+      if (host) {
+        // Check if sourceOptions.url already starts with the host to avoid duplication
+        urlWfs = sourceOptions.url.startsWith(host)
+          ? sourceOptions.url
+          : host + sourceOptions.url;
+      }
+    }
 
     return {
       ...layer,
