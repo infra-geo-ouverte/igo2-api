@@ -28,12 +28,13 @@ import { IContextLayerWithRelations } from './context-layer.interface';
 export function mergeLayerContext(
   ctxLayer: IContextLayerWithRelations
 ): AnyLayerOptionsOut {
-  const ctxLayerOptions = convertLayerContextToOptions(ctxLayer);
-  if (!ctxLayer.layer) {
+  const { layer, ...restContextLayer } = ctxLayer;
+  const ctxLayerOptions = convertLayerContextToOptions(restContextLayer);
+  if (!layer) {
     return ctxLayerOptions;
   }
 
-  const baseOptions: LayerOptions = convertLayerToOptions(ctxLayer.layer);
+  const baseOptions: LayerOptions = convertLayerToOptions(layer);
   const { sourceOptions } = baseOptions;
 
   if (!sourceOptions) {

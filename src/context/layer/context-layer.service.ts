@@ -208,9 +208,12 @@ export class ContextLayerService {
     profils: IProfils,
     globalLayers: ILayer[]
   ): Promise<AnyLayerOptionsOut[]> {
-    const globalLayersWithSourceOptions = globalLayers.map((layer) =>
-      convertLayerToOptions(layer)
+    const layerIds = new Set(
+      layers.map((ctxLayer) => ctxLayer.layerId).filter(Boolean)
     );
+    const globalLayersWithSourceOptions = globalLayers
+      .filter((globalLayer) => !layerIds.has(globalLayer.id))
+      .map((layer) => convertLayerToOptions(layer));
 
     const processedOptions = await Promise.all([
       ...globalLayersWithSourceOptions.map((raw) =>
