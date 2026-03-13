@@ -1,3 +1,4 @@
+import { filterSensitiveInformation } from '@igo2/fastify';
 import * as Sentry from '@sentry/node';
 import { nodeProfilingIntegration } from '@sentry/profiling-node';
 import dotenv from 'dotenv';
@@ -29,6 +30,7 @@ if (hasSentry) {
 
     // Set sampling rate for profiling
     // This is relative to tracesSampleRate
-    profilesSampleRate: 1.0
+    profilesSampleRate: 1.0,
+    beforeSend: filterSensitiveInformation()
   });
 }
