@@ -12,9 +12,15 @@ const InsertUserSchema = Type.Omit(
   ['createdAt', 'updatedAt']
 );
 
-const SelectUserSchema = createSelectSchema(userModel, {
-  preference: Type.Optional(Type.Record(Type.String(), Type.Unknown()))
-});
+export const SelectUserSchema = Type.Intersect([
+  createSelectSchema(userModel, {
+    preference: Type.Optional(Type.Record(Type.String(), Type.Unknown()))
+  }),
+  Type.Object({
+    guides: Type.Optional(Type.Array(Type.String())),
+    hasOsrmPrivateAccess: Type.Optional(Type.Boolean())
+  })
+]);
 
 export const GetUserSchema = {
   description: 'Get user.',

@@ -351,7 +351,8 @@ export class ContextPermissionService {
         title: externalUser
           ? `${externalUser.firstName} ${externalUser.lastName}`.trim()
           : 'Unknown User',
-        profilType: 'user'
+        profilType: 'user',
+        userSource: externalUser?.source
       };
     });
   }

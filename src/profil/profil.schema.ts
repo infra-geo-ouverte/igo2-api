@@ -24,7 +24,7 @@ const SearchResultSchema = Type.Object<Record<keyof ISearchResult, TSchema>>({
 export const GetUsersAndProfilsSchema = {
   description: 'Get profile and user by query.',
   querystring: Type.Object({
-    q: Type.Optional(Type.String({ pattern: "^[\\wÀ-ÿ'\\-,]+$" })),
+    q: Type.Optional(Type.String({ pattern: "^[\\wÀ-ÿ'\\-, ]+$" })),
     limit: Type.Optional(Type.Number({ maximum: 20 }))
   }),
   response: {

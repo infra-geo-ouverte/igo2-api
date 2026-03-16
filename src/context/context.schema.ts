@@ -115,7 +115,7 @@ export const GetContextsSchema = {
   querystring: Type.Object({
     permission: Type.Optional(
       Type.Union([
-        Type.String({ pattern: "^[\\wÀ-ÿ'\\-,]+$" }),
+        Type.String({ pattern: "^[\\wÀ-ÿ'\\-, ]+$" }),
         Type.Array(Type.String())
       ])
     ),

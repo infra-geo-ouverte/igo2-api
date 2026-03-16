@@ -12,7 +12,10 @@ export type IAnyContextPermissionWithRelations =
   | IContextPermissionWithUser
   | IContextPermissionWithProfil;
 
-export type IAnyContextPermissionOut = IAnyContextPermission & {
+export type IAnyContextPermissionOut = (
+  | IContextPermissionWithUser
+  | IContextPermissionProfil
+) & {
   title?: string;
   profilType: ProfilType;
 };

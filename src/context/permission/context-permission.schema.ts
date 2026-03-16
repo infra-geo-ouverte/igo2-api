@@ -4,6 +4,7 @@ import { createInsertSchema, createSelectSchema } from 'drizzle-orm/typebox';
 import Type, { Static, TSchema } from 'typebox';
 
 import { ProfilType } from '../../profil';
+import { SelectUserSchema } from '../../user/user.schema';
 import { BASE_SCHEMA_CONTEXT } from '../context.schema';
 import { contextPermissionModel } from './context-permission.model';
 
@@ -11,7 +12,9 @@ const SelectContextPermissionSchema = Type.Interface(
   [createSelectSchema(contextPermissionModel)],
   {
     title: Type.String(),
-    profilType: Type.Enum(ProfilType)
+    profilType: Type.Enum(ProfilType),
+    userSource: Type.Optional(Type.String()),
+    user: SelectUserSchema
   }
 );
 
