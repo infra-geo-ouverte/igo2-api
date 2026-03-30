@@ -6,10 +6,9 @@ WORKDIR /usr/app
 RUN apk update && apk add --no-cache bash curl postgresql-client
 RUN curl -sL https://sentry.io/get-cli/ | bash
 
-COPY package.json package-lock.json .npmrc .env.example ./
+COPY package.json package-lock.json .env.example ./
 RUN npm ci && \
-    npm cache clean --force && \
-    rm .npmrc
+    npm cache clean --force
 
 COPY tsconfig.json tsconfig.app.json eslint.config.mjs .prettierrc ./
 COPY migrations ./migrations
@@ -27,10 +26,9 @@ WORKDIR /usr/app
 RUN apk add --no-cache vim htop tzdata
 RUN ln -s /usr/share/zoneinfo/America/Montreal /etc/localtime
 
-COPY package.json package-lock.json .npmrc ./
+COPY package.json package-lock.json ./
 RUN npm ci --omit=dev && \
-    npm cache clean --force && \
-    rm .npmrc
+    npm cache clean --force
 
 COPY --from=builder /usr/app/dist ./dist
 COPY migrations ./migrations
