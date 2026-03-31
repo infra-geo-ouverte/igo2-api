@@ -104,16 +104,9 @@ export class UserController {
       return [...new Set(acc)];
     }, []);
 
-    const hasOsrmPrivateAccess = profilsIgo.find(
-      (profil) => profil.hasOsrmPrivateAccess
-    )
-      ? true
-      : false;
-
     return reply.send({
       ...user,
-      guides,
-      hasOsrmPrivateAccess
+      guides
     } satisfies IUserWithPermission);
   };
 

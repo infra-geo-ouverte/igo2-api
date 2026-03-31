@@ -20,6 +20,5 @@ export const profilModel = appPgTable('profil', {
   canShareToProfils: integer().array(),
   canFilter: boolean(),
   hasAcrigeo: boolean(),
-  guides: text().array(),
-  hasOsrmPrivateAccess: boolean()
+  guides: text().array()
 });

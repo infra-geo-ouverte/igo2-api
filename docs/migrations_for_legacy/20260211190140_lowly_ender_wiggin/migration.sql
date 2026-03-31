@@ -107,8 +107,7 @@ CREATE TABLE IF NOT EXISTS "profil_igo" (
   "canShareToProfils" varchar,
   "canFilter" boolean,
   "hasAcrigeo" boolean,
-  "guides" varchar,
-  "hasOsrmPrivateAccess" boolean
+  "guides" varchar
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "tool" (

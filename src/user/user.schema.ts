@@ -17,8 +17,7 @@ export const SelectUserSchema = Type.Intersect([
     preference: Type.Optional(Type.Record(Type.String(), Type.Unknown()))
   }),
   Type.Object({
-    guides: Type.Optional(Type.Array(Type.String())),
-    hasOsrmPrivateAccess: Type.Optional(Type.Boolean())
+    guides: Type.Optional(Type.Array(Type.String()))
   })
 ]);
 

@@ -14,7 +14,6 @@ export interface IUserWithProfils extends IUser {
 
 export interface IUserWithPermission extends IUser {
   guides?: string[];
-  hasOsrmPrivateAccess?: boolean;
 }
 
 export type IUserPreference = Record<string, unknown>;

@@ -151,8 +151,7 @@ export async function appendMockedContexts(
     preference: {},
     group: null,
     canShareToProfils: null,
-    guides: null,
-    hasOsrmPrivateAccess: null
+    guides: null
   });
   const contextsDb: IContextDetailed[] = [];
 

@@ -32,8 +32,7 @@ test('Profil IGO', async (t) => {
       canShareToProfils: [0],
       canFilter: true,
       hasAcrigeo: true,
-      guides: ['admin'],
-      hasOsrmPrivateAccess: true
+      guides: ['admin']
     };
     const response = await createProfil(app, HEADERS_ADMIN, profil);
     const profilBD = response.json();

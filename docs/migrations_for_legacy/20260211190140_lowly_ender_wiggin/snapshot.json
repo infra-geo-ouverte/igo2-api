@@ -1395,19 +1395,6 @@
       "table": "tool"
     },
     {
-      "type": "boolean",
-      "typeSchema": null,
-      "notNull": false,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "hasOsrmPrivateAccess",
-      "entityType": "columns",
-      "schema": "igo",
-      "table": "profil_igo"
-    },
-    {
       "type": "varchar",
       "typeSchema": null,
       "notNull": false,

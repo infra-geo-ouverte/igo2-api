@@ -13,8 +13,7 @@ export const PROFIL_ADMIN_MOCK: IProfil = {
   canShareToProfils: [0],
   canFilter: true,
   hasAcrigeo: true,
-  guides: ['admin'],
-  hasOsrmPrivateAccess: true
+  guides: ['admin']
 };
 
 export const ALL_PROFIL_MOCK: IProfil[] = [PROFIL_ADMIN_MOCK];
