@@ -45,7 +45,7 @@ export class UserService {
     return result;
   }
 
-  async getByExternalId(externalId: number): Promise<IUser | undefined> {
+  async getByExternalId(externalId: string): Promise<IUser | undefined> {
     const [result] = await this.db
       .select()
       .from(userModel)
@@ -53,7 +53,7 @@ export class UserService {
     return result;
   }
 
-  async getOrCreateByExternalId(externalId: number): Promise<IUser> {
+  async getOrCreateByExternalId(externalId: string): Promise<IUser> {
     let user = await this.getByExternalId(externalId);
     if (!user) {
       user = await this.create({ externalId });

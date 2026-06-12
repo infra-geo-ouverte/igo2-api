@@ -2,6 +2,7 @@ import type { preHandlerAsyncHookHandler } from 'fastify';
 
 import { AppInstance } from '../../app.interface';
 import { IProfils } from '../authentication';
+import { isAnonymousConsumer } from '../authentication/shared/consumer/consumer.utils';
 
 export const ADMIN_GROUP = 'igo-admin' as const;
 
@@ -19,7 +20,7 @@ export const consumerAuthorization = (
     // Extract the standardized identity (Authentication step)
     const consumer = app.authService.getConsumer(request.headers);
 
-    if (!consumer || consumer.isAnonymous) {
+    if (!consumer || isAnonymousConsumer(consumer)) {
       return reply.forbidden('Missing authorization: Access denied.');
     }
   };

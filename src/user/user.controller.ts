@@ -1,7 +1,13 @@
 import { AppInstance, AppReply, AppRequest } from '../app.interface';
 import { IAuthService } from '../auth';
+import { isUserConsumer } from '../auth/authentication/shared/consumer/consumer.utils';
 import { ProfilService } from '../profil';
-import { IUserPreference, IUserWithPermission } from './user.interface';
+import {
+  IUser,
+  IUserPreference,
+  IUserWithPermission,
+  IUserWithProfils
+} from './user.interface';
 import {
   CreateUserSchema,
   DeleteUserSchema,
@@ -39,7 +45,11 @@ export class UserController {
     const body = request.body;
     const mergePreference = request.query.mergePreference ?? true;
 
-    const user = request.user!;
+    const user = request.user;
+    if (!user) {
+      return reply.forbidden('Accès refusé');
+    }
+
     if (body.id && body.id !== user.id) {
       return reply.forbidden();
     }
@@ -58,7 +68,7 @@ export class UserController {
     request: AppRequest<typeof DeleteUserSchema>,
     reply: AppReply<typeof DeleteUserSchema>
   ) => {
-    const user = request.user!;
+    const user = request.user;
     if (!user) {
       return reply.notFound();
     }
@@ -71,43 +81,13 @@ export class UserController {
     request: AppRequest<typeof GetUserSchema>,
     reply: AppReply<typeof GetUserSchema>
   ) => {
-    const user = request.user!;
-    const profils = user.profils;
-
-    let profilsIgo = await this.profilIgoService
-      .getByProfils(profils)
-      .catch(() => []);
-    const preference: IUserPreference = profilsIgo.reduce(
-      (acc, value) => Object.assign(acc, value ? value.preference : {}),
-      {}
-    );
-    const canShare = profilsIgo.find((p) => p.canShare === true);
-    preference.canShare = !!canShare;
-    user.preference = Object.assign(preference, user.preference);
-
-    const hasAcrigeo = profilsIgo.find((p) => p.hasAcrigeo === true);
-    if (!hasAcrigeo) {
-      if (profilsIgo.length !== 1) {
-        profilsIgo = profilsIgo.filter((p) => p.name !== 'acrigeo');
-      } else {
-        profilsIgo =
-          profilsIgo[0].name === 'acrigeo'
-            ? profilsIgo
-            : profilsIgo.filter((p) => p.name !== 'acrigeo');
-      }
+    const user = request.user;
+    if (!user) {
+      return reply.forbidden('Accès refusé');
     }
 
-    const guides = profilsIgo.reduce((acc: string[], value) => {
-      if (value.guides) {
-        acc.push(...value.guides);
-      }
-      return [...new Set(acc)];
-    }, []);
-
-    return reply.send({
-      ...user,
-      guides
-    } satisfies IUserWithPermission);
+    const userWithPermissions = await this.addUserPermissions(user);
+    return reply.send(userWithPermissions);
   };
 
   /**
@@ -119,13 +99,40 @@ export class UserController {
   ) => {
     const user = request.user;
     if (user) {
-      return user;
+      return await this.addUserPermissions(user);
     }
 
     const consumer = this.authService.getConsumer(request.headers);
+    if (!consumer) {
+      return reply.internalServerError("Problème d'accès");
+    }
+
     const userDb = await this.userService.create({
-      externalId: consumer.customId
+      externalId: isUserConsumer(consumer)
+        ? consumer.customId.toString()
+        : consumer.id
     });
-    return reply.code(201).send(userDb);
+
+    const userWithPermissions = await this.addUserPermissions(userDb);
+    return reply.code(201).send(userWithPermissions);
   };
+
+  private async addUserPermissions(
+    user: IUserWithProfils | IUser
+  ): Promise<IUserWithPermission> {
+    const profils = (user as IUserWithProfils)?.profils ?? [];
+
+    const profilsIgo = await this.profilIgoService
+      .getByProfils(profils)
+      .catch(() => []);
+    const preference: IUserPreference = profilsIgo.reduce(
+      (acc, value) => Object.assign(acc, value ? value.preference : {}),
+      {}
+    );
+    const canShare = profilsIgo.find((p) => p.canShare === true);
+    preference.canShare = !!canShare;
+    user.preference = Object.assign(preference, user.preference);
+
+    return user;
+  }
 }

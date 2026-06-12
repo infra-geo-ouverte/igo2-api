@@ -104,16 +104,8 @@ for (const file of files) {
   console.log(`---> Executing: ${file}`);
 
   if (file.endsWith('.gz')) {
-    // Handle compressed files
-    const { stdout: decompressed } = await $({
-      stdio: ['ignore', 'pipe', 'inherit']
-    })`zcat ${filePath}`;
-
-    await $({
-      input: decompressed,
-      stdio: ['pipe', 'inherit', 'inherit'],
-      env
-    })`psql ${env.PGDATABASE}`;
+    // Handle compressed files via shell pipeline to avoid psql restricted mode
+    await $Bash`zcat ${filePath} | psql ${env.PGDATABASE}`;
   } else {
     // Handle plain SQL files
     await $({

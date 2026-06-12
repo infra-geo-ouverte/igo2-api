@@ -1,15 +1,15 @@
+import { loadEnvFile } from '@igo2/base-api';
 import { getAdminConfig } from '@igo2/fastify';
-import 'dotenv/config';
 import { defineConfig } from 'drizzle-kit';
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const config = getAdminConfig(process.env as any);
+loadEnvFile();
+
+const config = getAdminConfig(process.env);
 
 const migrationConfig = defineConfig({
   out: './migrations',
   schema: ['./src/**/*.model.ts', './src/**/*.relation.ts'],
   dialect: 'postgresql',
-  casing: 'snake_case',
   verbose: true,
   migrations: {
     schema: 'migrations',

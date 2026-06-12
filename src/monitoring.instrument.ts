@@ -1,13 +1,8 @@
 import { filterSensitiveInformation } from '@igo2/fastify';
 import * as Sentry from '@sentry/node';
 import { nodeProfilingIntegration } from '@sentry/profiling-node';
-import dotenv from 'dotenv';
 
 import { getPackageVersion } from './utils/version';
-
-dotenv.config({
-  quiet: true
-});
 
 const isLocal = process.env.ENVIRONMENT === 'local';
 const isProd = process.env.ENVIRONMENT === 'production';

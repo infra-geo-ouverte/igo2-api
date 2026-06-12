@@ -1,8 +1,9 @@
 import { FastifySchema } from 'fastify';
 
 import { createInsertSchema, createSelectSchema } from 'drizzle-orm/typebox';
-import Type, { Static, TSchema } from 'typebox';
+import Type from 'typebox';
 
+import { Nullable } from '../../core/schema/schema';
 import { ProfilType } from '../../profil';
 import { SelectUserSchema } from '../../user/user.schema';
 import { BASE_SCHEMA_CONTEXT } from '../context.schema';
@@ -74,20 +75,13 @@ export const UpdateContextPermissionSchema = {
   }
 } satisfies FastifySchema;
 
-export const Nullable = <T extends TSchema>(schema: T) =>
-  Type.Unsafe<Static<T> | null>({
-    ...schema,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    type: [(schema as any).type, 'null'] // Combines types into an array: ['number', 'null']
-  });
-
 export const CreateContextPermissionSchema = {
   ...BASE_SCHEMA_CONTEXT,
   description: 'Create context permission.',
   body: Type.Interface(
     [Type.Omit(InsertContextPermissionSchema, ['profilId', 'userId'])],
     {
-      userExternalId: Type.Number(),
+      userExternalId: Type.String(),
       userId: Type.Optional(Nullable(Type.Number())),
       profilId: Type.Optional(Nullable(Type.Number()))
     }

@@ -68,7 +68,7 @@ Ce module injecte l'objet `request.user` dans le contexte de chaque requête.
 ```typescript
 // Enregistrement de l'authentification unifiée dans app.ts
 await app.register(authenticationPlugin, {
-  api: { implementation: AuthenticationApi },
+  api: { authApi: AuthenticationApi, userService: UserService },
   strategy: {
     plugin: headerAuthentication,
     options: {
@@ -115,16 +115,16 @@ Assurez-vous que votre fichier `.env` contient la configuration suivante pour ce
 
 ## 🌎 Contribution
 
-1. Prendre/assigner une sous-tâche JIRA en priorité avant un nouveau récit.
+1. Prendre/assigner une sous-tâche Github en priorité avant un nouveau récit.
 2. Mettre cette sous-tâche/ce récit à « En cours ».
 3. Ensuite:
    1. Pour un récit, faire un kickoff technique avec le tech lead, l’architecte associé et désigneur si nécessaire.
    2. Pour une sous-tâche, simplement aviser la personne associée au récit liée.
 4. Faire ce qui est demandé dans le récit/la sous-tâche.
 5. Créer une MR sur GitHub avec une description la plus claire possible avec des screenshots/vidéos s'il y a changement visuel.
-6. Mettre le récit/la sous-tâche à « En revue » dans JIRA.
-7. Une fois approuvée, merger la MR. Si la tâche faite est une sous-tâche, simplement la mettre à « Terminé » dans JIRA. Sinon, mettre le récit à « En essai » dans JIRA et faire la validation sur la DEV.
-8. Une fois la validation terminée, mettre le récit à « Terminé » dans JIRA.
+6. Mettre le récit/la sous-tâche à « En revue » dans Github.
+7. Une fois approuvée, merger la MR. Si la tâche faite est une sous-tâche, simplement la mettre à « Terminé » dans Github. Sinon, mettre le récit à « En essai » dans Github et faire la validation sur la DEV.
+8. Une fois la validation terminée, mettre le récit à « Terminé » dans Github.
 
 ## 🧰 Dépannage
 

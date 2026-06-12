@@ -46,7 +46,10 @@ export class ContextController {
       throw reply.conflict(message);
     }
 
-    const user = request.user!;
+    const user = request.user;
+    if (!user) {
+      return reply.forbidden('Accès refusé');
+    }
     const context = await this.contextService.createDetailed(newContext, user);
 
     return reply.code(201).send(context);
@@ -58,12 +61,16 @@ export class ContextController {
   ) => {
     const id = request.params.contextId;
 
+    const user = request.user;
+    if (!user) {
+      return reply.forbidden('Accès refusé');
+    }
+
     const contextDb = await this.contextService.getById(id);
     if (!contextDb) {
       return reply.notFound('Context not found');
     }
 
-    const user = request.user!;
     const context = await this.contextService.cloneDetailed(
       id,
       (request.body as Partial<IContextDetailed>) ?? {},
@@ -72,7 +79,7 @@ export class ContextController {
 
     const contextDetailed = await this.contextService.getDetailedById(
       context.id,
-      request.user!
+      user
     );
     if (!contextDetailed) {
       throw reply.notFound(`No context found for ${context.id}`);
@@ -229,11 +236,17 @@ export class ContextController {
     request: AppRequest<typeof PostContextDefaultSchema>,
     reply: AppReply<typeof PostContextDefaultSchema>
   ) => {
-    const { defaultContextId } = request.body;
+    let { defaultContextId } = request.body;
 
-    const user = request.user!;
+    const user = request.user;
+    if (!user) {
+      return reply.forbidden('Accès refusé');
+    }
+
     if (user.defaultContextId === defaultContextId) {
-      return reply.badRequest('Le contexte est déjà celui par défaut');
+      const defaultCtx =
+        await this.contextService.getByUri(DEFAULT_CONTEXT_URI);
+      defaultContextId = defaultCtx!.id;
     }
 
     await this.userService.update(user.id, {

@@ -1,9 +1,10 @@
 import { IncomingHttpHeaders } from 'node:http';
 
+import { FastifyInstance, FastifyPluginAsync } from 'fastify';
+
 import { AxiosInstance } from 'axios';
 
-import { IUserWithProfils } from '../../user';
-import { ADMIN_GROUP } from '../authorization';
+import { IAnyConsumer } from './shared/consumer';
 
 export interface IAuthApi {
   findMany(ids: number[]): Promise<IAuthUser[]>;
@@ -12,20 +13,11 @@ export interface IAuthApi {
 }
 
 export interface IAuthService {
-  getConsumer(headers: IncomingHttpHeaders): IConsumer;
+  getConsumer(headers: IncomingHttpHeaders): IAnyConsumer | undefined;
 }
 
-export const ConsumerGroups = [ADMIN_GROUP, 'test'] as const;
-export type ConsumerGroups = (typeof ConsumerGroups)[number] | string;
-
-export interface IConsumer {
-  /** Le id externe de l'usager provenant du provider d'authentification */
-  id: string;
-  /** Le id externe de l'api d'authentification */
-  customId: number;
-  username: string;
-  groups: ConsumerGroups[];
-  isAnonymous: boolean;
+export interface IAuthEnv {
+  AUTH_API: string;
 }
 
 export interface IAuthUser {
@@ -37,19 +29,45 @@ export interface IAuthUser {
   lastName?: string;
 }
 
-export interface IAuthApiInstance {
+export interface IAuthApiInstance<U extends IUserBase = IUserBase> {
   authApi: IAuthApi;
+  userService: IUserService<U>;
   authService: IAuthService;
 }
 
-export interface IAuthenticationRequest {
-  user?: IUserWithProfils;
+export interface IUserService<U extends IUserBase = IUserBase> {
+  getByExternalId: (externalId: string) => Promise<U | undefined>;
+  getOrCreateByExternalId: (externalId: string, source?: string) => Promise<U>;
 }
+
+export interface IAuthenticationRequest<
+  U extends IUserBase = IUserBaseWithProfils
+> {
+  user?: U;
+}
+
+interface IUserBaseWithProfils extends IUserBase {
+  profils: IProfils;
+}
+
+export type IUserBase = object;
 
 export type IProfils = string[];
 
+export interface IAuthenticationConfig<U extends IUserBase = IUserBase> {
+  api: {
+    authApi: new (app: FastifyInstance) => IAuthApi;
+    userService: new (app: FastifyInstance) => IUserService<U>;
+  };
+  strategy: {
+    plugin: FastifyPluginAsync<IAuthPluginConfig>;
+    options?: IAuthPluginConfig;
+  };
+}
+
 export interface IAuthPluginConfig {
   clients?: IAuthPluginClientConfig[];
+  skipRoutes?: string[];
 }
 
 export interface IAuthPluginClientConfig {
@@ -58,7 +76,10 @@ export interface IAuthPluginClientConfig {
 }
 
 export interface IAuthPluginClientConfigOptions {
+  /** Set the header api-key */
   withApiKey?: boolean;
+  /** Forward the consumer headers */
   withConsumer?: boolean;
+  /** Forward the header authorization */
   withAuthorization?: boolean;
 }

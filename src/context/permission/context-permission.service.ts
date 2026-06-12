@@ -4,7 +4,7 @@ import { AppDatabase, AppInstance } from '../../app.interface';
 import { IProfils } from '../../auth';
 import { ProfilService, profilModel } from '../../profil';
 import { UserService, userModel } from '../../user';
-import { IUserWithProfils } from '../../user/user.interface';
+import { IUser, IUserWithProfils } from '../../user/user.interface';
 import { IContext } from '../context.interface';
 import {
   IAnyContextPermissionIn,
@@ -337,20 +337,23 @@ export class ContextPermissionService {
   private async enrichUsers(
     ctxPermissions: IContextPermissionWithUser[]
   ): Promise<IAnyContextPermissionOut[]> {
-    const userExternalIds = ctxPermissions.map(
-      (userPerm) => userPerm.user.externalId
+    const permissionUsers = ctxPermissions.filter(
+      (userPerm) => userPerm.user.source === 'user'
+    );
+    const userExternalIds = permissionUsers.map((userPerm) =>
+      Number(userPerm.user.externalId)
     );
     const authUsers = await this.app.authApi.findMany(userExternalIds);
 
     const authUserMap = new Map(authUsers.map((u) => [u.id, u]));
-    return ctxPermissions.map((userPerm) => {
-      const externalUser = authUserMap.get(userPerm.user.externalId);
+    return permissionUsers.map((userPerm) => {
+      const externalUser = authUserMap.get(Number(userPerm.user.externalId));
 
       return {
         ...userPerm,
         title: externalUser
           ? `${externalUser.firstName} ${externalUser.lastName}`.trim()
-          : 'Unknown User',
+          : 'System or Unknown User',
         profilType: 'user',
         userSource: externalUser?.source
       };
@@ -360,19 +363,26 @@ export class ContextPermissionService {
   private async enrichUser(
     ctxPermissions: IContextPermissionWithUser
   ): Promise<IAnyContextPermissionOut> {
-    const authUsers = await this.app.authApi.findMany([
-      ctxPermissions.user.externalId
-    ]);
-
-    const authUser = authUsers[0];
-
+    const title = await this.getUserTitle(ctxPermissions.user);
     return {
       ...ctxPermissions,
-      title: authUser
-        ? `${authUser.firstName} ${authUser.lastName}`.trim()
-        : 'Unknown User',
+      title,
       profilType: 'user'
     };
+  }
+  private async getUserTitle(user: IUser): Promise<string> {
+    if (user.source === 'system') {
+      return `System:${user.id}`;
+    }
+
+    const authUsers = await this.app.authApi.findMany([
+      Number(user.externalId)
+    ]);
+    const authUser = authUsers[0];
+
+    return authUser
+      ? `${authUser.firstName} ${authUser.lastName}`.trim()
+      : 'Unknown User';
   }
 }
 

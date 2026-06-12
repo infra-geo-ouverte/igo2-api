@@ -18,7 +18,7 @@ export const contextLayerModel = appPgTable(
       .notNull()
       .references(() => contextModel.id, { onDelete: 'cascade' }),
     /** We consider as a system layer if it is not linked to a layer like LayerGroup */
-    layerId: integer().references(() => layerModel.id),
+    layerId: integer().references(() => layerModel.id, { onDelete: 'cascade' }),
     ...metadataTimestampColumns
   },
   (table) => [

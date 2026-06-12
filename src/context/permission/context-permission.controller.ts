@@ -23,7 +23,11 @@ export class ContextPermissionController {
     request: AppRequest<typeof CreateContextPermissionSchema>,
     reply: AppReply<typeof CreateContextPermissionSchema>
   ) => {
-    const user = request.user!;
+    const user = request.user;
+    if (!user) {
+      return reply.forbidden('Accès refusé');
+    }
+
     const ctxPermission = {
       ...request.body,
       contextId: request.params.contextId
@@ -38,7 +42,11 @@ export class ContextPermissionController {
     request: AppRequest<typeof UpdateContextPermissionSchema>,
     reply: AppReply<typeof UpdateContextPermissionSchema>
   ) => {
-    const user = request.user!;
+    const user = request.user;
+    if (!user) {
+      return reply.forbidden('Accès refusé');
+    }
+
     const id = request.params.id;
 
     const ctxPermission = await this.ctxPermissionService.getById(id);

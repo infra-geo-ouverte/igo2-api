@@ -23,13 +23,17 @@ export class ContextHiddenController {
     request: AppRequest<typeof GetContextShowSchema>,
     reply: AppReply<typeof GetContextShowSchema>
   ) => {
+    const user = request.user;
+    if (!user) {
+      return reply.forbidden('Accès refusé');
+    }
+
     const contextId = request.params.contextId;
     const context = await this.contextService.getById(contextId);
     if (!context) {
       return reply.notFound();
     }
 
-    const user = request.user!;
     await this.contextHiddenService.show(user.id, contextId);
 
     return this.contextHiddenService.getById(user.id, contextId);
@@ -39,13 +43,17 @@ export class ContextHiddenController {
     request: AppRequest<typeof GetContextHideSchema>,
     reply: AppReply<typeof GetContextHideSchema>
   ) => {
+    const user = request.user;
+    if (!user) {
+      return reply.forbidden('Accès refusé');
+    }
+
     const contextId = request.params.contextId;
     const context = await this.contextService.getById(contextId);
     if (!context) {
       return reply.notFound();
     }
     try {
-      const user = request.user!;
       const hidden = await this.contextHiddenService.hide(user.id, contextId);
       return reply.code(200).send(hidden);
     } catch (error) {
@@ -65,13 +73,17 @@ export class ContextHiddenController {
     request: AppRequest<typeof GetContextAllHiddenSchema>,
     reply: AppReply<typeof GetContextAllHiddenSchema>
   ) => {
+    const user = request.user;
+    if (!user) {
+      return reply.forbidden('Accès refusé');
+    }
+
     const contextId = request.params.contextId;
     const context = await this.contextService.getById(contextId);
     if (!context) {
       return reply.notFound();
     }
 
-    const user = request.user!;
     return this.contextHiddenService.get(user.id);
   };
 
@@ -79,13 +91,17 @@ export class ContextHiddenController {
     request: AppRequest<typeof GetContextHiddenSchema>,
     reply: AppReply<typeof GetContextHiddenSchema>
   ) => {
+    const user = request.user;
+    if (!user) {
+      return reply.forbidden('Accès refusé');
+    }
+
     const contextId = request.params.contextId;
     const context = await this.contextService.getById(contextId);
     if (!context) {
       return reply.notFound();
     }
 
-    const user = request.user!;
     return this.contextHiddenService.getById(user.id, contextId);
   };
 }

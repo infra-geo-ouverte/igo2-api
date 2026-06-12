@@ -21,6 +21,8 @@ export interface SourceOptions {
   [key: string]: unknown;
 }
 
+export type LayerSourceOptions = Omit<SourceOptions, 'type' | 'url'>;
+
 export type AnyLayerOptionsOut = (LayerOptions | LayerGroupOptions) & {
   id: number;
 };
@@ -135,4 +137,13 @@ export interface SourceFieldsOptionsParams {
   alias?: string;
   values?: string[];
   [key: string]: unknown;
+}
+
+type ILayerMigrateUpdate = { id: ILayerIn['id'] } & Partial<
+  Pick<ILayerIn, 'layerOptions' | 'sourceOptions'>
+>;
+
+export interface ILayerMigrateBatch {
+  toAdd?: ILayerIn[];
+  toPut?: ILayerMigrateUpdate[];
 }

@@ -1,6 +1,6 @@
 import { AppInstance } from '../../../app.interface';
 import { HEADERS_USER_1, HEADERS_USER_2 } from '../../../auth/test/auth.mock';
-import { LayerGroupOptions, LayerOptions } from '../../../layer';
+import { LayerGroupOptions, LayerOptions, SourceOptions } from '../../../layer';
 import { LAYER_MOCK_1, LAYER_MOCK_2 } from '../../../layer/test/layer.mock';
 import { IContext, IContextDetailedIn } from '../../context.interface';
 import { appendContextsWithPermission } from '../../permission/test/context-permission.mock';
@@ -15,13 +15,13 @@ import {
 export const CONTEXT_LAYER_MOCK_1: LayerOptions = {
   ...LAYER_MOCK_1.layerOptions,
   type: LAYER_MOCK_1.type,
-  sourceOptions: LAYER_MOCK_1.sourceOptions ?? undefined
+  sourceOptions: LAYER_MOCK_1.sourceOptions as SourceOptions | undefined
 };
 
 export const CONTEXT_LAYER_MOCK_2: LayerOptions = {
   ...LAYER_MOCK_2.layerOptions,
   type: LAYER_MOCK_2.type,
-  sourceOptions: LAYER_MOCK_2.sourceOptions ?? undefined
+  sourceOptions: LAYER_MOCK_2.sourceOptions as SourceOptions | undefined
 };
 
 export const CONTEXT_LAYER_MOCK_3: LayerGroupOptions = {

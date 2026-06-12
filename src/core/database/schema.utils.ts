@@ -3,8 +3,7 @@ import {
   PgBuildExtraConfigColumns,
   PgTableExtraConfigValue,
   pgEnum,
-  pgSchema,
-  pgTable
+  snakeCase
 } from 'drizzle-orm/pg-core';
 
 const dbSchemaName = process.env.DB_SCHEMA ?? 'public';
@@ -20,8 +19,8 @@ export const appPgTable = <
   ) => PgTableExtraConfigValue[]
 ) => {
   return dbSchemaName === 'public'
-    ? pgTable(name, columns, extraConfig)
-    : pgSchema(dbSchemaName).table(name, columns, extraConfig);
+    ? snakeCase.table(name, columns, extraConfig)
+    : snakeCase.schema(dbSchemaName).table(name, columns, extraConfig);
 };
 
 export const appPgEnum = <U extends string, T extends Readonly<[U, ...U[]]>>(
@@ -30,5 +29,5 @@ export const appPgEnum = <U extends string, T extends Readonly<[U, ...U[]]>>(
 ) => {
   return dbSchemaName === 'public'
     ? pgEnum(name, values)
-    : pgSchema(dbSchemaName).enum(name, values);
+    : snakeCase.schema(dbSchemaName).enum(name, values);
 };

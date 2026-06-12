@@ -151,8 +151,8 @@ export class LayerWss {
     return {
       ...layer,
       workspace: {
-        ...layer.workspace,
-        enabled: true
+        enabled: true,
+        ...layer.workspace
       },
       sourceOptions: {
         ...sourceOptions,

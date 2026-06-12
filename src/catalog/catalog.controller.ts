@@ -30,7 +30,11 @@ export class CatalogController {
     reply: AppReply<typeof UpdateCatalogSchema>
   ) => {
     const id = request.params.id;
-    const profils = request.user!.profils;
+    const user = request.user;
+    if (!user) {
+      return reply.forbidden('Accès refusé');
+    }
+    const profils = user.profils;
     const catalogToUpdate = request.body;
 
     const catalog = await this.catalogService.getById(id, profils);
@@ -46,7 +50,11 @@ export class CatalogController {
     reply: AppReply<typeof DeleteByCatalogIdSchema>
   ) => {
     const id = request.params.id;
-    const profils = request.user!.profils;
+    const user = request.user;
+    if (!user) {
+      return reply.forbidden('Accès refusé');
+    }
+    const profils = user.profils;
 
     const catalog = await this.catalogService.getById(id, profils);
     if (!catalog) {
@@ -63,7 +71,7 @@ export class CatalogController {
     reply: AppReply<typeof GetByCatalogIdSchema>
   ) => {
     const id = request.params.id;
-    const profils = request.user!.profils;
+    const profils = request.user?.profils ?? [];
 
     const catalog = await this.catalogService.getById(id, profils);
     if (!catalog) {
@@ -74,7 +82,7 @@ export class CatalogController {
   };
 
   get = async (request: AppRequest<typeof GetCatalogsSchema>) => {
-    const profils = request.user!.profils;
+    const profils = request.user?.profils ?? [];
     return this.catalogService.get(profils);
   };
 }

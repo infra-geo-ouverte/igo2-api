@@ -75,16 +75,30 @@ function mergeOgcFilterOptions(
     ? mergeOgcFilter(sourceOgcFilters, contextOgcFilters)
     : { ...contextOgcFilters };
 
-  if (mergedFilters.interfaceOgcFilters && sourceFields?.length) {
-    const advancedFilters = mergeAdvancedOgcFilters(
-      sourceFields,
-      mergedFilters.interfaceOgcFilters
-    );
+  // Restore interface filters (advanced filters saved in context that are valid)
+  if (contextOgcFilters.interfaceOgcFilters && sourceFields?.length) {
+    if (sourceOgcFilters) {
+      // Find the saved interface filters that are NOT predefined base filters.
+      // Predefined filters were already processed and merged by `mergeOgcFilter`.
+      const advancedContextFilters =
+        contextOgcFilters.interfaceOgcFilters.filter(
+          (f) => !searchFilter(sourceOgcFilters.filters ?? {}, f.propertyName)
+        );
 
-    mergedFilters.interfaceOgcFilters = [
-      ...mergedFilters.interfaceOgcFilters,
-      ...advancedFilters
-    ];
+      // Validate that these advanced filters correspond to valid sourceFields.
+      const advancedFilters = mergeAdvancedOgcFilters(
+        sourceFields,
+        advancedContextFilters
+      );
+
+      // Append the valid advanced filters to any predefined ones we already kept.
+      if (advancedFilters.length > 0 || mergedFilters.interfaceOgcFilters) {
+        mergedFilters.interfaceOgcFilters = [
+          ...(mergedFilters.interfaceOgcFilters || []),
+          ...advancedFilters
+        ];
+      }
+    }
   }
 
   return mergedFilters;

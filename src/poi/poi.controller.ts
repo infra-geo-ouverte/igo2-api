@@ -18,7 +18,10 @@ export class PoiController {
     request: AppRequest<typeof CreatePoiSchema>,
     reply: AppReply<typeof CreatePoiSchema>
   ) => {
-    const user = request.user!;
+    const user = request.user;
+    if (!user) {
+      return reply.forbidden('Accès refusé');
+    }
 
     const res = await this.poiService.create({
       ...request.body,
@@ -31,8 +34,10 @@ export class PoiController {
     request: AppRequest<typeof UpdatePoiSchema>,
     reply: AppReply<typeof UpdatePoiSchema>
   ) => {
-    const user = request.user!;
-
+    const user = request.user;
+    if (!user) {
+      return reply.forbidden('Accès refusé');
+    }
     const id = request.params.id;
     const poiToUpdate = request.body;
 
@@ -48,7 +53,11 @@ export class PoiController {
     request: AppRequest<typeof DeletePoiSchema>,
     reply: AppReply<typeof DeletePoiSchema>
   ) => {
-    const user = request.user!;
+    const user = request.user;
+    if (!user) {
+      return reply.forbidden('Accès refusé');
+    }
+
     const id = request.params.id;
 
     const poi = await this.poiService.getById(id, user.id);
@@ -64,7 +73,11 @@ export class PoiController {
     request: AppRequest<typeof GetPoiSchema>,
     reply: AppReply<typeof GetPoiSchema>
   ) => {
-    const user = request.user!;
+    const user = request.user;
+    if (!user) {
+      return reply.forbidden('Accès refusé');
+    }
+
     const id = request.params.id;
 
     const poi = await this.poiService.getById(id, user.id);
@@ -75,8 +88,12 @@ export class PoiController {
     return poi;
   };
 
-  getAll = async (request: AppRequest) => {
-    const user = request.user!;
+  getAll = async (request: AppRequest, reply: AppReply) => {
+    const user = request.user;
+    if (!user) {
+      return reply.forbidden('Accès refusé');
+    }
+
     return this.poiService.getAll(user.id);
   };
 }

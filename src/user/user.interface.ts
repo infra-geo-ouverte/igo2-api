@@ -1,4 +1,5 @@
 import { IProfils } from '../auth';
+import { IConsumerSource } from '../auth/authentication/shared/consumer';
 import { userModel } from './user.model';
 
 export type IUser = typeof userModel.$inferSelect;
@@ -17,3 +18,9 @@ export interface IUserWithPermission extends IUser {
 }
 
 export type IUserPreference = Record<string, unknown>;
+
+export const UserSource = ['user', 'system'] as const satisfies Exclude<
+  IConsumerSource,
+  'anonymous'
+>[];
+export type UserSource = (typeof UserSource)[number];

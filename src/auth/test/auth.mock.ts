@@ -15,7 +15,7 @@ export const HEADERS_ADMIN: IHeaderConsumerRaw = {
 export const HEADERS_ANONYMOUS: IHeaderConsumerRaw = {
   'x-consumer-id': '123456782',
   'x-consumer-username': 'anonyme',
-  'x-consumer-custom-id': '4',
+  'x-consumer-custom-id': '',
   'x-consumer-groups': 'all',
   'x-anonymous-consumer': 'true'
 };
@@ -93,7 +93,7 @@ export function getUserHeaders(): IUsersHeader {
     },
     anonymous: {
       ...HEADERS_ANONYMOUS,
-      'x-consumer-custom-id': users[3].id!.toString()
+      'x-consumer-custom-id': ''
     }
   };
 }

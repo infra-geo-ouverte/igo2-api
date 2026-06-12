@@ -4,16 +4,20 @@ import { StringArray } from '@igo2/fastify';
 import { IncomingHttpHeaders } from 'http';
 import { TSchema, Type } from 'typebox';
 
-import { ConsumerGroups } from '../authentication.interface';
+import { Nullable } from '../../../core/schema/schema';
+import { ConsumerGroups } from '../shared/consumer';
 
-export const HeaderAnoymousConsumer = 'x-anonymous-consumer' as const;
+export const HeaderAnonymousConsumer = 'x-anonymous-consumer' as const;
+
+export const HeaderApiKey = 'x-api-key' as const;
 
 export const HeaderConsumers = [
   'x-consumer-id',
   'x-consumer-custom-id',
   'x-consumer-username',
   'x-consumer-groups',
-  HeaderAnoymousConsumer
+  HeaderAnonymousConsumer,
+  HeaderApiKey
 ] as const;
 export type HeaderConsumer = (typeof HeaderConsumers)[number];
 
@@ -27,10 +31,11 @@ export const HEADERS_CONSUMER_SCHEMA = Type.Object<
 >(
   {
     'x-consumer-id': Type.Optional(Type.String()),
-    'x-consumer-custom-id': Type.Optional(Type.Number()),
+    'x-consumer-custom-id': Type.Optional(Nullable(Type.Number())),
     'x-consumer-username': Type.Optional(Type.String()),
     'x-consumer-groups': Type.Optional(StringArray<ConsumerGroups>()),
-    'x-anonymous-consumer': Type.Optional(Type.Boolean())
+    [HeaderAnonymousConsumer]: Type.Optional(Type.Boolean()),
+    [HeaderApiKey]: Type.Optional(Type.String())
   },
   {
     $id: HEADERS_CONSUMER_SCHEMA_NAME,
@@ -44,7 +49,8 @@ export interface IHeaderConsumer {
   'x-consumer-custom-id': string;
   'x-consumer-username': string;
   'x-consumer-groups'?: ConsumerGroups[];
-  'x-anonymous-consumer'?: boolean;
+  [HeaderAnonymousConsumer]?: boolean;
+  [HeaderApiKey]?: string;
 }
 
 export interface IHeaderConsumerRaw extends IncomingHttpHeaders {
@@ -52,7 +58,8 @@ export interface IHeaderConsumerRaw extends IncomingHttpHeaders {
   'x-consumer-custom-id': string;
   'x-consumer-username': string;
   'x-consumer-groups'?: string;
-  'x-anonymous-consumer'?: string;
+  [HeaderAnonymousConsumer]?: string;
+  [HeaderApiKey]?: string;
 }
 
 export const REQUEST_WITH_HEADER_AUTH = {

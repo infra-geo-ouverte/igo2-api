@@ -10,6 +10,7 @@ import {
   AnySourceOptionsParams,
   ILayer,
   ILayerIn,
+  ILayerMigrateBatch,
   LayerOptions,
   LayerType,
   SourceOptions
@@ -20,7 +21,9 @@ import { LayerWss } from './permission/layer-wss';
 import {
   convertLayerToOptions,
   getParamsLayers,
-  isLayerItemOptions
+  isLayerItemOptions,
+  resolveUrl,
+  sanitizeLayerSourceOptions
 } from './utils/layer.utils';
 
 type IQueryBySourceOptions = Pick<SourceOptions, 'type' | 'url'> & {
@@ -54,17 +57,34 @@ export class LayerService {
     transaction?: Transaction
   ): Promise<ILayer> {
     const dbInstance = transaction ?? this.db;
+    const data: ILayerIn = {
+      ...layerData,
+      sourceOptions: layerData.sourceOptions
+        ? sanitizeLayerSourceOptions(
+            layerData.sourceOptions as Partial<SourceOptions>
+          )
+        : layerData.sourceOptions
+    };
     const [result] = await dbInstance
       .insert(layerModel)
-      .values(layerData)
+      .values(data)
       .returning();
     return result;
   }
 
   async update(id: number, layerData: Partial<ILayerIn>): Promise<ILayer> {
+    const data: Partial<ILayerIn> = {
+      ...layerData,
+      sourceOptions:
+        layerData.sourceOptions != null
+          ? sanitizeLayerSourceOptions(
+              layerData.sourceOptions as Partial<SourceOptions>
+            )
+          : layerData.sourceOptions
+    };
     const [result] = await this.db
       .update(layerModel)
-      .set(layerData)
+      .set(data)
       .where(eq(layerModel.id, id))
       .returning();
     return result;
@@ -116,10 +136,7 @@ export class LayerService {
       return undefined;
     }
 
-    const isAllowed = await this.urlAllowed(layerResult.url, profils);
-    if (!isAllowed) {
-      throw this.app.httpErrors.forbidden();
-    }
+    await this.urlAllowed(layerResult.url, profils);
 
     return layerResult;
   }
@@ -128,12 +145,14 @@ export class LayerService {
     options: IQueryBySourceOptions,
     layerId?: number
   ): Promise<ILayer | undefined> {
+    const resolvedUrl = resolveUrl(options.url, this.app.env.WSS_API);
     const params = options.params as AnySourceOptionsParams;
     const layerName = params?.layers ?? params?.['LAYERS'];
+
     const conditions = [
       and(
         eq(layerModel.type, options.type),
-        eq(layerModel.url, options.url),
+        eq(layerModel.url, resolvedUrl),
         layerName ? eq(layerModel.layers, layerName) : isNull(layerModel.layers)
       )
     ];
@@ -158,13 +177,13 @@ export class LayerService {
     sourceOptions: SourceOptions,
     transaction?: Transaction
   ): Promise<ILayer | undefined> {
+    if (sourceOptions.url === undefined) {
+      throw this.app.httpErrors.badRequest('SourceOptions url is required');
+    }
+
     const layerDB = await this.getBySource(sourceOptions, layerId);
     if (layerDB) {
       return layerDB;
-    }
-
-    if (sourceOptions.url === undefined) {
-      throw this.app.httpErrors.badRequest('SourceOptions url is required');
     }
 
     return this.create(
@@ -190,21 +209,34 @@ export class LayerService {
       }
     });
     if (!layerResult) {
-      return undefined;
+      throw this.app.httpErrors.notFound(
+        'Layer not found by source',
+        type,
+        layers ?? 'No layer name',
+        url
+      );
     }
 
     const options = convertLayerToOptions(layerResult);
-
-    if (type === 'wms' && isLayerItemOptions(options)) {
-      return this.setWssOptions(options, url);
-    }
+    return this.setWssOptions(options, url);
   }
 
-  async urlAllowed(url: string, profils: IProfils): Promise<boolean> {
+  async urlAllowed(url: string, profils: IProfils): Promise<void> {
     if (!this.layerPermission) {
-      return true;
+      return;
     }
-    return this.layerPermission.verifyPermissionByUrl(url, profils);
+
+    const resolvedUrl = resolveUrl(url, this.app.env.WSS_API);
+    const hasAccess = await this.layerPermission.verifyPermissionByUrl(
+      resolvedUrl,
+      profils
+    );
+    if (!hasAccess) {
+      console.error('LayerService - has no access', resolvedUrl, profils);
+      throw this.app.httpErrors.forbidden();
+    }
+
+    return;
   }
 
   async setWssOptions(
@@ -216,5 +248,63 @@ export class LayerService {
     }
 
     return layer;
+  }
+
+  async migrateBatch(request: ILayerMigrateBatch): Promise<void> {
+    return this.app.db.transaction(async (tx) => {
+      const operations: Promise<unknown>[] = [];
+
+      if (request.toAdd) {
+        for (const layer of request.toAdd) {
+          const existingLayer = await this.getBySource({
+            type: layer.type,
+            url: layer.url,
+            params: { layers: layer.layers }
+          });
+          if (existingLayer) {
+            throw this.app.httpErrors.badRequest(
+              `Le layer que vous tentez de créer existe déjà, voir le id: ${existingLayer.id}. Payload: ${layer}`
+            );
+          }
+          operations.push(this.create(layer, tx));
+        }
+      }
+
+      if (request.toPut) {
+        for (const payload of request.toPut) {
+          const { id, ...values } = payload;
+          const sanitizedValues = {
+            ...values,
+            sourceOptions:
+              values.sourceOptions != null
+                ? sanitizeLayerSourceOptions(
+                    values.sourceOptions as Partial<SourceOptions>
+                  )
+                : values.sourceOptions
+          };
+          operations.push(
+            tx
+              .update(layerModel)
+              .set(sanitizedValues)
+              .where(sql`${layerModel.id} = ${id}`)
+          );
+        }
+      }
+
+      await Promise.all(operations);
+    });
+  }
+
+  async migrateLayer(layer: ILayerIn): Promise<ILayer> {
+    const { id: _id, type, url, layers, ...values } = layer;
+    const existingLayer = await this.getBySource({
+      type,
+      url,
+      params: { layers }
+    });
+
+    return existingLayer
+      ? this.update(existingLayer.id, values)
+      : this.create(layer);
   }
 }

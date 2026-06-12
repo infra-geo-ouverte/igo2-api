@@ -4,7 +4,6 @@ FROM node:24-alpine AS builder
 WORKDIR /usr/app
 
 RUN apk update && apk add --no-cache bash curl postgresql-client
-RUN curl -sL https://sentry.io/get-cli/ | bash
 
 COPY package.json package-lock.json .env.example ./
 RUN npm ci && \
@@ -16,7 +15,9 @@ COPY scripts ./scripts/
 COPY src ./src/
 
 RUN npm run build
-RUN sentry-cli sourcemaps inject /usr/app/dist
+
+# Example of how to inject source maps to Sentry. You can also upload them as part of your CI/CD pipeline using the sentry-cli or any other method that works for you
+# RUN sentry-cli sourcemaps inject /usr/app/dist
 
 # Service
 FROM node:24-alpine AS service

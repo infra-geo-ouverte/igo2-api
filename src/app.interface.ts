@@ -17,16 +17,11 @@ import {
   SENTRY_ENV_SCHEMA,
   StringArray
 } from '@igo2/fastify';
-import dotenv from 'dotenv';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import Type, { TSchema } from 'typebox';
 
-import { models } from './core/database/models';
+import { IAuthEnv } from './auth';
 import relations from './core/database/relations';
-
-dotenv.config({
-  quiet: true
-});
 
 export const Language = ['fr', 'en'] as const;
 export type Language = (typeof Language)[number];
@@ -35,7 +30,7 @@ export const defaultLanguage: Language = 'fr';
 
 export type AppInstance = FastifyInstance & InstanceSchema;
 
-export type AppDatabase = NodePgDatabase<typeof models, typeof relations>;
+export type AppDatabase = NodePgDatabase<typeof relations>;
 
 export type AppRequest<TSchema extends FastifySchema = FastifySchema> =
   FastifyRequest & RequestSchema<TSchema>;
@@ -49,8 +44,7 @@ export type IAppEnv = IConfig &
   IDatabaseEnv &
   ILoggerEnv;
 
-interface IAppBaseEnv {
-  AUTH_API: string;
+interface IAppBaseEnv extends IAuthEnv {
   KONG_API: string;
   ADMIN_KEY: string;
   /** Web Service Security */

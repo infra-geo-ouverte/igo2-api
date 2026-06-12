@@ -21,6 +21,9 @@ export class LayerPermissionKongApi implements ILayerPermission {
     this.ogcWssBasePaths = app.env.OGC_WSS_BASE_PATHS;
   }
 
+  /**
+   * Si une couche n'est pas dans OGC-WSS mais qu'on veut tout de même ajouter une gestion de permission on peut utiliser KONG et le plugin ACCESS CONTROL LIST (ACL)
+   */
   async verifyPermissionByUrl(
     url: string | undefined,
     profils: IProfils
@@ -62,13 +65,17 @@ export class LayerPermissionKongApi implements ILayerPermission {
       return false;
     }
 
+    // Les plugins représente des restrictions, si on n'a pas de plugin pas de restriction
     const plugins = await this.getPlugins(route.service.id);
     if (!plugins) {
       return true;
     }
+
+    // ACCESS CONTROL LIST (ACL), notre plugin de permission
     const acl = plugins.find(
       (plugin) => plugin.name === 'acl' && plugin.enabled
     );
+    // S'il n'est pas présent, c'est qu'il n'y a pas de restriction
     if (!acl) {
       return true;
     }
@@ -92,7 +99,6 @@ export class LayerPermissionKongApi implements ILayerPermission {
     }
 
     const routes = await this.getRoutes();
-
     if (!routes?.length) {
       return;
     }

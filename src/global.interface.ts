@@ -4,16 +4,18 @@ import {
   IAuthenticationRequest
 } from './auth/authentication/authentication.interface';
 import { ILayerPermissionInstance } from './layer/permission/shared/permission.interface';
+import { IUserWithProfils } from './user';
 
 // Declaration merging technique to enhance the FastifyInstance
 declare module 'fastify' {
-  interface FastifyInstance extends IAuthApiInstance, ILayerPermissionInstance {
+  interface FastifyInstance
+    extends IAuthApiInstance<IUserWithProfils>, ILayerPermissionInstance {
     env: IAppEnv;
     db: AppDatabase;
   }
 
   // eslint-disable-next-line @typescript-eslint/no-empty-object-type
-  interface FastifyRequest extends IAuthenticationRequest {}
+  interface FastifyRequest extends IAuthenticationRequest<IUserWithProfils> {}
 }
 
 declare global {

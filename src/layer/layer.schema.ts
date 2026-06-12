@@ -1,6 +1,10 @@
 import { FastifySchema } from 'fastify';
 
-import { createInsertSchema, createSelectSchema } from 'drizzle-orm/typebox';
+import {
+  createInsertSchema,
+  createSelectSchema,
+  createUpdateSchema
+} from 'drizzle-orm/typebox';
 import Type from 'typebox';
 
 import { LayerType } from './layer.interface';
@@ -32,6 +36,12 @@ export const SourceOptionsSchema = Type.Object(
   { additionalProperties: true }
 );
 
+export const LayerSourceOptionsSchema = Type.Omit(
+  SourceOptionsSchema,
+  ['type', 'url'],
+  { additionalProperties: true }
+);
+
 export const InsertLayerSchema = Type.Omit(
   createInsertSchema(layerModel, {
     layerOptions: Type.Optional(LayerOptionsSchema),
@@ -40,17 +50,28 @@ export const InsertLayerSchema = Type.Omit(
   ['id', 'createdAt', 'updatedAt']
 );
 
+export const PatchLayerSchema = Type.Omit(
+  createUpdateSchema(layerModel, {
+    layerOptions: Type.Optional(LayerOptionsSchema),
+    sourceOptions: Type.Optional(LayerSourceOptionsSchema)
+  }),
+  ['id', 'createdAt', 'updatedAt']
+);
+
 const SelectLayerSchema = createSelectSchema(layerModel, {
   layerOptions: Type.Optional(LayerOptionsSchema),
-  sourceOptions: Type.Optional(SourceOptionsSchema)
+  sourceOptions: Type.Optional(LayerSourceOptionsSchema)
+});
+
+const LayerKeyIdentifier = Type.Object({
+  type: Type.Enum(LayerType),
+  url: Type.String(),
+  layers: Type.Optional(Type.String())
 });
 
 export const GetLayerOptionSchema = {
   description: 'Get layer options by source.',
-  querystring: Type.Object({
-    type: Type.Enum(LayerType),
-    url: Type.String(),
-    layers: Type.Optional(Type.String()),
+  querystring: Type.Interface([LayerKeyIdentifier], {
     key: Type.Optional(Type.String())
   }),
   response: {
@@ -61,11 +82,7 @@ export const GetLayerOptionSchema = {
 
 export const GetLayerAdminOptionSchema = {
   description: 'Get layer admin options by source.',
-  querystring: Type.Object({
-    type: Type.Enum(LayerType),
-    url: Type.String(),
-    layers: Type.Optional(Type.String())
-  }),
+  querystring: LayerKeyIdentifier,
   response: {
     200: LayerOptionsSchema,
     404: { $ref: 'HttpError' }
@@ -113,7 +130,7 @@ export const UpdateLayerSchema = {
   params: Type.Object({
     id: Type.Number()
   }),
-  body: Type.Partial(InsertLayerSchema),
+  body: PatchLayerSchema,
   response: {
     200: SelectLayerSchema,
     404: { $ref: 'HttpError' }
@@ -125,5 +142,48 @@ export const CreateLayerSchema = {
   body: InsertLayerSchema,
   response: {
     201: SelectLayerSchema
+  }
+} satisfies FastifySchema;
+
+const MigrateInsertSchema = Type.Intersect([
+  Type.Omit(InsertLayerSchema, ['layerOptions', 'sourceOptions']),
+  Type.Object({
+    layerOptions: Type.Union([LayerOptionsSchema, Type.Null()]),
+    sourceOptions: Type.Union([SourceOptionsSchema, Type.Null()])
+  })
+]);
+
+export const LayerMigrateBatchSchema = {
+  description: 'Migrate layers in batch.',
+  body: Type.Object({
+    toAdd: Type.Optional(Type.Array(MigrateInsertSchema)),
+    toPut: Type.Optional(
+      Type.Array(
+        Type.Intersect([
+          Type.Object({
+            id: Type.Number()
+          }),
+          Type.Object({
+            layerOptions: Type.Optional(
+              Type.Union([LayerOptionsSchema, Type.Null()])
+            ),
+            sourceOptions: Type.Optional(
+              Type.Union([SourceOptionsSchema, Type.Null()])
+            )
+          })
+        ])
+      )
+    )
+  }),
+  response: {
+    200: Type.Object({})
+  }
+} satisfies FastifySchema;
+
+export const LayerMigrateSchema = {
+  description: 'Migrate a specific layer.',
+  body: MigrateInsertSchema,
+  response: {
+    200: SelectLayerSchema
   }
 } satisfies FastifySchema;

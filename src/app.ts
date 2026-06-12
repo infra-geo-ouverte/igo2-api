@@ -22,7 +22,6 @@ import {
   authenticationPlugin
 } from './auth/authentication';
 import { headerAuthentication } from './auth/authentication/header-authentication';
-import { models } from './core/database/models';
 import relations from './core/database/relations';
 import { LayerWssClient } from './layer';
 import { layerPermissionPlugin } from './layer/permission';
@@ -30,6 +29,7 @@ import {
   LayerPermissionKongApi,
   LayerPermissionKongClient
 } from './layer/permission/kong-permission';
+import { UserService } from './user';
 import { getPackageVersion } from './utils/version';
 
 export async function buildApp(
@@ -62,10 +62,8 @@ export async function buildApp(
     },
     orm: withDrizzlePg({
       environment: app.env.ENVIRONMENT,
-      schema: models,
       relations: relations,
-      logger: isLocal,
-      casing: 'snake_case'
+      logger: isLocal
     })
   });
 
@@ -81,7 +79,7 @@ export async function buildApp(
   await app.register(sentryPlugin, { ...app.env });
 
   await app.register(authenticationPlugin, {
-    api: { implementation: AuthenticationApi },
+    api: { authApi: AuthenticationApi, userService: UserService },
     strategy: {
       plugin: headerAuthentication,
       options: {
@@ -105,7 +103,8 @@ export async function buildApp(
               withApiKey: true
             }
           }
-        ]
+        ],
+        skipRoutes: ['/docs', '/healthy']
       }
     }
   });

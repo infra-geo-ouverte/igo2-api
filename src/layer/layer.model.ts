@@ -5,8 +5,8 @@ import { appPgEnum, appPgTable } from '../core/database';
 import { metadataTimestampColumns } from '../core/database/model.utils';
 import {
   AnyLayerOptionsWithoutSource,
-  LayerType,
-  SourceOptions
+  LayerSourceOptions,
+  LayerType
 } from './layer.interface';
 
 export const layerTypeEnum = appPgEnum('enum_layer_type', LayerType);
@@ -20,7 +20,7 @@ export const layerModel = appPgTable(
     layers: varchar({ length: 128 }),
     global: boolean(),
     layerOptions: json().$type<AnyLayerOptionsWithoutSource>(),
-    sourceOptions: json().$type<SourceOptions>(),
+    sourceOptions: json().$type<LayerSourceOptions>(),
     ...metadataTimestampColumns
   },
   (table) => [

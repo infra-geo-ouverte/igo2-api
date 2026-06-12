@@ -6,6 +6,7 @@ import { InternalAxiosRequestConfig } from 'axios';
 
 import { AppInstance } from '../../../app.interface';
 import { IAuthPluginClientConfig } from '../authentication.interface';
+import { HeaderApiKey } from './header-authentication.interface';
 
 const requestContext = new AsyncLocalStorage<Map<string, string | string[]>>();
 
@@ -37,7 +38,7 @@ export function apiAuthentication(
 
     client.interceptors.request.use((config) => {
       if (options.withApiKey) {
-        config.headers['x-api-key'] = apiKey;
+        config.headers[HeaderApiKey] = apiKey;
       }
 
       if (allowedHeaders.size > 0) {

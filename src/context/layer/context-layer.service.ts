@@ -237,10 +237,14 @@ export class ContextLayerService {
     profils: IProfils,
     isGlobal = false
   ): Promise<AnyLayerOptionsOut | null> {
-    const hasPermission = await this.validateLayerPermissions(layer, profils);
-    if (!hasPermission) return null;
+    try {
+      await this.validateLayerPermissions(layer, profils);
+    } catch (error) {
+      console.error(error);
+      return null;
+    }
 
-    if (this.shouldApplyWss(layer, isGlobal)) {
+    if (!isGlobal) {
       const options = await this.layerService.setWssOptions(layer, undefined);
       return options as AnyLayerOptionsOut;
     }
@@ -248,20 +252,12 @@ export class ContextLayerService {
     return layer;
   }
 
-  private shouldApplyWss(options: AnyLayerOptions, isGlobal: boolean): boolean {
-    return (
-      !isGlobal &&
-      isLayerItemOptions(options) &&
-      options.sourceOptions?.type === 'wms'
-    );
-  }
-
   private async validateLayerPermissions(
     layer: AnyLayerOptions,
     profils: IProfils
-  ): Promise<boolean> {
+  ): Promise<void> {
     if (isLayerGroupOptions(layer) || !layer.sourceOptions?.url) {
-      return true;
+      return;
     }
 
     return this.layerService.urlAllowed(layer.sourceOptions.url, profils);

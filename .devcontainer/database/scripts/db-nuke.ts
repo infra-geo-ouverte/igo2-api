@@ -2,16 +2,9 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
 import { DatabaseConfig, getLocalConfig } from '@igo2/fastify';
-import dotenv from 'dotenv';
 import pg from 'pg';
 
 const rootPath = resolve(__dirname, '../../..');
-console.log(rootPath);
-
-dotenv.config({
-  path: resolve(rootPath, '.env'),
-  quiet: true
-});
 
 const dbConfig = getLocalConfig(process.env as unknown as DatabaseConfig);
 

@@ -2,11 +2,25 @@ import { IContextLayer } from '../../context/layer';
 import {
   AnyLayerOptions,
   AnyLayerOptionsOut,
+  AnySourceOptionsParams,
   ILayer,
   LayerGroupOptions,
   LayerOptions,
+  LayerSourceOptions,
   SourceOptions
 } from '../layer.interface';
+
+/**
+ * Resolves a relative URL (starting with '/') to an absolute URL using the host of the provided WSS_API URL.
+ * Returns the original URL unchanged if it is already absolute or if no base is provided.
+ */
+export function resolveUrl(url: string, wssApi?: string): string {
+  if (url.startsWith('/') && wssApi) {
+    const { origin } = new URL(wssApi);
+    return `${origin}${url}`;
+  }
+  return url;
+}
 
 export function isLayerGroupOptions(
   option: AnyLayerOptions
@@ -93,6 +107,31 @@ export function formatSourceOptionsFromLayer(
 
 export function getParamsLayers(options: SourceOptions): string | undefined {
   return options.params?.layers ?? options.params?.['LAYERS'] ?? undefined;
+}
+
+/**
+ * Strips unique-key fields (type, url, params.layers/LAYERS) from a sourceOptions object
+ * before persisting in the source_options JSON column. These values are already stored
+ * in dedicated columns and must not be duplicated.
+ */
+export function sanitizeLayerSourceOptions(
+  sourceOptions: Partial<SourceOptions>
+): LayerSourceOptions {
+  const { type: _type, url: _url, params, ...rest } = sourceOptions;
+  const result: LayerSourceOptions = { ...rest };
+
+  if (params) {
+    const {
+      layers: _layers,
+      LAYERS: _LAYERS,
+      ...remainingParams
+    } = params as Record<string, unknown>;
+    if (Object.keys(remainingParams).length > 0) {
+      result.params = remainingParams as Partial<AnySourceOptionsParams>;
+    }
+  }
+
+  return result;
 }
 
 /** Recursive */

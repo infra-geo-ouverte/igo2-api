@@ -1,3 +1,5 @@
+import { captureException } from '@sentry/node';
+
 import { AppInstance, AppReply, AppRequest } from '../app.interface';
 import {
   CreateLayerSchema,
@@ -5,6 +7,8 @@ import {
   GetLayerAdminOptionSchema,
   GetLayerOptionSchema,
   GetLayerSchema,
+  LayerMigrateBatchSchema,
+  LayerMigrateSchema,
   UpdateLayerSchema
 } from './layer.schema';
 import { LayerService } from './layer.service';
@@ -31,9 +35,13 @@ export class LayerController {
     reply: AppReply<typeof UpdateLayerSchema>
   ) => {
     const id = request.params.id;
-    const profils = request.user!.profils;
+    const user = request.user;
+    if (!user) {
+      return reply.forbidden('Accès refusé');
+    }
+    const profils = user.profils;
 
-    const layer = this.layerService.getByIdWithPermission(id, profils);
+    const layer = await this.layerService.getByIdWithPermission(id, profils);
     if (!layer) {
       return reply.notFound();
     }
@@ -46,9 +54,13 @@ export class LayerController {
     reply: AppReply<typeof DeleteLayerSchema>
   ) => {
     const id = request.params.id;
-    const profils = request.user!.profils;
+    const user = request.user;
+    if (!user) {
+      return reply.forbidden('Accès refusé');
+    }
+    const profils = user.profils;
 
-    const layer = this.layerService.getByIdWithPermission(id, profils);
+    const layer = await this.layerService.getByIdWithPermission(id, profils);
     if (!layer) {
       return reply.notFound();
     }
@@ -63,7 +75,7 @@ export class LayerController {
     reply: AppReply<typeof GetLayerSchema>
   ) => {
     const id = request.params.id;
-    const profils = request.user!.profils;
+    const profils = request.user?.profils ?? [];
 
     const layer = await this.layerService.getByIdWithPermission(id, profils);
     if (!layer) {
@@ -102,19 +114,40 @@ export class LayerController {
   };
 
   getOptions = async (request: AppRequest<typeof GetLayerOptionSchema>) => {
-    const profils = request.user!.profils;
+    const profils = request.user?.profils ?? [];
     const { type, layers, url } = request.query;
 
-    const isAllowed = await this.layerService.urlAllowed(url, profils);
-    if (!isAllowed) {
+    try {
+      await this.layerService.urlAllowed(url, profils);
+    } catch (error) {
+      console.error(error);
+      captureException(error);
       return {};
     }
 
-    const options = await this.layerService.getOptions(type, layers, url);
-    if (!options) {
+    try {
+      const options = await this.layerService.getOptions(type, layers, url);
+      return options;
+    } catch (error) {
+      console.error(error);
+      captureException(error);
       return {};
     }
+  };
 
-    return options;
+  migrateBatch = async (
+    request: AppRequest<typeof LayerMigrateBatchSchema>,
+    reply: AppReply<typeof LayerMigrateBatchSchema>
+  ) => {
+    await this.layerService.migrateBatch(request.body);
+    return reply.code(200).send({});
+  };
+
+  migrateLayer = async (
+    request: AppRequest<typeof LayerMigrateSchema>,
+    reply: AppReply<typeof LayerMigrateSchema>
+  ) => {
+    const layer = await this.layerService.migrateLayer(request.body);
+    return reply.code(200).send(layer);
   };
 }

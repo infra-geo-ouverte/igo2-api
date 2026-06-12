@@ -1,8 +1,5 @@
 import { AppInstance } from '../app.interface';
-import {
-  adminAuthorization,
-  authenticatedAuthorization
-} from '../auth/authorization/authorization';
+import { adminAuthorization } from '../auth/authorization/authorization';
 import { addRoutingTagHook } from '../utils/url.utils';
 import { CatalogController } from './catalog.controller';
 import {
@@ -23,7 +20,6 @@ export const routes = (app: AppInstance) => {
   app.route({
     method: 'GET',
     url: '/:id',
-    preHandler: authenticatedAuthorization,
     handler: controller.getById,
     schema: GetByCatalogIdSchema
   });
@@ -31,7 +27,6 @@ export const routes = (app: AppInstance) => {
   app.route({
     method: 'GET',
     url: '',
-    preHandler: authenticatedAuthorization,
     handler: controller.get,
     schema: GetCatalogsSchema
   });

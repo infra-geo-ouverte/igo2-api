@@ -1,17 +1,26 @@
 {
   "version": "8",
   "dialect": "postgres",
-  "id": "36669b34-6e0d-467a-83b6-985f84cef990",
-  "prevIds": ["00000000-0000-0000-0000-000000000000"],
+  "id": "c5dd5f5e-f7cd-406a-81a7-08f7458dfb65",
+  "prevIds": [
+    "00000000-0000-0000-0000-000000000000"
+  ],
   "ddl": [
     {
-      "values": ["public", "protected", "private"],
+      "values": [
+        "public",
+        "protected",
+        "private"
+      ],
       "name": "enum_context_scope",
       "entityType": "enums",
       "schema": "public"
     },
     {
-      "values": ["read", "write"],
+      "values": [
+        "read",
+        "write"
+      ],
       "name": "enum_context_type_permission",
       "entityType": "enums",
       "schema": "public"
@@ -35,6 +44,15 @@
         "cluster"
       ],
       "name": "enum_layer_type",
+      "entityType": "enums",
+      "schema": "public"
+    },
+    {
+      "values": [
+        "user",
+        "system"
+      ],
+      "name": "enum_user_source",
       "entityType": "enums",
       "schema": "public"
     },
@@ -1112,19 +1130,6 @@
       "table": "profil"
     },
     {
-      "type": "boolean",
-      "typeSchema": null,
-      "notNull": false,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "has_osrm_private_access",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "profil"
-    },
-    {
       "type": "serial",
       "typeSchema": null,
       "notNull": true,
@@ -1294,6 +1299,19 @@
       "table": "user"
     },
     {
+      "type": "enum_user_source",
+      "typeSchema": "public",
+      "notNull": true,
+      "dimensions": 0,
+      "default": "'user'",
+      "generated": null,
+      "identity": null,
+      "name": "source",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "user"
+    },
+    {
       "type": "integer",
       "typeSchema": null,
       "notNull": false,
@@ -1320,7 +1338,7 @@
       "table": "user"
     },
     {
-      "type": "integer",
+      "type": "text",
       "typeSchema": null,
       "notNull": true,
       "dimensions": 0,
@@ -1668,10 +1686,14 @@
     },
     {
       "nameExplicit": false,
-      "columns": ["context_id"],
+      "columns": [
+        "context_id"
+      ],
       "schemaTo": "public",
       "tableTo": "context",
-      "columnsTo": ["id"],
+      "columnsTo": [
+        "id"
+      ],
       "onUpdate": "NO ACTION",
       "onDelete": "CASCADE",
       "name": "context_access_context_id_context_id_fkey",
@@ -1681,10 +1703,14 @@
     },
     {
       "nameExplicit": false,
-      "columns": ["user_id"],
+      "columns": [
+        "user_id"
+      ],
       "schemaTo": "public",
       "tableTo": "user",
-      "columnsTo": ["id"],
+      "columnsTo": [
+        "id"
+      ],
       "onUpdate": "NO ACTION",
       "onDelete": "NO ACTION",
       "name": "context_user_id_user_id_fkey",
@@ -1694,10 +1720,14 @@
     },
     {
       "nameExplicit": false,
-      "columns": ["user_id"],
+      "columns": [
+        "user_id"
+      ],
       "schemaTo": "public",
       "tableTo": "user",
-      "columnsTo": ["id"],
+      "columnsTo": [
+        "id"
+      ],
       "onUpdate": "NO ACTION",
       "onDelete": "NO ACTION",
       "name": "context_hidden_user_id_user_id_fkey",
@@ -1707,10 +1737,14 @@
     },
     {
       "nameExplicit": false,
-      "columns": ["context_id"],
+      "columns": [
+        "context_id"
+      ],
       "schemaTo": "public",
       "tableTo": "context",
-      "columnsTo": ["id"],
+      "columnsTo": [
+        "id"
+      ],
       "onUpdate": "NO ACTION",
       "onDelete": "CASCADE",
       "name": "context_hidden_context_id_context_id_fkey",
@@ -1720,10 +1754,14 @@
     },
     {
       "nameExplicit": false,
-      "columns": ["context_id"],
+      "columns": [
+        "context_id"
+      ],
       "schemaTo": "public",
       "tableTo": "context",
-      "columnsTo": ["id"],
+      "columnsTo": [
+        "id"
+      ],
       "onUpdate": "NO ACTION",
       "onDelete": "CASCADE",
       "name": "context_layer_context_id_context_id_fkey",
@@ -1733,12 +1771,16 @@
     },
     {
       "nameExplicit": false,
-      "columns": ["layer_id"],
+      "columns": [
+        "layer_id"
+      ],
       "schemaTo": "public",
       "tableTo": "layer",
-      "columnsTo": ["id"],
+      "columnsTo": [
+        "id"
+      ],
       "onUpdate": "NO ACTION",
-      "onDelete": "NO ACTION",
+      "onDelete": "CASCADE",
       "name": "context_layer_layer_id_layer_id_fkey",
       "entityType": "fks",
       "schema": "public",
@@ -1746,10 +1788,14 @@
     },
     {
       "nameExplicit": false,
-      "columns": ["profil_id"],
+      "columns": [
+        "profil_id"
+      ],
       "schemaTo": "public",
       "tableTo": "profil",
-      "columnsTo": ["id"],
+      "columnsTo": [
+        "id"
+      ],
       "onUpdate": "NO ACTION",
       "onDelete": "NO ACTION",
       "name": "context_permission_profil_id_profil_id_fkey",
@@ -1759,10 +1805,14 @@
     },
     {
       "nameExplicit": false,
-      "columns": ["user_id"],
+      "columns": [
+        "user_id"
+      ],
       "schemaTo": "public",
       "tableTo": "user",
-      "columnsTo": ["id"],
+      "columnsTo": [
+        "id"
+      ],
       "onUpdate": "NO ACTION",
       "onDelete": "NO ACTION",
       "name": "context_permission_user_id_user_id_fkey",
@@ -1772,10 +1822,14 @@
     },
     {
       "nameExplicit": false,
-      "columns": ["context_id"],
+      "columns": [
+        "context_id"
+      ],
       "schemaTo": "public",
       "tableTo": "context",
-      "columnsTo": ["id"],
+      "columnsTo": [
+        "id"
+      ],
       "onUpdate": "NO ACTION",
       "onDelete": "CASCADE",
       "name": "context_permission_context_id_context_id_fkey",
@@ -1785,10 +1839,14 @@
     },
     {
       "nameExplicit": false,
-      "columns": ["context_id"],
+      "columns": [
+        "context_id"
+      ],
       "schemaTo": "public",
       "tableTo": "context",
-      "columnsTo": ["id"],
+      "columnsTo": [
+        "id"
+      ],
       "onUpdate": "NO ACTION",
       "onDelete": "CASCADE",
       "name": "context_tool_context_id_context_id_fkey",
@@ -1798,10 +1856,14 @@
     },
     {
       "nameExplicit": false,
-      "columns": ["tool_id"],
+      "columns": [
+        "tool_id"
+      ],
       "schemaTo": "public",
       "tableTo": "tool",
-      "columnsTo": ["id"],
+      "columnsTo": [
+        "id"
+      ],
       "onUpdate": "NO ACTION",
       "onDelete": "NO ACTION",
       "name": "context_tool_tool_id_tool_id_fkey",
@@ -1811,10 +1873,14 @@
     },
     {
       "nameExplicit": false,
-      "columns": ["user_id"],
+      "columns": [
+        "user_id"
+      ],
       "schemaTo": "public",
       "tableTo": "user",
-      "columnsTo": ["id"],
+      "columnsTo": [
+        "id"
+      ],
       "onUpdate": "NO ACTION",
       "onDelete": "NO ACTION",
       "name": "poi_user_id_user_id_fkey",
@@ -1823,7 +1889,9 @@
       "table": "poi"
     },
     {
-      "columns": ["id"],
+      "columns": [
+        "id"
+      ],
       "nameExplicit": false,
       "name": "catalog_pkey",
       "schema": "public",
@@ -1831,7 +1899,9 @@
       "entityType": "pks"
     },
     {
-      "columns": ["id"],
+      "columns": [
+        "id"
+      ],
       "nameExplicit": false,
       "name": "context_access_pkey",
       "schema": "public",
@@ -1839,7 +1909,9 @@
       "entityType": "pks"
     },
     {
-      "columns": ["id"],
+      "columns": [
+        "id"
+      ],
       "nameExplicit": false,
       "name": "context_pkey",
       "schema": "public",
@@ -1847,7 +1919,9 @@
       "entityType": "pks"
     },
     {
-      "columns": ["id"],
+      "columns": [
+        "id"
+      ],
       "nameExplicit": false,
       "name": "context_hidden_pkey",
       "schema": "public",
@@ -1855,7 +1929,9 @@
       "entityType": "pks"
     },
     {
-      "columns": ["id"],
+      "columns": [
+        "id"
+      ],
       "nameExplicit": false,
       "name": "context_layer_pkey",
       "schema": "public",
@@ -1863,7 +1939,9 @@
       "entityType": "pks"
     },
     {
-      "columns": ["id"],
+      "columns": [
+        "id"
+      ],
       "nameExplicit": false,
       "name": "context_permission_pkey",
       "schema": "public",
@@ -1871,7 +1949,9 @@
       "entityType": "pks"
     },
     {
-      "columns": ["id"],
+      "columns": [
+        "id"
+      ],
       "nameExplicit": false,
       "name": "context_tool_pkey",
       "schema": "public",
@@ -1879,7 +1959,9 @@
       "entityType": "pks"
     },
     {
-      "columns": ["id"],
+      "columns": [
+        "id"
+      ],
       "nameExplicit": false,
       "name": "layer_pkey",
       "schema": "public",
@@ -1887,7 +1969,9 @@
       "entityType": "pks"
     },
     {
-      "columns": ["id"],
+      "columns": [
+        "id"
+      ],
       "nameExplicit": false,
       "name": "poi_pkey",
       "schema": "public",
@@ -1895,7 +1979,9 @@
       "entityType": "pks"
     },
     {
-      "columns": ["id"],
+      "columns": [
+        "id"
+      ],
       "nameExplicit": false,
       "name": "profil_pkey",
       "schema": "public",
@@ -1903,7 +1989,9 @@
       "entityType": "pks"
     },
     {
-      "columns": ["id"],
+      "columns": [
+        "id"
+      ],
       "nameExplicit": false,
       "name": "tool_pkey",
       "schema": "public",
@@ -1911,7 +1999,9 @@
       "entityType": "pks"
     },
     {
-      "columns": ["id"],
+      "columns": [
+        "id"
+      ],
       "nameExplicit": false,
       "name": "user_pkey",
       "schema": "public",
@@ -1920,7 +2010,9 @@
     },
     {
       "nameExplicit": false,
-      "columns": ["uri"],
+      "columns": [
+        "uri"
+      ],
       "nullsNotDistinct": false,
       "name": "context_uri_key",
       "schema": "public",
@@ -1929,7 +2021,9 @@
     },
     {
       "nameExplicit": false,
-      "columns": ["name"],
+      "columns": [
+        "name"
+      ],
       "nullsNotDistinct": false,
       "name": "tool_name_key",
       "schema": "public",
@@ -1938,7 +2032,9 @@
     },
     {
       "nameExplicit": false,
-      "columns": ["external_id"],
+      "columns": [
+        "external_id"
+      ],
       "nullsNotDistinct": false,
       "name": "user_external_id_key",
       "schema": "public",

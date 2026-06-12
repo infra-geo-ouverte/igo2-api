@@ -6,6 +6,7 @@ import axios from 'axios';
 
 import { AppInstance } from '../../../../app.interface';
 import { apiAuthentication } from '../api-authentication';
+import { HeaderApiKey } from '../header-authentication.interface';
 
 const MOCK_APP = {
   env: {
@@ -23,7 +24,7 @@ test('apiAuthentication', async (t: TestContext) => {
     const config = await (
       client.interceptors.request as any
     ).handlers[0].fulfilled({ headers: {} });
-    strictEqual(config.headers['x-api-key'], 'test-api-key');
+    strictEqual(config.headers[HeaderApiKey], 'test-api-key');
   });
 
   await t.test(

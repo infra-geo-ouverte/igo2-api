@@ -71,10 +71,15 @@ export class ProfilController {
     request: AppRequest<typeof GetAllProfilSchema>,
     reply: AppReply<typeof GetAllProfilSchema>
   ) => {
-    const user = request.user!;
-    const profils = request.user!.profils;
+    const user = request.user;
+    if (!user) {
+      return reply.forbidden('Accès refusé');
+    }
+    const profils = user.profils;
 
-    const externalUser = await this.authApi.getUserById(user.externalId);
+    const externalUser = await (user.source === 'user'
+      ? this.authApi.getUserById(Number(user.externalId))
+      : undefined);
 
     let profilDb = await this.profilService.getByProfils(profils);
 
@@ -121,7 +126,11 @@ export class ProfilController {
   ) => {
     const profilName = request.params.name;
 
-    const profils = request.user!.profils;
+    const user = request.user;
+    if (!user) {
+      return reply.forbidden('Accès refusé');
+    }
+    const profils = user.profils;
     if (!profils.includes(profilName)) {
       return reply.notFound();
     }
@@ -135,10 +144,15 @@ export class ProfilController {
   };
 
   getProfilsAndUsers = async (
-    request: AppRequest<typeof GetUsersAndProfilsSchema>
+    request: AppRequest<typeof GetUsersAndProfilsSchema>,
+    reply: AppReply<typeof GetUsersAndProfilsSchema>
   ): Promise<ISearchResult[]> => {
     const { q, limit = 10 } = request.query;
-    const currentUserProfilNames = request.user!.profils;
+    const user = request.user;
+    if (!user) {
+      return reply.forbidden('Accès refusé');
+    }
+    const currentUserProfilNames = user.profils;
 
     const allProfils = await this.profilService.get();
     const currentUserProfils = allProfils.filter((p) =>

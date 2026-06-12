@@ -29,7 +29,11 @@ export class ToolController {
     reply: AppReply<typeof UpdateToolSchema>
   ) => {
     const id = request.params.id;
-    const profils = request.user!.profils;
+    const user = request.user;
+    if (!user) {
+      return reply.forbidden('Accès refusé');
+    }
+    const profils = user.profils;
 
     const tool = await this.toolService.getById(id, profils);
     if (!tool) {
@@ -44,7 +48,11 @@ export class ToolController {
     reply: AppReply<typeof DeleteToolSchema>
   ) => {
     const id = request.params.id;
-    const profils = request.user!.profils;
+    const user = request.user;
+    if (!user) {
+      return reply.forbidden('Accès refusé');
+    }
+    const profils = user.profils;
 
     const tool = await this.toolService.getById(id, profils);
     if (!tool) {
@@ -60,7 +68,11 @@ export class ToolController {
     reply: AppReply<typeof GetToolSchema>
   ) => {
     const id = request.params.id;
-    const profils = request.user!.profils;
+    const user = request.user;
+    if (!user) {
+      return reply.forbidden('Accès refusé');
+    }
+    const profils = user.profils;
 
     const tool = await this.toolService.getById(id, profils);
     if (!tool) {
@@ -70,8 +82,15 @@ export class ToolController {
     return tool;
   };
 
-  get = async (request: AppRequest<typeof GetAllToolSchema>) => {
-    const profils = request.user!.profils;
+  get = async (
+    request: AppRequest<typeof GetAllToolSchema>,
+    reply: AppReply<typeof GetAllToolSchema>
+  ) => {
+    const user = request.user;
+    if (!user) {
+      return reply.forbidden('Accès refusé');
+    }
+    const profils = user.profils;
     return this.toolService.get(profils);
   };
 }

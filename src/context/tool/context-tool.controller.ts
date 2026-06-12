@@ -23,7 +23,11 @@ export class ContextToolController {
     reply: AppReply<typeof CreateContextToolSchema>
   ) => {
     const contextId = request.params.contextId;
-    const profils = request.user!.profils;
+    const user = request.user;
+    if (!user) {
+      return reply.forbidden('Accès refusé');
+    }
+    const profils = user.profils;
     const newToolContext = request.body as IContextTool;
     newToolContext.contextId = contextId;
 

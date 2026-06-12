@@ -2,6 +2,7 @@ import { deepStrictEqual, ok, strictEqual } from 'node:assert/strict';
 import test, { TestContext } from 'node:test';
 
 import { AppInstance } from '../../../../app.interface';
+import { IUserConsumer } from '../../shared/consumer';
 import { headerAuthentication } from '../header-authentication';
 import { HeaderAuthenticationService } from '../header-authentication.service';
 
@@ -45,10 +46,9 @@ test('headerAuthentication', async (t: TestContext) => {
       };
 
       const authService = new HeaderAuthenticationService();
-      const formattedHeaders = authService['formatHeaders'](originalHeaders);
+      const consumerGroups = authService['getHeaderGroups'](originalHeaders);
 
-      ok(formattedHeaders !== originalHeaders, 'Should return a new object');
-      deepStrictEqual(formattedHeaders['x-consumer-groups'], ['admin', 'test']);
+      deepStrictEqual(consumerGroups, ['admin', 'test']);
       strictEqual(
         originalHeaders['x-consumer-groups'],
         'admin, test',
@@ -67,13 +67,12 @@ test('headerAuthentication', async (t: TestContext) => {
     };
 
     const authService = new HeaderAuthenticationService();
-    const consumer = authService.getConsumer(headers);
+    const consumer = authService.getConsumer(headers) as IUserConsumer;
 
     strictEqual(consumer.id, 'ext-123');
     strictEqual(consumer.customId, 456);
     strictEqual(consumer.username, 'jdoe');
     deepStrictEqual(consumer.groups, ['manager']);
-    strictEqual(consumer.isAnonymous, false);
   });
 
   await t.test('getConsumer should handle anonymous user', () => {
@@ -82,21 +81,16 @@ test('headerAuthentication', async (t: TestContext) => {
     };
 
     const authService = new HeaderAuthenticationService();
-    const consumer = authService.getConsumer(headers);
-    strictEqual(consumer.isAnonymous, true);
+    const consumer = authService.getConsumer(headers) as IUserConsumer;
+    strictEqual(consumer.source, 'anonymous');
   });
 
   await t.test('getConsumer should handle missing headers', () => {
     const headers = {};
 
     const authService = new HeaderAuthenticationService();
-    const consumer = authService.getConsumer(headers);
 
-    strictEqual(consumer.id, undefined);
-    ok(isNaN(consumer.customId));
-    strictEqual(consumer.username, undefined);
-    deepStrictEqual(consumer.groups, []);
-    strictEqual(consumer.isAnonymous, false);
+    strictEqual(authService.getConsumer(headers), undefined);
   });
 
   await t.test('getConsumer should handle invalid customId', () => {
@@ -105,7 +99,7 @@ test('headerAuthentication', async (t: TestContext) => {
     };
 
     const authService = new HeaderAuthenticationService();
-    const consumer = authService.getConsumer(headers);
+    const consumer = authService.getConsumer(headers) as IUserConsumer;
 
     ok(isNaN(consumer.customId));
   });

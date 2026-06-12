@@ -20,8 +20,6 @@ export const userRelations = defineRelationsPart(
         from: r.user.id,
         to: r.context.userId
       }),
-      // contextPermissions: r.many.contextPermission(),
-      // contextHiddens: r.many.contextHidden(),
       pois: r.many.poi({
         from: r.user.id,
         to: r.poi.userId

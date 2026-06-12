@@ -1,12 +1,15 @@
 {
   "extends": "./tsconfig.json",
   "compilerOptions": {
+    "rootDir": "./src",
+    "outDir": "./dist",
+    "declaration": true,
     "types": []
   },
-  "include": ["src/**/*.ts"],
+  "include": ["./src/**/*.ts"],
   "exclude": [
-    "src/**/*.test.ts",
-    "src/**/*.e2e.ts",
-    "**/*.spec.ts"
+    "./src/**/*.test.ts",
+    "./src/**/*.e2e.ts",
+    "./**/*.spec.ts"
   ]
 }

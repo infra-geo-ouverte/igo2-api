@@ -13,9 +13,15 @@ import {
   HEADERS_USER_2
 } from '../../auth/test/auth.mock';
 import { syncUsers } from '../../user/test/user.mock';
-import { ILayer, ILayerIn } from '../layer.interface';
+import {
+  ILayer,
+  ILayerIn,
+  ILayerMigrateBatch,
+  SourceOptions
+} from '../layer.interface';
 import { LayerService } from '../layer.service';
 import { IRouteConfig } from '../permission/kong-permission/layer-permission-kong.interface';
+import { getParamsLayers } from '../utils';
 import {
   LAYER_MOCK_1,
   LAYER_MOCK_2,
@@ -55,6 +61,32 @@ test('Layer', async (t: TestContext) => {
         LAYER_MOCK_1.layerOptions?.title
       );
     });
+
+    t.test(
+      'Should not store type, url or layers in sourceOptions column',
+      async (t: TestContext) => {
+        const payload = {
+          ...LAYER_MOCK_2,
+          url: 'http://sanitize.test.com/create',
+          sourceOptions: {
+            ...LAYER_MOCK_2.sourceOptions!,
+            url: 'http://sanitize.test.com/create'
+          }
+        };
+        const response = await createLayer(app, HEADERS_ADMIN, payload);
+        t.assert.equal(response.statusCode, 201);
+
+        const result = response.json<ILayer>();
+        // Unique-key fields must not be duplicated inside sourceOptions
+        t.assert.equal(result.sourceOptions?.['type'], undefined);
+        t.assert.equal(result.sourceOptions?.['url'], undefined);
+        const params = result.sourceOptions?.params as
+          | Record<string, unknown>
+          | undefined;
+        t.assert.equal(params?.['LAYERS'], undefined);
+        t.assert.equal(params?.['layers'], undefined);
+      }
+    );
 
     t.test('Should fail on invalid body', async (t: TestContext) => {
       const { type, ...mock } = { ...LAYER_MOCK_1 };
@@ -122,6 +154,43 @@ test('Layer', async (t: TestContext) => {
       }
     );
 
+    t.test(
+      'Should not store type, url or layers in sourceOptions column after patch',
+      async (t: TestContext) => {
+        const patchPayload: Partial<ILayerIn> = {
+          sourceOptions: {
+            type: 'wms',
+            url: layers[0].url,
+            version: '1.1.1',
+            params: {
+              layers: 'SOME_LAYER',
+              LAYERS: 'SOME_LAYER',
+              STYLES: 'default'
+            }
+          }
+        };
+        const response = await updateLayer(
+          HEADERS_ADMIN,
+          layers[0].id,
+          patchPayload
+        );
+        t.assert.equal(response.statusCode, 200);
+
+        const result = (
+          await getLayer(HEADERS_ADMIN, layers[0].id)
+        ).json<ILayer>();
+        t.assert.equal(result.sourceOptions?.['type'], undefined);
+        t.assert.equal(result.sourceOptions?.['url'], undefined);
+        const params = result.sourceOptions?.params as
+          | Record<string, unknown>
+          | undefined;
+        t.assert.equal(params?.['layers'], undefined);
+        t.assert.equal(params?.['LAYERS'], undefined);
+        // Other params kept
+        t.assert.equal(params?.['STYLES'], 'default');
+      }
+    );
+
     t.test('Should not patch for anonymous user', async (t: TestContext) => {
       const layer = layers[1];
 
@@ -172,15 +241,12 @@ test('Layer', async (t: TestContext) => {
       t.assert.equal(result.type, layer.type);
     });
 
-    t.test(
-      'Should not get layer for anonymous user',
-      async (t: TestContext) => {
-        const layer = layers[1];
+    t.test('Should get layer for anonymous user', async (t: TestContext) => {
+      const layer = layers[1];
 
-        const response = await getLayer(HEADERS_ANONYMOUS, layer.id);
-        t.assert.equal(response.statusCode, 403);
-      }
-    );
+      const response = await getLayer(HEADERS_ANONYMOUS, layer.id);
+      t.assert.equal(response.statusCode, 200);
+    });
 
     t.test(
       'Should get any layer for authenticated user',
@@ -275,6 +341,324 @@ test('Layer', async (t: TestContext) => {
 
   // ----------------------------------------------------------------
 
+  t.test('POST /migrate/layer', async (t: TestContext) => {
+    t.test(
+      'Should not migrate layer for anonymous user',
+      async (t: TestContext) => {
+        const response = await migrateLayer(HEADERS_ANONYMOUS, LAYER_MOCK_1);
+        t.assert.equal(response.statusCode, 403);
+      }
+    );
+
+    t.test(
+      'Should not migrate layer for authenticated user',
+      async (t: TestContext) => {
+        const response = await migrateLayer(HEADERS_USER_1, LAYER_MOCK_1);
+        t.assert.equal(response.statusCode, 403);
+      }
+    );
+
+    t.test(
+      'Should migrate (create) new layer for admin user',
+      async (t: TestContext) => {
+        const newLayer: ILayerIn = {
+          ...LAYER_MOCK_1,
+          url: 'http://migrate.test.com/new-layer-1',
+          sourceOptions: {
+            ...LAYER_MOCK_1.sourceOptions!,
+            url: 'http://migrate.test.com/new-layer-1'
+          }
+        };
+
+        const response = await migrateLayer(HEADERS_ADMIN, newLayer);
+        t.assert.equal(response.statusCode, 200);
+
+        // Verify the layer was created
+        const getResponse = await app.inject({
+          method: 'GET',
+          headers: HEADERS_ADMIN,
+          url: '/layers'
+        });
+        const allLayers = getResponse.json<ILayer[]>();
+        const created = allLayers.find(
+          (l) => l.url === 'http://migrate.test.com/new-layer-1'
+        );
+        t.assert.ok(created);
+        t.assert.equal(created?.type, LAYER_MOCK_1.type);
+        // Unique-key fields must not be duplicated inside sourceOptions
+        t.assert.equal(created?.sourceOptions?.['type'], undefined);
+        t.assert.equal(created?.sourceOptions?.['url'], undefined);
+      }
+    );
+
+    t.test(
+      'Should migrate (update) existing layer for admin user',
+      async (t: TestContext) => {
+        const existingLayer = layers[0];
+        const updateData: ILayerIn = {
+          ...existingLayer,
+          type: existingLayer.type,
+          url: existingLayer.url,
+          layers: getParamsLayers(existingLayer.sourceOptions as SourceOptions),
+          sourceOptions: {
+            ...existingLayer.sourceOptions!,
+            // type and url are no longer stored in sourceOptions column;
+            // they must be provided explicitly in migrate payloads
+            type: existingLayer.type,
+            url: existingLayer.url
+          },
+          layerOptions: {
+            ...existingLayer.layerOptions,
+            title: 'Updated Title for Migrate'
+          }
+        };
+
+        const response = await migrateLayer(HEADERS_ADMIN, updateData);
+        t.assert.equal(response.statusCode, 200);
+
+        // Verify the layer was updated
+        const getResponse = await getLayer(HEADERS_ADMIN, response.json().id);
+        const updated = getResponse.json<ILayer>();
+        t.assert.equal(
+          updated.layerOptions?.title,
+          'Updated Title for Migrate'
+        );
+      }
+    );
+
+    t.test('Should fail with invalid body', async (t: TestContext) => {
+      const invalidLayer = {
+        type: 'invalid_type' as never,
+        url: 'http://test.com'
+      };
+
+      const response = await app.inject({
+        method: 'POST',
+        headers: HEADERS_ADMIN,
+        url: '/layers/migrate/layer',
+        body: invalidLayer
+      });
+
+      t.assert.equal(response.statusCode, 400);
+    });
+  });
+
+  // ----------------------------------------------------------------
+
+  t.test('POST /migrate/batch', async (t: TestContext) => {
+    t.test(
+      'Should not migrate batch for anonymous user',
+      async (t: TestContext) => {
+        const batchRequest: ILayerMigrateBatch = {
+          toAdd: [LAYER_MOCK_1]
+        };
+
+        const response = await migrateBatch(HEADERS_ANONYMOUS, batchRequest);
+        t.assert.equal(response.statusCode, 403);
+      }
+    );
+
+    t.test(
+      'Should not migrate batch for authenticated user',
+      async (t: TestContext) => {
+        const batchRequest: ILayerMigrateBatch = {
+          toAdd: [LAYER_MOCK_1]
+        };
+
+        const response = await migrateBatch(HEADERS_USER_1, batchRequest);
+        t.assert.equal(response.statusCode, 403);
+      }
+    );
+
+    t.test(
+      'Should add layers in batch for admin user',
+      async (t: TestContext) => {
+        const newLayer1: ILayerIn = {
+          ...LAYER_MOCK_1,
+          url: 'http://batch.test.com/layer-1',
+          sourceOptions: {
+            ...LAYER_MOCK_1.sourceOptions!,
+            url: 'http://batch.test.com/layer-1'
+          }
+        };
+
+        const newLayer2: ILayerIn = {
+          ...LAYER_MOCK_2,
+          url: 'http://batch.test.com/layer-2',
+          sourceOptions: {
+            ...LAYER_MOCK_2.sourceOptions!,
+            url: 'http://batch.test.com/layer-2'
+          }
+        };
+
+        const batchRequest: ILayerMigrateBatch = {
+          toAdd: [newLayer1, newLayer2]
+        };
+
+        const response = await migrateBatch(HEADERS_ADMIN, batchRequest);
+        t.assert.equal(response.statusCode, 200);
+
+        // Verify both layers were created
+        const getResponse = await app.inject({
+          method: 'GET',
+          headers: HEADERS_ADMIN,
+          url: '/layers'
+        });
+        const allLayers = getResponse.json<ILayer[]>();
+        const created1 = allLayers.find(
+          (l) => l.url === 'http://batch.test.com/layer-1'
+        );
+        const created2 = allLayers.find(
+          (l) => l.url === 'http://batch.test.com/layer-2'
+        );
+        t.assert.ok(created1);
+        t.assert.ok(created2);
+      }
+    );
+
+    t.test(
+      'Should update layers in batch for admin user',
+      async (t: TestContext) => {
+        // Create fresh layers for this test since layers[1] is deleted in DELETE tests
+        const layerResponse1 = await createLayer(app, HEADERS_ADMIN, {
+          ...LAYER_MOCK_1,
+          url: 'http://batch-update.test.com/layer-1',
+          sourceOptions: {
+            ...LAYER_MOCK_1.sourceOptions!,
+            url: 'http://batch-update.test.com/layer-1'
+          }
+        });
+        const newLayer1 = layerResponse1.json<ILayer>();
+
+        const layerResponse2 = await createLayer(app, HEADERS_ADMIN, {
+          ...LAYER_MOCK_2,
+          url: 'http://batch-update.test.com/layer-2',
+          sourceOptions: {
+            ...LAYER_MOCK_2.sourceOptions!,
+            url: 'http://batch-update.test.com/layer-2'
+          }
+        });
+        const newLayer2 = layerResponse2.json<ILayer>();
+
+        const batchRequest: ILayerMigrateBatch = {
+          toPut: [
+            {
+              id: newLayer1.id,
+              layerOptions: {
+                title: 'Batch Updated Title 1'
+              },
+              sourceOptions: null
+            },
+            {
+              id: newLayer2.id,
+              layerOptions: {
+                title: 'Batch Updated Title 2'
+              },
+              sourceOptions: null
+            }
+          ]
+        };
+
+        const response = await migrateBatch(HEADERS_ADMIN, batchRequest);
+        t.assert.equal(response.statusCode, 200);
+
+        // Verify both layers were updated
+        const get1 = await getLayer(HEADERS_ADMIN, newLayer1.id);
+        const get2 = await getLayer(HEADERS_ADMIN, newLayer2.id);
+        const updated1 = get1.json<ILayer>();
+        const updated2 = get2.json<ILayer>();
+        t.assert.equal(updated1.layerOptions?.title, 'Batch Updated Title 1');
+        t.assert.equal(updated2.layerOptions?.title, 'Batch Updated Title 2');
+      }
+    );
+
+    t.test(
+      'Should add and update layers together in batch for admin user',
+      async (t: TestContext) => {
+        const existingLayer = layers[0];
+        const newLayer: ILayerIn = {
+          ...LAYER_MOCK_1,
+          url: 'http://batch.test.com/combined-new',
+          sourceOptions: {
+            ...LAYER_MOCK_1.sourceOptions!,
+            url: 'http://batch.test.com/combined-new'
+          }
+        };
+
+        const batchRequest: ILayerMigrateBatch = {
+          toAdd: [newLayer],
+          toPut: [
+            {
+              id: existingLayer.id,
+              layerOptions: {
+                title: 'Combined Batch Update'
+              },
+              sourceOptions: null
+            }
+          ]
+        };
+
+        const response = await migrateBatch(HEADERS_ADMIN, batchRequest);
+        t.assert.equal(response.statusCode, 200);
+
+        // Verify the layer was created
+        const getResponse = await app.inject({
+          method: 'GET',
+          headers: HEADERS_ADMIN,
+          url: '/layers'
+        });
+        const allLayers = getResponse.json<ILayer[]>();
+        const created = allLayers.find(
+          (l) => l.url === 'http://batch.test.com/combined-new'
+        );
+        t.assert.ok(created);
+
+        // Verify the layer was updated
+        const updated = await getLayer(HEADERS_ADMIN, existingLayer.id);
+        const updatedLayer = updated.json<ILayer>();
+        t.assert.equal(
+          updatedLayer.layerOptions?.title,
+          'Combined Batch Update'
+        );
+      }
+    );
+
+    t.test(
+      'Should fail if trying to add a duplicate layer',
+      async (t: TestContext) => {
+        const duplicateLayer: ILayerIn = {
+          ...layers[0],
+          sourceOptions: {
+            ...layers[0].sourceOptions!,
+            // type and url are no longer stored in sourceOptions column;
+            // they must be provided explicitly in migrate payloads
+            type: layers[0].type,
+            url: layers[0].url
+          }
+        };
+
+        const batchRequest: ILayerMigrateBatch = {
+          toAdd: [duplicateLayer]
+        };
+
+        const response = await migrateBatch(HEADERS_ADMIN, batchRequest);
+        t.assert.equal(response.statusCode, 400);
+      }
+    );
+
+    t.test(
+      'Should handle empty batch request for admin user',
+      async (t: TestContext) => {
+        const batchRequest: ILayerMigrateBatch = {};
+
+        const response = await migrateBatch(HEADERS_ADMIN, batchRequest);
+        t.assert.equal(response.statusCode, 200);
+      }
+    );
+  });
+
+  // ----------------------------------------------------------------
+
   t.test('Service Logic (getLayerOrCreate)', async (t: TestContext) => {
     t.test(
       'Should create a new layer if it does not exist',
@@ -282,7 +666,7 @@ test('Layer', async (t: TestContext) => {
         const sourceOptions = {
           ...LAYER_MOCK_1.sourceOptions!,
           url: 'http://example.com/new-service-layer'
-        };
+        } as SourceOptions;
 
         const layer = await layerService.getLayerOrCreate(
           undefined,
@@ -300,7 +684,7 @@ test('Layer', async (t: TestContext) => {
         const sourceOptions = {
           ...LAYER_MOCK_1.sourceOptions!,
           url: 'http://example.com/existing-service-layer'
-        };
+        } as SourceOptions;
         const firstLayer = await layerService.getLayerOrCreate(
           undefined,
           sourceOptions
@@ -383,6 +767,31 @@ test('Layer', async (t: TestContext) => {
       method: 'DELETE',
       headers,
       url: `/layers/${id}`
+    });
+
+    return response;
+  }
+
+  async function migrateBatch(
+    headers: IncomingHttpHeaders,
+    batchRequest: ILayerMigrateBatch
+  ) {
+    const response = await app.inject({
+      method: 'POST',
+      headers,
+      url: '/layers/migrate/batch',
+      body: batchRequest
+    });
+
+    return response;
+  }
+
+  async function migrateLayer(headers: IncomingHttpHeaders, layer: ILayerIn) {
+    const response = await app.inject({
+      method: 'POST',
+      headers,
+      url: '/layers/migrate/layer',
+      body: layer
     });
 
     return response;

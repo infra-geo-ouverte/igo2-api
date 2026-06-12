@@ -32,7 +32,7 @@ export type IContextPermissionUserIn = Omit<
   IContextPermissionUser,
   'id' | 'createdAt' | 'updatedAt' | 'userId'
 > & {
-  userExternalId: number;
+  userExternalId: string;
   userId?: IContextPermissionProfil['userId'] | null;
   contextId?: IContextPermissionProfil['contextId'];
 };

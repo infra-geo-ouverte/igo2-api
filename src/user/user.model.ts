@@ -1,16 +1,19 @@
-import { index, integer, json, serial } from 'drizzle-orm/pg-core';
+import { index, integer, json, serial, text } from 'drizzle-orm/pg-core';
 
-import { appPgTable } from '../core/database';
+import { appPgEnum, appPgTable } from '../core/database';
 import { metadataTimestampColumns } from '../core/database/model.utils';
-import { IUserPreference } from './user.interface';
+import { IUserPreference, UserSource } from './user.interface';
+
+export const userSourceEnum = appPgEnum('enum_user_source', UserSource);
 
 export const userModel = appPgTable(
   'user',
   {
     id: serial().primaryKey(),
+    source: userSourceEnum().notNull().default('user'),
     defaultContextId: integer(),
     preference: json().$type<IUserPreference>(),
-    externalId: integer().notNull().unique(),
+    externalId: text().notNull().unique(),
     ...metadataTimestampColumns
   },
   (table) => [index('idx_user_external_id').on(table.externalId)]

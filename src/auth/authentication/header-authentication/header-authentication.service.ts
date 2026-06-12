@@ -2,57 +2,63 @@ import { IncomingHttpHeaders } from 'node:http2';
 
 import Value from 'typebox/value';
 
+import { IAuthService } from '../authentication.interface';
 import {
   ConsumerGroups,
-  IAuthService,
-  IConsumer
-} from '../authentication.interface';
+  IAnonymousConsumer,
+  IAnyConsumer,
+  ISystemConsumer,
+  IUserConsumer
+} from '../shared/consumer';
+import { getConsumerSource } from '../shared/consumer/consumer.utils';
 import {
   HEADERS_CONSUMER_SCHEMA,
-  HeaderAnoymousConsumer,
   HeaderConsumer
 } from './header-authentication.interface';
 
 export class HeaderAuthenticationService implements IAuthService {
-  getConsumer(incomingHeaders: IncomingHttpHeaders): IConsumer {
-    const headers = this.formatHeaders(incomingHeaders);
+  getConsumer(headers: IncomingHttpHeaders): IAnyConsumer | undefined {
+    const groups = this.getHeaderGroups(headers);
+    const source = getConsumerSource(headers);
+    const id = headers['x-consumer-id' as HeaderConsumer] as string;
+    const username = headers['x-consumer-username' as HeaderConsumer] as string;
 
-    const isAnonymous =
-      String(headers[HeaderAnoymousConsumer]).toLowerCase() === 'true';
-
-    const groups = (headers['x-consumer-groups' as HeaderConsumer] ??
-      []) as ConsumerGroups[];
-
-    const customId = Number(headers['x-consumer-custom-id' as HeaderConsumer]);
-
-    return {
-      id: headers['x-consumer-id' as HeaderConsumer] as string,
-      customId,
-      username: headers['x-consumer-username' as HeaderConsumer] as string,
-      groups,
-      isAnonymous
-    };
-  }
-
-  /**
-   * Decodes specific headers (like groups) without mutating the original headers object.
-   */
-  private formatHeaders(
-    incomingHeaders: IncomingHttpHeaders
-  ): IncomingHttpHeaders {
-    const xConsumerGroupsKey = 'x-consumer-groups' satisfies HeaderConsumer;
-    const groupsHeader = incomingHeaders[xConsumerGroupsKey];
-
-    if (!groupsHeader) {
-      return incomingHeaders;
+    if (!source) {
+      return undefined;
     }
 
-    return {
-      ...incomingHeaders,
-      [xConsumerGroupsKey]: Value.Decode(
-        HEADERS_CONSUMER_SCHEMA['properties'][xConsumerGroupsKey],
-        groupsHeader
-      )
-    };
+    switch (source) {
+      case 'user':
+        return {
+          id,
+          customId: Number(headers['x-consumer-custom-id' as HeaderConsumer]),
+          username,
+          groups,
+          source: 'user'
+        } satisfies IUserConsumer;
+      case 'system':
+        return {
+          id,
+          username,
+          groups,
+          source: 'system'
+        } satisfies ISystemConsumer;
+      default:
+        return {
+          id,
+          username,
+          groups,
+          source: 'anonymous'
+        } satisfies IAnonymousConsumer;
+    }
+  }
+
+  private getHeaderGroups(headers: IncomingHttpHeaders): ConsumerGroups[] {
+    const groupsSchema =
+      HEADERS_CONSUMER_SCHEMA['properties']['x-consumer-groups'];
+    return Value.Decode(
+      groupsSchema,
+      headers['x-consumer-groups']
+    ) as ConsumerGroups[];
   }
 }

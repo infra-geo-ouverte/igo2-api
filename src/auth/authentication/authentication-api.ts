@@ -1,8 +1,13 @@
+import { FastifyInstance } from 'fastify';
+
 import axios from 'axios';
 import { AxiosError } from 'axios';
 
-import { AppInstance } from '../../app.interface';
-import { IAuthApi, IAuthUser } from './authentication.interface';
+import { IAuthApi, IAuthEnv, IAuthUser } from './authentication.interface';
+
+type IAuthFastifyInstance = FastifyInstance & {
+  env: IAuthEnv;
+};
 
 export const AuthClient = axios.create({
   paramsSerializer: {
@@ -11,7 +16,7 @@ export const AuthClient = axios.create({
 });
 
 export class AuthenticationApi implements IAuthApi {
-  constructor(private app: AppInstance) {
+  constructor(private app: IAuthFastifyInstance) {
     AuthClient.defaults.baseURL = this.app.env.AUTH_API;
   }
 

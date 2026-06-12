@@ -13,6 +13,8 @@ import {
   GetLayerOptionSchema,
   GetLayerSchema,
   GetLayersSchema,
+  LayerMigrateBatchSchema,
+  LayerMigrateSchema,
   UpdateLayerSchema
 } from './layer.schema';
 
@@ -24,7 +26,6 @@ export const routes = (app: AppInstance) => {
   app.route({
     method: 'GET',
     url: '/options',
-    preHandler: authenticatedAuthorization,
     handler: controller.getOptions,
     schema: GetLayerOptionSchema
   });
@@ -40,7 +41,6 @@ export const routes = (app: AppInstance) => {
   app.route({
     method: 'GET',
     url: '/:id',
-    preHandler: authenticatedAuthorization,
     handler: controller.getById,
     schema: GetLayerSchema
   });
@@ -56,7 +56,6 @@ export const routes = (app: AppInstance) => {
   app.route({
     method: 'GET',
     url: '/baselayers',
-    preHandler: authenticatedAuthorization,
     handler: controller.getBaseLayers,
     schema: GetBaseLayersSchema
   });
@@ -83,5 +82,21 @@ export const routes = (app: AppInstance) => {
     preHandler: authenticatedAuthorization,
     handler: controller.create,
     schema: CreateLayerSchema
+  });
+
+  app.route({
+    method: 'POST',
+    url: '/migrate/batch',
+    preHandler: adminAuthorization,
+    handler: controller.migrateBatch,
+    schema: LayerMigrateBatchSchema
+  });
+
+  app.route({
+    method: 'POST',
+    url: '/migrate/layer',
+    preHandler: adminAuthorization,
+    handler: controller.migrateLayer,
+    schema: LayerMigrateSchema
   });
 };
