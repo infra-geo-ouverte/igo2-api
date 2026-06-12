@@ -1,28 +1,24 @@
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import dotenv from 'dotenv';
+import { loadEnvFile } from '@igo2/base-api';
 import { $ } from 'execa';
 import { GenericContainer, Wait } from 'testcontainers';
-import { Environment } from 'testcontainers/build/types';
+import { Environment } from 'testcontainers/build/types.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 const rootPath = resolve(__dirname, '../../');
 
-const appEnv: any = {};
-dotenv.config({
-  path: resolve(rootPath, '.env.example'),
-  processEnv: appEnv,
-  quiet: true
-});
+const appEnv: Environment = {};
+loadEnvFile({ path: resolve(rootPath, '.env.example'), target: appEnv });
 
 const environment = {
   ...(appEnv as Environment),
-  POSTGRES_DB: appEnv.DB_NAME,
-  POSTGRES_USER: appEnv.DB_USER,
-  POSTGRES_PASSWORD: appEnv.DB_PASSWORD,
+  POSTGRES_DB: appEnv.DB_NAME!,
+  POSTGRES_USER: appEnv.DB_USER!,
+  POSTGRES_PASSWORD: appEnv.DB_PASSWORD!,
   POSTGRES_HOST_AUTH_METHOD: 'trust'
 } satisfies Environment;
 
