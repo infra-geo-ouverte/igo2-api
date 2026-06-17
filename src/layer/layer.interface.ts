@@ -139,6 +139,34 @@ export interface SourceFieldsOptionsParams {
   [key: string]: unknown;
 }
 
+export interface ILayerSearchItem {
+  score: number;
+  properties: {
+    name?: string;
+    title?: string;
+    abstract?: string;
+    keywords?: string[];
+    metadataUrl?: string;
+    minScaleDenom?: number;
+    maxScaleDenom?: number;
+    queryable?: boolean;
+    optionsFromCapabilities?: boolean;
+    type: 'layer' | 'group';
+    format: LayerType;
+    url: string;
+    sourceId: number;
+    id: string;
+  };
+  highlight: {
+    title?: string;
+  };
+}
+
+export interface ILayerSearchResult {
+  items: ILayerSearchItem[];
+  maxScore?: number;
+}
+
 type ILayerMigrateUpdate = { id: ILayerIn['id'] } & Partial<
   Pick<ILayerIn, 'layerOptions' | 'sourceOptions'>
 >;

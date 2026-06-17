@@ -69,6 +69,55 @@ const LayerKeyIdentifier = Type.Object({
   layers: Type.Optional(Type.String())
 });
 
+const SearchLayerItemSchema = Type.Object({
+  score: Type.Number(),
+  properties: Type.Object(
+    {
+      name: Type.Optional(Type.String()),
+      title: Type.Optional(Type.String()),
+      abstract: Type.Optional(Type.String()),
+      keywords: Type.Optional(Type.Array(Type.String())),
+      metadataUrl: Type.Optional(Type.String()),
+      minScaleDenom: Type.Optional(Type.Number()),
+      maxScaleDenom: Type.Optional(Type.Number()),
+      queryable: Type.Optional(Type.Boolean()),
+      optionsFromCapabilities: Type.Optional(Type.Boolean()),
+      type: Type.Union([Type.Literal('layer'), Type.Literal('group')]),
+      format: Type.Enum(LayerType),
+      url: Type.String(),
+      sourceId: Type.Number(),
+      id: Type.String()
+    },
+    { additionalProperties: false }
+  ),
+  highlight: Type.Object(
+    {
+      title: Type.Optional(Type.String())
+    },
+    { additionalProperties: false }
+  )
+});
+
+const SearchLayerResultSchema = Type.Object({
+  items: Type.Array(SearchLayerItemSchema),
+  maxScore: Type.Optional(Type.Number())
+});
+
+export const SearchLayerOptionSchema = {
+  description: 'Search layers.',
+  querystring: Type.Object({
+    q: Type.String(),
+    type: Type.Optional(
+      Type.Union([Type.Literal('layer'), Type.Literal('group')])
+    ),
+    limit: Type.Optional(Type.Integer({ minimum: 1 })),
+    page: Type.Optional(Type.Integer({ minimum: 1 }))
+  }),
+  response: {
+    200: SearchLayerResultSchema
+  }
+} satisfies FastifySchema;
+
 export const GetLayerOptionSchema = {
   description: 'Get layer options by source.',
   querystring: Type.Interface([LayerKeyIdentifier], {

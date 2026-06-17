@@ -17,6 +17,7 @@ import {
   ILayer,
   ILayerIn,
   ILayerMigrateBatch,
+  ILayerSearchResult,
   SourceOptions
 } from '../layer.interface';
 import { LayerService } from '../layer.service';
@@ -128,6 +129,66 @@ test('Layer', async (t: TestContext) => {
     t.test('Should not list for authenticated user', async (t: TestContext) => {
       const response = await getLayers(HEADERS_USER_1);
       t.assert.equal(response.statusCode, 403);
+    });
+
+    t.test(
+      'Should search layers and return formatted items',
+      async (t: TestContext) => {
+        const response = await searchLayers(HEADERS_USER_1, {
+          q: 'msp',
+          type: 'layer',
+          limit: 10,
+          page: 1
+        });
+        t.assert.equal(response.statusCode, 200);
+
+        const result = response.json<ILayerSearchResult>();
+        t.assert.equal(Array.isArray(result.items), true);
+        t.assert.equal(result.items.length > 0, true);
+        t.assert.equal(result.items[0].properties.type, 'layer');
+        t.assert.equal(result.items[0].properties.format, 'wms');
+        t.assert.equal(
+          result.items.some(
+            (item) =>
+              item.properties.title === LAYER_MOCK_2.layerOptions?.title &&
+              item.properties.url === LAYER_MOCK_2.url
+          ),
+          true
+        );
+      }
+    );
+
+    t.test(
+      'Should search layers by metadata keyword',
+      async (t: TestContext) => {
+        const response = await searchLayers(HEADERS_USER_1, {
+          q: 'urgence',
+          type: 'layer',
+          limit: 10,
+          page: 1
+        });
+        t.assert.equal(response.statusCode, 200);
+
+        const result = response.json<ILayerSearchResult>();
+        t.assert.equal(
+          result.items.some(
+            (item) =>
+              item.properties.title === LAYER_MOCK_2.layerOptions?.title &&
+              item.properties.keywords?.includes('urgence')
+          ),
+          true
+        );
+      }
+    );
+
+    t.test('Should fail search when q is missing', async (t: TestContext) => {
+      const response = await app.inject({
+        method: 'GET',
+        headers: HEADERS_USER_1,
+        url: '/layers/search?type=layer&limit=10&page=1'
+      });
+
+      t.assert.equal(response.statusCode, 400);
     });
   });
 
@@ -746,6 +807,37 @@ test('Layer', async (t: TestContext) => {
     });
 
     return response;
+  }
+
+  async function searchLayers(
+    headers: IncomingHttpHeaders,
+    query: {
+      q: string;
+      type?: 'layer' | 'group';
+      limit?: number;
+      page?: number;
+    }
+  ) {
+    const searchParams = new URLSearchParams();
+    searchParams.set('q', query.q);
+
+    if (query.type) {
+      searchParams.set('type', query.type);
+    }
+
+    if (query.limit != null) {
+      searchParams.set('limit', query.limit.toString());
+    }
+
+    if (query.page != null) {
+      searchParams.set('page', query.page.toString());
+    }
+
+    return app.inject({
+      method: 'GET',
+      headers,
+      url: `/layers/search?${searchParams.toString()}`
+    });
   }
 
   async function updateLayer(

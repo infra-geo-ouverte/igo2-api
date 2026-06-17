@@ -1,5 +1,7 @@
+import { createHash } from 'node:crypto';
+
 import { StringArray } from '@igo2/fastify';
-import { and, eq, isNull, or, sql } from 'drizzle-orm';
+import { and, desc, eq, isNull, or, sql } from 'drizzle-orm';
 import Value from 'typebox/value';
 
 import { AppDatabase, AppInstance } from '../app.interface';
@@ -11,6 +13,8 @@ import {
   ILayer,
   ILayerIn,
   ILayerMigrateBatch,
+  ILayerSearchItem,
+  ILayerSearchResult,
   LayerOptions,
   LayerType,
   SourceOptions
@@ -117,6 +121,87 @@ export class LayerService {
       plainLayer.layerOptions = null;
       return plainLayer;
     });
+  }
+
+  async search(
+    originalQuery: string,
+    type: 'layer' | 'group' = 'layer',
+    limit = 10,
+    page = 1
+  ): Promise<ILayerSearchResult> {
+    const normalizedQuery = this.normalizeSearchQuery(originalQuery);
+    if (!normalizedQuery) {
+      return { items: [] };
+    }
+
+    const tsQuery = normalizedQuery
+      .split(' ')
+      .filter(Boolean)
+      .map((term) => `${term}:*`)
+      .join(' | ');
+
+    const offset = (page - 1) * limit;
+    const searchDocument = sql<string>`
+      to_tsvector(
+        'simple',
+        concat_ws(
+          ' ',
+          coalesce(${layerModel.layers}, ''),
+          coalesce(${layerModel.url}, ''),
+          coalesce(${layerModel.type}::text, ''),
+          coalesce(${layerModel.layerOptions}->>'title', ''),
+          coalesce(${layerModel.layerOptions}->>'name', ''),
+          coalesce(${layerModel.layerOptions}->'metadata'->>'abstract', ''),
+          coalesce(${layerModel.layerOptions}->'metadata'->>'keyword', '')
+        )
+      )
+    `;
+    const rank = sql<number>`ts_rank(${searchDocument}, to_tsquery('simple', ${tsQuery}))`;
+    const headline = sql<string>`
+      ts_headline(
+        'simple',
+        coalesce(${layerModel.layerOptions}->>'title', ${layerModel.layers}, ''),
+        to_tsquery('simple', ${tsQuery}),
+        'StartSel=<strong>, StopSel=</strong>'
+      )
+    `;
+    const typeFilter =
+      type === 'group'
+        ? sql`${layerModel.type} = 'group'`
+        : sql`${layerModel.type} <> 'group'`;
+
+    const rows = await this.db
+      .select({
+        id: layerModel.id,
+        type: layerModel.type,
+        url: layerModel.url,
+        layers: layerModel.layers,
+        global: layerModel.global,
+        layerOptions: layerModel.layerOptions,
+        sourceOptions: layerModel.sourceOptions,
+        score: rank,
+        headline: headline
+      })
+      .from(layerModel)
+      .where(
+        and(
+          typeFilter,
+          sql`${searchDocument} @@ to_tsquery('simple', ${tsQuery})`
+        )
+      )
+      .orderBy(desc(rank))
+      .limit(limit)
+      .offset(offset);
+
+    const items = rows.map((row) => this.mapSearchRow(row, type));
+
+    return {
+      items,
+      maxScore:
+        items.length > 0
+          ? Math.max(...items.map((item) => item.score))
+          : undefined
+    };
   }
 
   async getById(id: number): Promise<ILayer | undefined> {
@@ -306,5 +391,89 @@ export class LayerService {
     return existingLayer
       ? this.update(existingLayer.id, values)
       : this.create(layer);
+  }
+
+  private normalizeSearchQuery(query: string): string {
+    return query
+      .replaceAll(/(\(|\)|\*)/g, ' ')
+      .replaceAll(/\s+/g, ' ')
+      .trim()
+      .normalize('NFD')
+      .replaceAll(/[\u0300-\u036f]/g, '')
+      .toLowerCase();
+  }
+
+  private mapSearchRow(
+    row: {
+      id: number;
+      type: LayerType;
+      url: string;
+      layers: string | null;
+      layerOptions: ILayer['layerOptions'];
+      sourceOptions: ILayer['sourceOptions'];
+      score: number;
+      headline: string;
+    },
+    type: 'layer' | 'group'
+  ): ILayerSearchItem {
+    const layerOptions =
+      row.layerOptions && typeof row.layerOptions === 'object'
+        ? (row.layerOptions as Record<string, unknown>)
+        : {};
+    const sourceOptions =
+      row.sourceOptions && typeof row.sourceOptions === 'object'
+        ? (row.sourceOptions as Record<string, unknown>)
+        : {};
+    const metadata =
+      layerOptions['metadata'] && typeof layerOptions['metadata'] === 'object'
+        ? (layerOptions['metadata'] as Record<string, unknown>)
+        : {};
+    const identifier = createHash('md5')
+      .update(`${row.type}${row.url}${row.layers ?? ''}`)
+      .digest('hex');
+
+    return {
+      score: row.score,
+      properties: {
+        name: row.layers ?? undefined,
+        title: this.getOptionalString(layerOptions['title']),
+        abstract: this.getOptionalString(metadata['abstract']),
+        keywords: this.getOptionalStringArray(metadata['keyword']),
+        metadataUrl: this.getOptionalString(metadata['url']),
+        minScaleDenom: this.getOptionalNumber(layerOptions['minScaleDenom']),
+        maxScaleDenom: this.getOptionalNumber(layerOptions['maxScaleDenom']),
+        queryable: this.getOptionalBoolean(sourceOptions['queryable']),
+        optionsFromCapabilities: this.getOptionalBoolean(
+          sourceOptions['optionsFromCapabilities']
+        ),
+        type,
+        format: row.type,
+        url: row.url,
+        sourceId: row.id,
+        id: identifier
+      },
+      highlight: {
+        title: row.headline || this.getOptionalString(layerOptions['title'])
+      }
+    };
+  }
+
+  private getOptionalString(value: unknown): string | undefined {
+    return typeof value === 'string' && value.length > 0 ? value : undefined;
+  }
+
+  private getOptionalNumber(value: unknown): number | undefined {
+    return typeof value === 'number' ? value : undefined;
+  }
+
+  private getOptionalBoolean(value: unknown): boolean | undefined {
+    return typeof value === 'boolean' ? value : undefined;
+  }
+
+  private getOptionalStringArray(value: unknown): string[] | undefined {
+    return Array.isArray(value) &&
+      value.every((item) => typeof item === 'string')
+      ? value
+      : undefined;
   }
 }
