@@ -58,9 +58,9 @@ export const APP_BASE_ENV_SCHEMA = Type.Object<
   Record<keyof IAppBaseEnv, TSchema>
 >({
   AUTH_API: Type.String(),
-  KONG_API: Type.String(),
-  ADMIN_KEY: Type.String(),
-  WSS_API: Type.String(),
+  KONG_API: Type.Optional(Type.String()),
+  ADMIN_KEY: Type.Optional(Type.String()),
+  WSS_API: Type.Optional(Type.String()),
   OGC_WSS_HOSTS: StringArray(),
   OGC_WSS_URI: Type.String({ default: '/apis/wss/' }),
   OGC_WSS_BASE_PATHS: Type.Array(Type.String(), { default: ['/apis/'] })
