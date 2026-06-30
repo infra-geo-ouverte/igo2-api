@@ -91,8 +91,9 @@ export class LayerController {
   };
 
   search = async (request: AppRequest<typeof SearchLayerOptionSchema>) => {
+    const profils = request.user?.profils ?? [];
     const { q, type = 'layer', limit = 10, page = 1 } = request.query;
-    return this.layerService.search(q, type, limit, page);
+    return this.layerService.search(q, type, profils, limit, page);
   };
 
   getBaseLayers = async () => {

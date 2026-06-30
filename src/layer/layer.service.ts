@@ -126,6 +126,7 @@ export class LayerService {
   async search(
     originalQuery: string,
     type: 'layer' | 'group' = 'layer',
+    profils: IProfils,
     limit = 10,
     page = 1
   ): Promise<ILayerSearchResult> {
@@ -193,7 +194,20 @@ export class LayerService {
       .limit(limit)
       .offset(offset);
 
-    const items = rows.map((row) => this.mapSearchRow(row, type));
+    const items = (
+      await Promise.all(
+        rows.map(async (row) => {
+          try {
+            await this.urlAllowed(row.url, profils);
+            return row;
+          } catch {
+            return null;
+          }
+        })
+      )
+    )
+      .filter((row): row is (typeof rows)[number] => row !== null)
+      .map((row) => this.mapSearchRow(row, type));
 
     return {
       items,
