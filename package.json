@@ -1,6 +1,6 @@
 {
   "name": "igo-api",
-  "version": "1.0.0-next.32",
+  "version": "1.0.0-next.1",
   "description": "IGO - API",
   "license": "LiLiQ-R",
   "workspaces": [
