@@ -1,76 +1,47 @@
-import * as Boom from '@hapi/boom';
+import { and, eq } from 'drizzle-orm';
 
-import { ObjectUtils } from '@igo2/base-api';
-
-import { IPoi } from './poi.interface';
-import { Poi } from './poi.model';
+import { AppDatabase, AppInstance } from '../app.interface';
+import { IPoi, IPoiIn } from './poi.interface';
+import { poiModel } from './poi.model';
 
 export class PoiService {
-  public async create (poi: IPoi): Promise<Poi> {
-    return await Poi.create(poi);
+  private db: AppDatabase;
+
+  constructor(app: AppInstance) {
+    this.db = app.db;
   }
 
-  public async update (
-    id: string,
-    userId: string,
-    poi: IPoi
-  ): Promise<{ id: string }> {
-    return await Poi
-      .update(poi, {
-        where: {
-          id,
-          userId
-        }
-      })
-      .then((count: [number]) => {
-        if (!count[0]) {
-          throw Boom.notFound();
-        }
-        return { id };
-      });
+  async create(poi: IPoiIn): Promise<IPoi> {
+    const { id, ...values } = poi;
+    const [result] = await this.db.insert(poiModel).values(values).returning();
+    return result;
   }
 
-  public async delete (id: string, userId: string): Promise<void> {
-    return await Poi
-      .destroy({
-        where: {
-          id,
-          userId
-        }
-      })
-      .then((count: number) => {
-        if (!count) {
-          throw Boom.notFound();
-        }
-      });
+  async update(id: number, poi: Partial<IPoiIn>): Promise<IPoi> {
+    const [result] = await this.db
+      .update(poiModel)
+      .set(poi)
+      .where(eq(poiModel.id, id))
+      .returning();
+    return result;
   }
 
-  public async get (userId: string): Promise<Poi[]> {
-    return await Poi
-      .findAll({
-        where: {
-          userId
-        }
-      })
-      .then((pois: Poi[]) => {
-        const plainPois = pois.map(poi => ObjectUtils.removeNull(poi.get()));
-        return plainPois;
-      });
+  async delete(id: number, userId: number): Promise<number> {
+    const result = await this.db
+      .delete(poiModel)
+      .where(and(eq(poiModel.id, id), eq(poiModel.userId, userId)));
+    return result.rowCount ?? 0;
   }
 
-  public async getById (id: string, userId: string): Promise<Poi> {
-    return await Poi
-      .findOne({
-        where: {
-          id,
-          userId
-        }
-      })
-      .then((poi: Poi) => {
-        if (!poi) {
-          throw Boom.notFound();
-        }
-        return ObjectUtils.removeNull(poi.get());
-      });
+  async getAll(userId: number): Promise<IPoi[]> {
+    return this.db.select().from(poiModel).where(eq(poiModel.userId, userId));
+  }
+
+  async getById(id: number, userId: number): Promise<IPoi | undefined> {
+    const [result] = await this.db
+      .select()
+      .from(poiModel)
+      .where(and(eq(poiModel.id, id), eq(poiModel.userId, userId)));
+    return result;
   }
 }

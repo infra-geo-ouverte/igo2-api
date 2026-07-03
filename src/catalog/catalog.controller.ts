@@ -1,48 +1,88 @@
-import * as Hapi from '@hapi/hapi';
-
-import { handleError, HapiRequestToUser } from '../utils';
-
+import { AppInstance, AppReply, AppRequest } from '../app.interface';
+import {
+  CreateCatalogSchema,
+  DeleteByCatalogIdSchema,
+  GetByCatalogIdSchema,
+  GetCatalogsSchema,
+  UpdateCatalogSchema
+} from './catalog.schema';
 import { CatalogService } from './catalog.service';
-import { ICatalog } from './catalog.interface';
 
 export class CatalogController {
   private catalogService: CatalogService;
 
-  constructor () {
-    this.catalogService = new CatalogService();
+  constructor(app: AppInstance) {
+    this.catalogService = new CatalogService(app);
   }
 
-  public async create (request: Hapi.Request, h: Hapi.ResponseToolkit) {
-    const catalogToCreate: ICatalog = request.payload as ICatalog;
+  create = async (
+    request: AppRequest<typeof CreateCatalogSchema>,
+    reply: AppReply<typeof CreateCatalogSchema>
+  ) => {
+    const catalogToCreate = request.body;
 
-    const res = await this.catalogService.create(catalogToCreate).catch(handleError);
-    return h.response(res).code(201);
-  }
+    const res = await this.catalogService.create(catalogToCreate);
+    return reply.code(201).send(res);
+  };
 
-  public async update (request: Hapi.Request, _h: Hapi.ResponseToolkit) {
+  update = async (
+    request: AppRequest<typeof UpdateCatalogSchema>,
+    reply: AppReply<typeof UpdateCatalogSchema>
+  ) => {
     const id = request.params.id;
-    const catalogToUpdate: ICatalog = request.payload as ICatalog;
+    const user = request.user;
+    if (!user) {
+      return reply.forbidden('Accès refusé');
+    }
+    const profils = user.profils;
+    const catalogToUpdate = request.body;
 
-    return await this.catalogService.update(id, catalogToUpdate).catch(handleError);
-  }
+    const catalog = await this.catalogService.getById(id, profils);
+    if (!catalog) {
+      return reply.notFound('Catalog not found');
+    }
 
-  public async delete (request: Hapi.Request, h: Hapi.ResponseToolkit) {
+    return this.catalogService.update(id, catalogToUpdate);
+  };
+
+  delete = async (
+    request: AppRequest<typeof DeleteByCatalogIdSchema>,
+    reply: AppReply<typeof DeleteByCatalogIdSchema>
+  ) => {
     const id = request.params.id;
+    const user = request.user;
+    if (!user) {
+      return reply.forbidden('Accès refusé');
+    }
+    const profils = user.profils;
 
-    await this.catalogService.delete(id).catch(handleError);
+    const catalog = await this.catalogService.getById(id, profils);
+    if (!catalog) {
+      return reply.notFound('Catalog not found');
+    }
 
-    return h.response().code(204);
-  }
+    const res = await this.catalogService.delete(id);
 
-  public async getById (request: Hapi.Request, _h: Hapi.ResponseToolkit) {
+    return reply.code(204).send(res);
+  };
+
+  getById = async (
+    request: AppRequest<typeof GetByCatalogIdSchema>,
+    reply: AppReply<typeof GetByCatalogIdSchema>
+  ) => {
     const id = request.params.id;
-    const user = HapiRequestToUser(request);
+    const profils = request.user?.profils ?? [];
 
-    return await this.catalogService.getById(id, user.id).catch(handleError);
-  }
+    const catalog = await this.catalogService.getById(id, profils);
+    if (!catalog) {
+      return reply.notFound('Catalog not found');
+    }
 
-  public async get (request: Hapi.Request, _h: Hapi.ResponseToolkit) {
-    const user = HapiRequestToUser(request);
-    return await this.catalogService.get(user.id).catch(handleError);
-  }
+    return catalog;
+  };
+
+  get = async (request: AppRequest<typeof GetCatalogsSchema>) => {
+    const profils = request.user?.profils ?? [];
+    return this.catalogService.get(profils);
+  };
 }

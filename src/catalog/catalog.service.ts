@@ -1,79 +1,64 @@
-import * as Boom from '@hapi/boom';
+import { asc, eq } from 'drizzle-orm';
 
-import { ObjectUtils } from '@igo2/base-api';
-import { UserApi } from '../user';
-
-import { ICatalog } from './catalog.interface';
-import { Catalog } from './catalog.model';
+import { AppDatabase, AppInstance } from '../app.interface';
+import { IProfils, hasRequiredProfils } from '../auth';
+import { ICatalog, ICatalogIn } from './catalog.interface';
+import { catalogModel } from './catalog.model';
 
 export class CatalogService {
-  public async create (catalog: ICatalog): Promise<Catalog> {
-    return await Catalog.create(catalog);
+  private db: AppDatabase;
+
+  constructor(private app: AppInstance) {
+    this.db = app.db;
   }
 
-  public async update (id: string, catalog: ICatalog): Promise<{ id: string }> {
-    return await Catalog
-      .update(catalog, {
-        where: {
-          id
-        }
-      })
-      .then((count: [number]) => {
-        if (!count[0]) {
-          throw Boom.notFound();
-        }
-
-        return { id };
-      });
+  async create(catalogData: ICatalogIn): Promise<ICatalog> {
+    const [catalog] = await this.db
+      .insert(catalogModel)
+      .values(catalogData)
+      .returning();
+    return catalog;
   }
 
-  public async delete (id: string): Promise<void> {
-    return await Catalog
-      .destroy({
-        where: {
-          id
-        }
-      })
-      .then((count: number) => {
-        if (!count) {
-          throw Boom.notFound();
-        }
-      });
+  async update(id: number, catalogData: ICatalogIn): Promise<ICatalog> {
+    const [catalog] = await this.db
+      .update(catalogModel)
+      .set(catalogData)
+      .where(eq(catalogModel.id, id))
+      .returning();
+    return catalog;
   }
 
-  public async get (userId: string): Promise<Catalog[]> {
-    const profils: string[] = await UserApi.getProfils(userId).catch(() => {
-      return [];
-    });
-    profils.push(userId);
-
-    const catalogs = await Catalog.findAll({
-      order: ['order']
-    });
-
-    return catalogs.filter(c => {
-      return c.profils.length === 0 || c.profils.some(p => profils.includes(p));
-    }).map(catalog => {
-      return ObjectUtils.removeNull(catalog.get());
-    });
+  async delete(id: number): Promise<number> {
+    const catalog = await this.db
+      .delete(catalogModel)
+      .where(eq(catalogModel.id, id));
+    return catalog.rowCount ?? 0;
   }
 
-  public async getById (id: string, userId: string): Promise<Catalog> {
-    const profils: string[] = await UserApi.getProfils(userId).catch(() => {
-      return [];
-    });
-    profils.push(userId);
+  async get(profils: IProfils): Promise<ICatalog[]> {
+    const catalogs = await this.db
+      .select()
+      .from(catalogModel)
+      .orderBy(asc(catalogModel.order));
 
-    const catalog = await Catalog.findOne({
-      where: {
-        id
-      }
-    });
+    return catalogs.filter((c) => hasRequiredProfils(c.profils, profils));
+  }
 
-    if (!catalog || (catalog.profils.length !== 0 && !catalog.profils.some(p => profils.includes(p)))) {
-      throw Boom.notFound();
+  async getById(id: number, profils: IProfils): Promise<ICatalog | undefined> {
+    const [catalog] = await this.db
+      .select()
+      .from(catalogModel)
+      .where(eq(catalogModel.id, id));
+
+    if (!catalog) {
+      return undefined;
     }
 
-    return ObjectUtils.removeNull(catalog.get());
+    if (!hasRequiredProfils(catalog.profils, profils)) {
+      throw this.app.httpErrors.unauthorized();
+    }
+
+    return catalog;
   }
 }

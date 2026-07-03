@@ -1,78 +1,34 @@
+import { index, uniqueIndex } from 'drizzle-orm/cockroach-core';
+import { boolean, json, serial, varchar } from 'drizzle-orm/pg-core';
+
+import { appPgEnum, appPgTable } from '../core/database';
+import { metadataTimestampColumns } from '../core/database/model.utils';
 import {
-  Table, Column, Model, AllowNull, PrimaryKey, Index,
-  AutoIncrement, DataType, AfterUpdate, AfterCreate, Default
-} from 'sequelize-typescript';
+  AnyLayerOptionsWithoutSource,
+  LayerSourceOptions,
+  LayerType
+} from './layer.interface';
 
-import * as Configs from '../configurations';
-import { IDatabaseConfiguration } from '../configurations';
+export const layerTypeEnum = appPgEnum('enum_layer_type', LayerType);
 
-import { ILayer } from './layer.interface';
-
-@Table({
-  tableName: 'layer',
-  timestamps: true
-})
-export class Layer extends Model<ILayer> {
-  @PrimaryKey
-  @AutoIncrement
-  @AllowNull(false)
-  @Column
-    id: number;
-
-  @Default(true)
-  @AllowNull(false)
-  @Column
-    enabled: boolean;
-
-  @Index({ name: 'layer_type_url_layers', unique: true })
-  @AllowNull(false)
-  @Column({ type: DataType.STRING(16) })
-    type: string;
-
-  @Index({ name: 'layer_type_url_layers', unique: true })
-  @Column
-    url: string;
-
-  @Index({ name: 'layer_type_url_layers', unique: true })
-  @Column({ type: DataType.STRING(128) })
-    layers: string;
-
-  @Index({ unique: false })
-  @Column
-    global: boolean;
-
-  @Column({ type: DataType.JSON })
-    layerOptions: { [key: string]: any };
-
-  @Column({ type: DataType.JSON })
-    sourceOptions: { [key: string]: any };
-
-  @Column({
-    type: (Configs.getDatabaseConfig() as IDatabaseConfiguration).dialect === 'postgres' ? DataType.TSVECTOR : DataType.TEXT
-  }) // only for postgresql
-    searchableColumn: { [key: string]: any };
-
-  @Column(DataType.STRING)
-  get profils (): string[] {
-    const profils: string = this.getDataValue('profils') as any;
-    return profils ? profils.split(',') : [];
-  }
-
-  set profils (value: string[]) {
-    const profils: any = value.join(',');
-    this.setDataValue('profils', profils);
-  }
-
-  @AfterUpdate
-  @AfterCreate
-  static updateSearchableColumn (layer: Layer) {
-    // this will be called when an instance is created or updated
-    let sql = 'UPDATE layer SET "searchableColumn" =\'NA\'';
-    if ((Configs.getDatabaseConfig() as IDatabaseConfiguration).dialect === 'postgres') {
-      sql = ` 
-      UPDATE layer SET "searchableColumn" = to_tsvector('simple', ${['coalesce(layers,\'\')', 'coalesce("layerOptions"->\'title\',\'{}\')'].join(" || ' ' || ")});
-      `;
-    }
-    layer.sequelize.query(sql);
-  }
-}
+export const layerModel = appPgTable(
+  'layer',
+  {
+    id: serial().primaryKey(),
+    type: layerTypeEnum().notNull(),
+    url: varchar().notNull(),
+    layers: varchar({ length: 128 }),
+    global: boolean(),
+    layerOptions: json().$type<AnyLayerOptionsWithoutSource>(),
+    sourceOptions: json().$type<LayerSourceOptions>(),
+    ...metadataTimestampColumns
+  },
+  (table) => [
+    uniqueIndex('uq_layer_type_url_layers').on(
+      table.type,
+      table.url,
+      table.layers
+    ),
+    index('idx_layer_global').on(table.global)
+  ]
+);

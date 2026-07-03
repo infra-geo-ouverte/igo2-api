@@ -1,226 +1,491 @@
-import * as Boom from '@hapi/boom';
+import { uuid } from '@igo2/base-api';
+import { DrizzleQueryError, and, desc, eq, inArray, ne, or } from 'drizzle-orm';
 
-import { ObjectUtils } from '@igo2/base-api';
-import { UserApi } from '../user';
-import { Layer } from '../layer';
-import { Tool } from '../tool';
-
-import { IContext, ContextDetailed } from './context.interface';
-import { Context } from './context.model';
+import { AppDatabase, AppInstance } from '../app.interface';
+import { IProfils } from '../auth';
+import { Transaction } from '../core/database';
+import { LayerService } from '../layer';
+import { sortLayersByZindex } from '../layer/utils/layer.utils';
+import { PUBLIC_PROFIL, profilModel } from '../profil';
+import { IUserWithProfils } from '../user';
+import {
+  IContext,
+  IContextDetailed,
+  IContextDetailedChanges,
+  IContextDetailedIn,
+  IContextDetailedUpdate,
+  IContextIn,
+  IContextOut,
+  IContextWithRelations,
+  IGetAllDetailledContext
+} from './context.interface';
+import { contextModel } from './context.model';
+import { IContextHidden } from './hidden';
+import { contextHiddenModel } from './hidden/context-hidden.model';
+import { ContextLayerService } from './layer';
+import { ContextPermissionService, contextPermissionModel } from './permission';
+import { IContextPermission } from './permission/context-permission.interface';
+import { ContextToolService } from './tool';
 
 export class ContextService {
-  public async create (context: IContext): Promise<Context> {
-    return await Context.create(context).catch((error) => {
-      if (error?.data?.name === 'SequelizeUniqueConstraintError') {
-        const message = 'URI must be unique.';
-        throw Boom.conflict(message);
+  private contextLayerService: ContextLayerService;
+  private contextToolService: ContextToolService;
+  private contextPermission: ContextPermissionService;
+  private layerService: LayerService;
+  private db: AppDatabase;
+
+  constructor(private app: AppInstance) {
+    this.contextLayerService = new ContextLayerService(app);
+    this.contextToolService = new ContextToolService(app);
+    this.contextPermission = new ContextPermissionService(app);
+    this.layerService = new LayerService(app);
+    this.db = app.db;
+  }
+
+  async createDetailed(
+    context: IContextDetailedIn,
+    user: IUserWithProfils
+  ): Promise<IContextDetailed> {
+    const contextDb = await this.db.transaction(async (tx) => {
+      const contextDb = await this.create(
+        {
+          ...context,
+          userId: user.id
+        },
+        tx
+      );
+
+      if (context.tools?.length) {
+        await this.contextToolService.bulkCreate(
+          contextDb.id,
+          context.tools,
+          tx
+        );
       }
-      if (Boom.isBoom(error)) {
+      if (context.layers?.length) {
+        await this.contextLayerService.bulkCreate(
+          contextDb.id,
+          context.layers,
+          tx
+        );
+      }
+
+      return contextDb;
+    });
+
+    const contextDetailled = await this.getDetailedById(contextDb.id, user);
+    return contextDetailled!;
+  }
+
+  private async create(
+    context: IContextIn,
+    transaction?: Transaction
+  ): Promise<IContext> {
+    const dbInstance = transaction ?? this.db;
+    const [contextDb] = await dbInstance
+      .insert(contextModel)
+      .values(context)
+      .returning();
+    return contextDb;
+  }
+
+  async cloneDetailed(
+    id: number,
+    extraProperties: Partial<IContextDetailedIn>,
+    user: IUserWithProfils
+  ): Promise<IContext> {
+    return this.db.transaction(async (tx) => {
+      const contextDb = await this.clone(
+        id,
+        { ...extraProperties, userId: user.id },
+        tx
+      );
+      if (!contextDb) {
+        throw this.app.httpErrors.notFound('Context not found');
+      }
+      await this.contextLayerService.cloneByContextId(id, contextDb.id, tx);
+      await this.contextToolService.cloneByContextId(id, contextDb.id, tx);
+
+      return contextDb;
+    });
+  }
+
+  private async clone(
+    id: number,
+    extraProperties: Partial<IContextIn>,
+    transaction: Transaction
+  ): Promise<IContext | undefined> {
+    const context = await this.getById(id);
+    if (!context) {
+      return undefined;
+    }
+
+    const { id: _id, updatedAt, ...restContext } = context;
+    return this.create(
+      {
+        ...restContext,
+        ...extraProperties,
+        scope: 'private',
+        uri: uuid()
+      },
+      transaction
+    );
+  }
+
+  async updateDetailed(
+    id: number,
+    context: IContextDetailedUpdate
+  ): Promise<Partial<IContextDetailedChanges>> {
+    const { layers, tools, ...restContext } = context;
+
+    return this.db.transaction(async (tx) => {
+      try {
+        await this.update(id, restContext, tx);
+      } catch (error) {
+        if (error instanceof DrizzleQueryError) {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const code = (error?.cause as any)?.code;
+          if (code === '23505') {
+            const message = 'URI must be unique.';
+            throw this.app.httpErrors.conflict(message);
+          }
+        }
+
         throw error;
       }
-      throw Boom.badImplementation(error);
+
+      if (tools) {
+        await this.contextToolService.deleteByContextId(id, tx);
+        await this.contextToolService.bulkCreate(id, tools, tx);
+      }
+
+      const changes = await (layers
+        ? this.contextLayerService.modify(id, layers, tx)
+        : undefined);
+      return {
+        id,
+        layers: changes
+      };
     });
   }
 
-  public async update (id: string, context: IContext): Promise<{ id: string }> {
-    return await Context.update(context, {
+  private async update(
+    id: number,
+    context: Partial<IContext>,
+    transaction: Transaction
+  ): Promise<void> {
+    const dbInstance = transaction ?? this.db;
+    await dbInstance
+      .update(contextModel)
+      .set(context)
+      .where(eq(contextModel.id, id));
+  }
+
+  async delete(id: number): Promise<number> {
+    const result = await this.db
+      .delete(contextModel)
+      .where(eq(contextModel.id, id));
+    return result.rowCount ?? 0;
+  }
+
+  async get(): Promise<IContext[]> {
+    return this.db.select().from(contextModel);
+  }
+
+  async getAllByCatetogies(
+    profils: IProfils,
+    userId: number,
+    showHidden: boolean,
+    permission?: string | string[]
+  ): Promise<IGetAllDetailledContext> {
+    const permissions = this.parsePermissions(permission);
+    const profilsAuthorized = this.getAuthorizedProfils(profils, permissions);
+
+    const hasPublic = !permissions || permissions.includes(PUBLIC_PROFIL.name);
+
+    const [ours, shared, public$] = await Promise.all([
+      this.getOwnedContexts(userId, showHidden),
+      this.getSharedContexts(userId, profilsAuthorized, showHidden),
+      hasPublic ? this.getPublicContexts(userId, showHidden) : []
+    ]);
+
+    return {
+      ours: ours,
+      shared: shared,
+      public: public$
+    };
+  }
+
+  private parsePermissions(
+    perm: string | string[] | undefined
+  ): string[] | undefined {
+    if (typeof perm === 'string') return perm.split(',').map((p) => p.trim());
+    return perm;
+  }
+
+  private getAuthorizedProfils(
+    profils: IProfils,
+    permissions?: string[]
+  ): IProfils {
+    if (!permissions) {
+      return profils;
+    }
+    return profils.filter((p) => permissions.includes(p.toString()));
+  }
+
+  private formatContext(
+    context: IContextWithRelations,
+    defaultPerm: 'read' | 'write' = 'read'
+  ): IContextOut {
+    const { contextHiddens, contextPermissions, ...restContext } = context;
+
+    let permission = defaultPerm;
+    if (contextPermissions?.some((cp) => cp.typePermission === 'write')) {
+      permission = 'write';
+    }
+
+    return {
+      ...restContext,
+      permission,
+      hidden: !!contextHiddens?.length
+    };
+  }
+
+  private isVisible(
+    context: IContextWithRelations,
+    showHidden?: boolean
+  ): boolean {
+    return showHidden || !context.contextHiddens?.length;
+  }
+
+  private isPubliclyAccessible(context: IContextWithRelations): boolean {
+    return (
+      (context.contextPermissions && context.contextPermissions.length > 0) ||
+      context.userId === null
+    );
+  }
+
+  private async getOwnedContexts(
+    userId: number,
+    showHidden?: boolean
+  ): Promise<IContextOut[]> {
+    const contexts = await this.db.query.context.findMany({
       where: {
-        id
-      }
-    })
-      .then((count: [number]) => {
-        if (!count[0]) {
-          throw Boom.notFound();
+        userId
+      },
+      with: {
+        contextHiddens: {
+          where: { userId }
+        },
+        contextPermissions: true,
+        contextTools: {
+          with: {
+            tool: true
+          }
+        },
+        contextLayers: {
+          with: {
+            layer: true
+          }
         }
-        return { id };
+      },
+      orderBy: (context, { desc }) => [desc(context.createdAt)]
+    });
+
+    return contexts
+      .filter((context) => this.isVisible(context, showHidden))
+      .map((context) => this.formatContext(context, 'write'));
+  }
+
+  private async getSharedContexts(
+    userId: number,
+    profils: IProfils,
+    showHidden?: boolean
+  ): Promise<IContextOut[]> {
+    const rows = await this.db
+      .select({
+        context: contextModel,
+        permission: contextPermissionModel,
+        hidden: contextHiddenModel
       })
-      .catch((error) => {
-        if (error?.data?.name === 'SequelizeUniqueConstraintError') {
-          const message = 'URI must be unique.';
-          throw Boom.conflict(message);
-        }
-        if (Boom.isBoom(error)) {
-          throw error;
-        }
-        throw Boom.badImplementation(error);
-      });
+      .from(contextModel)
+      .leftJoin(
+        contextPermissionModel,
+        eq(contextModel.id, contextPermissionModel.contextId)
+      )
+      .leftJoin(
+        profilModel,
+        eq(contextPermissionModel.profilId, profilModel.id)
+      )
+      .leftJoin(
+        contextHiddenModel,
+        and(
+          eq(contextModel.id, contextHiddenModel.contextId),
+          eq(contextHiddenModel.userId, userId)
+        )
+      )
+      .where(
+        and(
+          eq(contextModel.scope, 'protected'),
+          ne(contextModel.userId, userId),
+          or(
+            eq(contextPermissionModel.userId, userId),
+            inArray(profilModel.name, profils as string[])
+          )
+        )
+      )
+      .orderBy(desc(contextModel.createdAt));
+
+    return this.reassembleContexts(rows)
+      .filter((context) => this.isVisible(context, showHidden))
+      .map((context) => this.formatContext(context));
   }
 
-  public async delete (id: string): Promise<void> {
-    return await Context.destroy({
+  private reassembleContexts(
+    rows: {
+      context: IContext;
+      permission: IContextPermission | null;
+      hidden: IContextHidden | null;
+    }[]
+  ): IContextWithRelations[] {
+    const contextMap = new Map<number, IContextWithRelations>();
+
+    for (const row of rows) {
+      let context = contextMap.get(row.context.id);
+      if (!context) {
+        context = {
+          ...row.context,
+          contextPermissions: [],
+          contextHiddens: [],
+          contextLayers: [],
+          contextTools: []
+        } as unknown as IContextWithRelations;
+        contextMap.set(row.context.id, context);
+      }
+      if (
+        row.permission &&
+        !context.contextPermissions!.some((p) => p.id === row.permission!.id)
+      ) {
+        context.contextPermissions!.push(row.permission);
+      }
+      if (
+        row.hidden &&
+        !context.contextHiddens!.some((h) => h.id === row.hidden!.id)
+      ) {
+        context.contextHiddens!.push(row.hidden);
+      }
+    }
+
+    return Array.from(contextMap.values());
+  }
+
+  private async getPublicContexts(
+    userId: number,
+    showHidden?: boolean
+  ): Promise<IContextOut[]> {
+    const contexts = await this.db.query.context.findMany({
       where: {
-        id
-      }
-    }).then((count: number) => {
-      if (!count) {
-        throw Boom.notFound();
-      }
+        scope: 'public',
+        userId: {
+          isNull: true
+        }
+      },
+      with: {
+        contextPermissions: {
+          with: {
+            profil: true
+          }
+        },
+        contextHiddens: {
+          where: { userId }
+        }
+      },
+      orderBy: (context, { desc }) => [desc(context.createdAt)]
+    });
+
+    return contexts
+      .filter(
+        (context) =>
+          this.isVisible(context, showHidden) &&
+          this.isPubliclyAccessible(context)
+      )
+      .map((context) => this.formatContext(context));
+  }
+
+  async getById(id: number): Promise<IContext | undefined> {
+    return this.db.query.context.findFirst({
+      where: { id }
     });
   }
 
-  public async get (): Promise<Context[]> {
-    return await Context.findAll().then((contexts: Context[]) => {
-      const plainContexts = contexts.map((context) => ObjectUtils.removeNull(context.get()));
-      return plainContexts;
+  async getByUri(uri: string): Promise<IContext | undefined> {
+    return this.db.query.context.findFirst({
+      where: { uri }
     });
   }
 
-  public async getById (
-    id: string,
-    user: string,
-    includeLayers = false,
-    includeTools = false
-  ): Promise<ContextDetailed> {
-    const include = [];
-    if (includeLayers) {
-      include.push(Layer);
-    }
-    if (includeTools) {
-      include.push(Tool);
-    }
+  async getDetailedById(
+    id: number,
+    user: IUserWithProfils | undefined
+  ): Promise<IContextDetailed | undefined> {
+    const where = { id };
 
-    let where: any = { id };
-
-    if (isNaN(id as any)) {
-      where = { uri: id };
-    }
-
-    const context = await Context.findOne({
-      include,
-      where
+    const context = await this.db.query.context.findFirst({
+      where,
+      with: {
+        contextLayers: {
+          with: {
+            layer: true
+          }
+        },
+        contextTools: {
+          with: {
+            tool: true
+          }
+        }
+      }
     });
 
     if (!context) {
-      throw Boom.notFound();
+      return;
     }
 
-    let globalTools;
-    if (includeTools) {
-      globalTools = await Tool.findAll({
-        where: { global: true }
-      });
-    }
-
-    let globalLayers;
-    if (includeLayers) {
-      globalLayers = await Layer.findAll({
-        where: { global: true, enabled: true }
-      });
-    }
-
-    if (includeLayers || includeTools) {
-      return await this.contextObjToPlainObj(context, user, globalTools, globalLayers);
-    } else {
-      return ObjectUtils.removeNull(context.get());
-    }
-  }
-
-  private async contextObjToPlainObj (context, user, globalTools?, globalLayers?): Promise<ContextDetailed> {
-    const profils: string[] = await UserApi.getProfils(user).catch(() => {
-      return [];
+    const globalTools = await this.db.query.tool.findMany({
+      where: { global: true }
     });
-    profils.push(user);
 
-    let plain: any = context.get();
-    plain.layers = [];
-    plain.tools = [];
-    plain.toolbar = [];
-    const toolbar = [];
+    const globalLayers = await this.layerService.getAllGlobal();
 
-    for (const tool of context.tools.filter(t => {
-      return t.profils.length === 0 || t.profils.some(p => profils.includes(p));
-    })) {
-      const plainTool = tool.get();
+    const profils = user?.profils ?? [];
+    const [toolbar, tools] = this.contextToolService.formatTools(
+      context.contextTools,
+      profils,
+      globalTools
+    );
 
-      plainTool.options = Object.assign({}, plainTool.options, plainTool.ToolContext.options);
-      plainTool.order = plainTool.ToolContext.order !== undefined ? plainTool.ToolContext.order : plainTool.order;
-      plainTool.enabled = plainTool.ToolContext.enabled;
-      plainTool.ToolContext = null;
-      delete plainTool.profils;
+    const layers = await this.contextLayerService.formatLayersToOptions(
+      context.contextLayers,
+      profils,
+      globalLayers
+    );
 
-      if (plainTool.enabled !== false) {
-        plain.tools.push(plainTool);
-        if (plainTool.inToolbar) {
-          toolbar.push(plainTool);
-        }
-      }
-    }
+    const permission = await this.contextPermission.getTypePermission(
+      context,
+      user
+    );
 
-    for (const tool of globalTools.filter(t => {
-      return t.profils.length === 0 || t.profils.some(p => profils.includes(p));
-    })) {
-      const plainTool = tool.get();
-      delete plainTool.profils;
-      if (plain.tools.findIndex((t) => t.name === plainTool.name) === -1) {
-        plain.tools.push(plainTool);
-        if (plainTool.inToolbar) {
-          toolbar.push(plainTool);
-        }
-      }
-    }
+    const {
+      contextLayers: _cl,
+      contextTools: _ct,
+      ...restContextDetailed
+    } = context;
 
-    plain.toolbar = toolbar
-      .filter(t => t.order)
-      .sort((t1, t2) => t1.order - t2.order).map((t) => t.name)
-      .concat(toolbar.filter(t => !t.order).map((t) => t.name));
-
-    if ((!context.layers || !context.layers.length) && !globalLayers) {
-      return ObjectUtils.removeNull(plain);
-    }
-
-    const plainLayers = [];
-
-    for (const layer of context.layers.filter(l => {
-      return l.profils.length === 0 || l.profils.some(p => profils.includes(p));
-    })) {
-      const plainL = layer.get();
-      if (plainL.LayerContext.enabled && plainL.enabled) {
-        plainLayers.push(plainL);
-      }
-    }
-
-    for (const layer of globalLayers.filter(l => {
-      return l.profils.length === 0 || l.profils.some(p => profils.includes(p));
-    })) {
-      const plainL = layer.get();
-      if (plainLayers.findIndex((l) => l.id === plainL.id) === -1) {
-        plainL.LayerContext = {};
-        plainLayers.push(plainL);
-      }
-    }
-
-    for (const plainLayer of plainLayers) {
-      const params = Object.assign(
-        {
-          layers: plainLayer.layers
-        },
-        (plainLayer.sourceOptions || {}).params,
-        (plainLayer.LayerContext.sourceOptions || {}).params
-      );
-
-      const sourceOptions = Object.assign(
-        {
-          type: plainLayer.type,
-          url: plainLayer.url,
-          optionsFromCapabilities: true
-        },
-        plainLayer.sourceOptions,
-        plainLayer.LayerContext.sourceOptions,
-        {
-          params
-        }
-      );
-
-      const layerFormatted = Object.assign({}, plainLayer.layerOptions, plainLayer.LayerContext.layerOptions, {
-        sourceOptions
-      });
-
-      plain.layers.push(layerFormatted);
-    }
-
-    plain = ObjectUtils.removeNull(plain);
-    plain.layers = plain.layers.sort((a, b) => (a.zIndex < b.zIndex ? -1 : a.zIndex > b.zIndex ? 1 : 0));
-
-    return ObjectUtils.removeNull(plain);
+    return {
+      ...restContextDetailed,
+      layers: sortLayersByZindex(layers),
+      tools,
+      toolbar,
+      permission
+    };
   }
 }

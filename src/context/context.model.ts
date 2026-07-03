@@ -1,73 +1,27 @@
-import {
-  Table,
-  Column,
-  Model,
-  AllowNull,
-  PrimaryKey,
-  Index,
-  AutoIncrement,
-  DataType,
-  Unique,
-  BelongsToMany,
-  HasMany
-} from 'sequelize-typescript';
+import { index } from 'drizzle-orm/cockroach-core';
+import { integer, json, serial, varchar } from 'drizzle-orm/pg-core';
 
-import { Layer } from '../layer';
-import { LayerContext } from '../layerContext';
+import { appPgEnum, appPgTable } from '../core/database';
+import { metadataTimestampColumns } from '../core/database/model.utils';
+import { userModel } from '../user/user.model';
+import { IMap, Scope } from './context.interface';
 
-import { Tool } from '../tool';
-import { ToolContext } from '../toolContext';
+export const contextScopeEnum = appPgEnum('enum_context_scope', Scope);
 
-import { ContextPermission } from '../contextPermission';
-import { ContextHidden } from '../contextHidden';
-
-import { IContext } from './context.interface';
-
-@Table({
-  tableName: 'context',
-  timestamps: true
-})
-export class Context extends Model<IContext> {
-  @PrimaryKey
-  @AutoIncrement
-  @AllowNull(false)
-  @Column
-    id: number;
-
-  @AllowNull(false)
-  @Unique
-  @Column({ type: DataType.TEXT })
-    uri: string;
-
-  @AllowNull(false)
-  @Column({ type: DataType.STRING(128) })
-    title: string;
-
-  @Column({ type: DataType.STRING(128) })
-    icon: string;
-
-  @Index
-  @AllowNull(false)
-  @Column({ type: DataType.STRING(128) })
-    owner: string;
-
-  @Index
-  @AllowNull(false)
-  @Column({ type: DataType.ENUM('public', 'protected', 'private') })
-    scope: string;
-
-  @Column({ type: DataType.JSON })
-    map: { [key: string]: any };
-
-  @BelongsToMany(() => Layer, () => LayerContext)
-    layers: Layer[];
-
-  @BelongsToMany(() => Tool, () => ToolContext)
-    tools: Tool[];
-
-  @HasMany(() => ContextPermission)
-    contextPermissions: ContextPermission[];
-
-  @HasMany(() => ContextHidden)
-    contextHiddens: ContextHidden[];
-}
+export const contextModel = appPgTable(
+  'context',
+  {
+    id: serial().primaryKey(),
+    uri: varchar({ length: 64 }).notNull().unique(),
+    title: varchar({ length: 128 }).notNull(),
+    icon: varchar({ length: 128 }),
+    scope: contextScopeEnum().notNull(),
+    map: json().$type<IMap>(),
+    userId: integer().references(() => userModel.id),
+    ...metadataTimestampColumns
+  },
+  (table) => [
+    index('idx_context_user_id').on(table.userId),
+    index('idx_context_scope').on(table.scope)
+  ]
+);

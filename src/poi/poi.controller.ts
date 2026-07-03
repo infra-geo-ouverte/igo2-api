@@ -1,49 +1,99 @@
-import * as Hapi from '@hapi/hapi';
-
-import { handleError, HapiRequestToUser } from '../utils';
-
+import { AppInstance, AppReply, AppRequest } from '../app.interface';
+import {
+  CreatePoiSchema,
+  DeletePoiSchema,
+  GetPoiSchema,
+  UpdatePoiSchema
+} from './poi.schema';
 import { PoiService } from './poi.service';
-import { IPoi } from './poi.interface';
 
 export class PoiController {
   private poiService: PoiService;
 
-  constructor () {
-    this.poiService = new PoiService();
+  constructor(app: AppInstance) {
+    this.poiService = new PoiService(app);
   }
 
-  public async create (request: Hapi.Request, h: Hapi.ResponseToolkit) {
-    const poiToCreate: IPoi = request.payload as IPoi;
-    const user = HapiRequestToUser(request);
-    poiToCreate.userId = user.id;
-    const res = await this.poiService.create(poiToCreate).catch(handleError);
-    return h.response(res).code(201);
-  }
+  create = async (
+    request: AppRequest<typeof CreatePoiSchema>,
+    reply: AppReply<typeof CreatePoiSchema>
+  ) => {
+    const user = request.user;
+    if (!user) {
+      return reply.forbidden('Accès refusé');
+    }
 
-  public async update (request: Hapi.Request, _h: Hapi.ResponseToolkit) {
+    const res = await this.poiService.create({
+      ...request.body,
+      userId: user.id
+    });
+    return reply.code(201).send(res);
+  };
+
+  update = async (
+    request: AppRequest<typeof UpdatePoiSchema>,
+    reply: AppReply<typeof UpdatePoiSchema>
+  ) => {
+    const user = request.user;
+    if (!user) {
+      return reply.forbidden('Accès refusé');
+    }
     const id = request.params.id;
-    const user = HapiRequestToUser(request);
-    const poiToUpdate: IPoi = request.payload as IPoi;
+    const poiToUpdate = request.body;
 
-    return await this.poiService.update(id, user.id, poiToUpdate).catch(handleError);
-  }
+    const poi = await this.poiService.getById(id, user.id);
+    if (!poi) {
+      return reply.notFound();
+    }
 
-  public async delete (request: Hapi.Request, h: Hapi.ResponseToolkit) {
+    return this.poiService.update(id, poiToUpdate);
+  };
+
+  delete = async (
+    request: AppRequest<typeof DeletePoiSchema>,
+    reply: AppReply<typeof DeletePoiSchema>
+  ) => {
+    const user = request.user;
+    if (!user) {
+      return reply.forbidden('Accès refusé');
+    }
+
     const id = request.params.id;
-    const user = HapiRequestToUser(request);
-    await this.poiService.delete(id, user.id).catch(handleError);
 
-    return h.response().code(204);
-  }
+    const poi = await this.poiService.getById(id, user.id);
+    if (!poi) {
+      return reply.notFound();
+    }
 
-  public async getById (request: Hapi.Request, _h: Hapi.ResponseToolkit) {
+    const response = await this.poiService.delete(id, user.id);
+    return reply.code(204).send(response);
+  };
+
+  getById = async (
+    request: AppRequest<typeof GetPoiSchema>,
+    reply: AppReply<typeof GetPoiSchema>
+  ) => {
+    const user = request.user;
+    if (!user) {
+      return reply.forbidden('Accès refusé');
+    }
+
     const id = request.params.id;
-    const user = HapiRequestToUser(request);
-    return await this.poiService.getById(id, user.id).catch(handleError);
-  }
 
-  public async get (request: Hapi.Request, _h: Hapi.ResponseToolkit) {
-    const user = HapiRequestToUser(request);
-    return await this.poiService.get(user.id).catch(handleError);
-  }
+    const poi = await this.poiService.getById(id, user.id);
+    if (!poi) {
+      return reply.notFound();
+    }
+
+    return poi;
+  };
+
+  getAll = async (request: AppRequest, reply: AppReply) => {
+    const user = request.user;
+    if (!user) {
+      return reply.forbidden('Accès refusé');
+    }
+
+    return this.poiService.getAll(user.id);
+  };
 }

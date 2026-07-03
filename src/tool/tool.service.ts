@@ -1,79 +1,63 @@
-import * as Boom from '@hapi/boom';
+import { eq } from 'drizzle-orm';
 
-import { ObjectUtils } from '@igo2/base-api';
-import { UserApi } from '../user';
-import { ITool } from './tool.interface';
-import { Tool } from './tool.model';
+import { AppDatabase, AppInstance } from '../app.interface';
+import { hasRequiredProfils } from '../auth';
+import { IProfils } from '../auth/authentication/authentication.interface';
+import { ITool, IToolIn } from './tool.interface';
+import { toolModel } from './tool.model';
 
 export class ToolService {
-  public async create (tool: ITool): Promise<Tool> {
-    return await Tool.create(tool).catch((error) => {
-      if (error?.data?.name === 'SequelizeUniqueConstraintError') {
-        const message = 'The pair contextId and toolId must be unique.';
-        throw Boom.conflict(message);
-      }
-      if (Boom.isBoom(error)) {
-        throw error;
-      }
-      throw Boom.badImplementation(error);
-    });
+  private db: AppDatabase;
+
+  constructor(private app: AppInstance) {
+    this.db = app.db;
+  }
+  async create(tool: IToolIn): Promise<ITool> {
+    const [result] = await this.db
+      .insert(toolModel)
+      .values({ ...tool, profils: cleanArray(tool.profils) })
+      .returning();
+    return result;
   }
 
-  public async update (id: string, tool: ITool): Promise<{ id: string }> {
-    return await Tool.update(tool, {
-      where: {
-        id
-      }
-    }).then((count: [number]) => {
-      if (!count[0]) {
-        throw Boom.notFound();
-      }
-      return { id };
-    });
+  async update(id: number, tool: Partial<IToolIn>): Promise<ITool> {
+    const [result] = await this.db
+      .update(toolModel)
+      .set({ ...tool, profils: cleanArray(tool.profils) })
+      .where(eq(toolModel.id, id))
+      .returning();
+    return result;
   }
 
-  public async delete (id: string): Promise<void> {
-    return await Tool.destroy({
-      where: {
-        id
-      }
-    }).then((count: number) => {
-      if (!count) {
-        throw Boom.notFound();
-      }
-    });
+  async delete(id: number): Promise<number> {
+    const result = await this.db.delete(toolModel).where(eq(toolModel.id, id));
+    return result.rowCount ?? 0;
   }
 
-  public async get (userId: string): Promise<Tool[]> {
-    const profils: string[] = await UserApi.getProfils(userId).catch(() => {
-      return [];
-    });
-    profils.push(userId);
-
-    return await Tool.findAll().then((tools: Tool[]) => {
-      const plainTools = tools.filter(t => {
-        return t.profils.length === 0 || t.profils.some(p => profils.includes(p));
-      }).map((tool) => ObjectUtils.removeNull(tool.get()));
-      return plainTools;
-    });
+  async get(profils: IProfils): Promise<ITool[]> {
+    const tools = await this.db.select().from(toolModel);
+    return tools.filter((t) => hasRequiredProfils(t.profils, profils));
   }
 
-  public async getById (id: string, userId: string): Promise<Tool> {
-    const profils: string[] = await UserApi.getProfils(userId).catch(() => {
-      return [];
-    });
-    profils.push(userId);
+  async getById(id: number, profils: IProfils): Promise<ITool | undefined> {
+    const [result] = await this.db
+      .select()
+      .from(toolModel)
+      .where(eq(toolModel.id, id));
 
-    return await Tool.findOne({
-      where: {
-        id
-      }
-    }).then((tool: Tool) => {
-      if (!tool || (tool.profils.length !== 0 && !tool.profils.some(p => profils.includes(p)))) {
-        throw Boom.notFound();
-      }
+    if (!result) {
+      return undefined;
+    }
 
-      return ObjectUtils.removeNull(tool.get());
-    });
+    if (!hasRequiredProfils(result.profils, profils)) {
+      throw this.app.httpErrors.unauthorized();
+    }
+
+    return result;
   }
 }
+const cleanArray = (arr: string[] | null | undefined) => {
+  if (!arr) return null;
+  const filtered = arr.filter((i) => i !== '');
+  return filtered.length === 0 ? null : filtered;
+};

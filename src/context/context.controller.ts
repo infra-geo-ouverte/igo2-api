@@ -1,368 +1,257 @@
-import * as Hapi from '@hapi/hapi';
-import * as Boom from '@hapi/boom';
-import { Op } from 'sequelize';
-import { ObjectUtils, uuid } from '@igo2/base-api';
-import { handleError, HapiRequestToUser } from '../utils';
+import { AppInstance, AppReply, AppRequest } from '../app.interface';
+import { UserService } from '../user';
+import { ContextAccessService } from './access/context-access.service';
+import {
+  IContextDetailed,
+  IContextDetailedChanges,
+  IContextDetailedUpdate,
+  IGetAllDetailledContext
+} from './context.interface';
+import {
+  CloneContextSchema,
+  CreateContextSchema,
+  DeleteContextSchema,
+  GetContextByIdSchema,
+  GetContextDefaultSchema,
+  GetContextDetailedByIdSchema,
+  GetContextDetailedByUriSchema,
+  GetContextsSchema,
+  PostContextDefaultSchema,
+  UpdateContextSchema
+} from './context.schema';
+import { ContextService } from './context.service';
 
-import { UserApi } from '../user';
-import { UserIgoService, IUserIgo } from '../userIgo';
-import { TypePermission, ContextPermissionService, ContextPermission } from '../contextPermission';
-import { ContextHidden } from '../contextHidden';
-import { ToolContextService } from '../toolContext/toolContext.service';
-import { LayerContextService } from '../layerContext/layerContext.service';
-import { ContextAccessService } from '../contextAccess/contextAccess.service';
-
-import { IContext, ContextService, Context, Scope } from './index';
-import { Config } from '@igo2/base-api';
-import { CredentialsConfig } from '../configurations';
+const DEFAULT_CONTEXT_URI = 'default';
 
 export class ContextController {
   private contextService: ContextService;
-  private contextPermissionService: ContextPermissionService;
-  private toolContextService: ToolContextService;
-  private layerContextService: LayerContextService;
   private contextAccessService: ContextAccessService;
-  private userIgoService: UserIgoService;
+  private userService: UserService;
 
-  constructor () {
-    this.contextPermissionService = new ContextPermissionService();
-    this.contextService = new ContextService();
-    this.toolContextService = new ToolContextService();
-    this.layerContextService = new LayerContextService();
-    this.userIgoService = new UserIgoService();
-    this.contextAccessService = new ContextAccessService();
+  constructor(app: AppInstance) {
+    this.contextService = new ContextService(app);
+    this.userService = new UserService(app);
+    this.contextAccessService = new ContextAccessService(app);
   }
 
-  public async create (request: Hapi.Request, h: Hapi.ResponseToolkit) {
-    const newContext: any = request.payload;
-    const requestedUser = HapiRequestToUser(request);
-    newContext.owner = requestedUser.sourceId;
+  create = async (
+    request: AppRequest<typeof CreateContextSchema>,
+    reply: AppReply<typeof CreateContextSchema>
+  ) => {
+    const newContext = request.body as unknown as IContextDetailed;
 
-    const context = await this.contextService.create(newContext).catch(handleError);
-    if (newContext.tools) {
-      await this.toolContextService.bulkCreate(context.id, newContext.tools);
+    const contextUri = await this.contextService.getByUri(newContext.uri);
+    if (contextUri) {
+      const message = 'URI must be unique.';
+      throw reply.conflict(message);
     }
-    if (newContext.layers) {
-      await this.layerContextService.bulkCreate(context.id, newContext.layers, true, true);
+
+    const user = request.user;
+    if (!user) {
+      return reply.forbidden('Accès refusé');
     }
+    const context = await this.contextService.createDetailed(newContext, user);
 
-    return h.response(context).code(201);
-  }
+    return reply.code(201).send(context);
+  };
 
-  public async clone (request: Hapi.Request, h: Hapi.ResponseToolkit) {
-    const requestedUser = HapiRequestToUser(request);
-    const owner = requestedUser.sourceId;
+  cloneDetailed = async (
+    request: AppRequest<typeof CloneContextSchema>,
+    reply: AppReply<typeof CloneContextSchema>
+  ) => {
     const id = request.params.contextId;
-    let properties = request.payload;
-    if (typeof request.payload === 'string') {
-      properties = JSON.parse(request.payload);
+
+    const user = request.user;
+    if (!user) {
+      return reply.forbidden('Accès refusé');
     }
 
-    const context = await this.contextService.getById(id, owner, true, true).catch(handleError);
+    const contextDb = await this.contextService.getById(id);
+    if (!contextDb) {
+      return reply.notFound('Context not found');
+    }
 
-    Object.assign(context, properties);
-    const newContext = {
-      scope: Scope[Scope.private],
-      uri: uuid(),
-      title: context.title,
-      icon: context.icon,
-      map: context.map,
-      tools: context.tools,
-      layers: context.layers.map((l) => {
-        const layerOptions = Object.assign({}, l);
-        delete layerOptions.sourceOptions;
-        return {
-          layerOptions,
-          sourceOptions: l.sourceOptions
-        };
-      })
-    };
-    (request as any).payload = newContext;
-    return await this.create(request, h);
-  }
+    const context = await this.contextService.cloneDetailed(
+      id,
+      (request.body as Partial<IContextDetailed>) ?? {},
+      user
+    );
 
-  public async update (request: Hapi.Request, _h: Hapi.ResponseToolkit) {
+    const contextDetailed = await this.contextService.getDetailedById(
+      context.id,
+      user
+    );
+    if (!contextDetailed) {
+      throw reply.notFound(`No context found for ${context.id}`);
+    }
+
+    return reply.code(201).send(contextDetailed);
+  };
+
+  update = async (
+    request: AppRequest<typeof UpdateContextSchema>,
+    reply: AppReply<typeof UpdateContextSchema>
+  ): Promise<Partial<IContextDetailedChanges>> => {
     const id = request.params.contextId;
-    const newContext: any = request.payload;
 
-    const context = await this.contextService.update(id, newContext as IContext).catch(handleError);
+    const context = await this.contextService.getById(id);
+    if (!context) {
+      return reply.notFound('Context not found');
+    }
 
-    if (newContext.tools) {
-      await this.toolContextService.deleteByContextId(context.id).catch(handleError);
-      await this.toolContextService.bulkCreate(context.id, newContext.tools);
+    return this.contextService.updateDetailed(
+      id,
+      request.body as IContextDetailedUpdate
+    );
+  };
+
+  delete = async (
+    request: AppRequest<typeof DeleteContextSchema>,
+    reply: AppReply<typeof DeleteContextSchema>
+  ) => {
+    const id = request.params.contextId;
+
+    const context = await this.contextService.getById(id);
+    if (!context) {
+      return reply.notFound('Context not found');
     }
-    if (newContext.layers) {
-      await this.layerContextService.deleteByContextId(context.id).catch(handleError);
-      await this.layerContextService.bulkCreate(context.id, newContext.layers, true, true);
+
+    const result = await this.contextService.delete(id);
+    return reply.code(204).send(result);
+  };
+
+  getById = async (
+    request: AppRequest<typeof GetContextByIdSchema>,
+    reply: AppReply<typeof GetContextByIdSchema>
+  ) => {
+    const id = request.params.contextId;
+
+    const context = await this.contextService.getById(id);
+    if (!context) {
+      return reply.notFound('Context not found');
     }
+
     return context;
-  }
+  };
 
-  public async delete (request: Hapi.Request, h: Hapi.ResponseToolkit) {
-    const id = request.params.contextId;
-    await this.contextService.delete(id);
-    return h.response().code(204);
-  }
+  get = async (
+    request: AppRequest<typeof GetContextsSchema>
+  ): Promise<IGetAllDetailledContext> => {
+    const user = request.user;
+    const { hidden, permission } = request.query;
 
-  public async getById (request: Hapi.Request, _h: Hapi.ResponseToolkit) {
-    const requestedUser = HapiRequestToUser(request);
-    const owner = requestedUser.sourceId;
-    const id = request.params.contextId;
-    const context = await this.contextService.getById(id, owner).catch(handleError);
-    const permission = await this.contextPermissionService.getPermission(context, owner);
-
-    if (!permission) {
-      throw Boom.unauthorized();
-    }
-    context.permission = TypePermission[permission];
-    return context;
-  }
-
-  public async get (request: Hapi.Request, _h: Hapi.ResponseToolkit) {
-    const cc = Config.getConfig('credentials') as CredentialsConfig;
-    const pco = cc?.publicContextOwner || 'admin';
-    
-    const requestedUser = HapiRequestToUser(request);
-    const {
-      randomUUID
-    } = await import('node:crypto');
-
-    let owner = `anonymous-${randomUUID()}`;
-    let isAnonyme = false;
-    let id = `anonymous-${randomUUID()}`;
-
-    if (!requestedUser) {
-      isAnonyme = true;
-    } else {
-      id = requestedUser.id;
-      owner = requestedUser.sourceId;
-    }
-    const permissions = request.query.permission;
-    const showHidden = request.query.hidden;
-
-    let profils = (await UserApi.getProfils(id).catch(() => [])) as string[];
-
-    if (owner) {
-      profils.push(owner);
-    }
-
-    profils = profils.filter((p) => !permissions || permissions.includes(p));
-
-    const promises = [];
-    if (owner && !isAnonyme) {
-      promises.push(
-        Context.findAll({
-          include: [
-            {
-              // @ts-ignore
-              model: ContextHidden,
-              required: false,
-              where: {
-                user: owner
-              }
-            }
-          ],
-          where: {
-            owner
-          },
-          order: [['createdAt', 'DESC']]
-        })
-      );
-    } else {
-      promises.push([]);
-    }
-
-    if (profils && profils.length) {
-      promises.push(
-        Context.findAll({
-          include: [
-            {
-              // @ts-ignore
-              model: ContextPermission,
-              where: {
-                profil: profils
-              }
-            },
-            {
-              // @ts-ignore
-              model: ContextHidden,
-              required: false,
-              where: {
-                user: owner
-              }
-            }
-          ],
-          where: {
-            scope: 'protected',
-            owner: {
-              [Op.ne]: owner
-            }
-          },
-          order: [['createdAt', 'DESC']]
-        })
-      );
-    } else {
-      promises.push([]);
-    }
-
-    if (!permissions || permissions.includes('public')) {
-      promises.push(
-        Context.findAll({
-          include: [
-            {
-              // @ts-ignore
-              model: ContextPermission,
-              required: false,
-              where: {
-                profil: profils
-              }
-            },
-            {
-              // @ts-ignore
-              model: ContextHidden,
-              required: false
-              /*     where: {
-                user: owner
-              } */
-            }
-          ],
-          where: {
-            scope: 'public',
-            owner: {
-              [Op.ne]: owner
-            }
-          },
-          order: [['createdAt', 'DESC']]
-        })
-      );
-    } else {
-      promises.push([]);
-    }
-
-    const repPromises = await Promise.all(promises);
-    const oursPromises = repPromises[0];
-    const sharedPromises = repPromises[1] || [];
-    const publicPromises = repPromises[2] || [];
-
-    const oursContexts = oursPromises
-      .filter((c) => {
-        return showHidden || !c.dataValues.contextHiddens.length;
-      })
-      .map((c) => {
-        const plainC = c.get();
-        plainC.permission = TypePermission[TypePermission.write];
-        plainC.hidden = !!c.contextHiddens.length;
-
-        delete plainC.contextHiddens;
-        return ObjectUtils.removeNull(plainC);
-      });
-
-    const sharedContexts = sharedPromises
-      .filter((c) => {
-        return showHidden || !c.dataValues.contextHiddens.length;
-      })
-      .map((c) => {
-        const plainC = c.get();
-
-        plainC.permission = TypePermission[TypePermission.read];
-        plainC.hidden = !!c.contextHiddens.length;
-
-        for (const cp of plainC.contextPermissions) {
-          const typePerm: any = cp.typePermission;
-          if (typePerm === TypePermission[TypePermission.write]) {
-            plainC.permission = TypePermission[TypePermission.write];
-            break;
-          }
-        }
-
-        delete plainC.contextPermissions;
-        delete plainC.contextHiddens;
-        return ObjectUtils.removeNull(plainC);
-      });
-
-    const publicContexts = publicPromises
-      .filter((c) => {
-        return showHidden || !c.dataValues.contextHiddens.length;
-      })
-      .map((c) => {
-        const plainC: any = c.get();
-        if (!plainC.contextPermissions.length && plainC.owner !== pco) {
-          return;
-        }
-
-        plainC.permission = TypePermission[TypePermission.read];
-        plainC.hidden = !!c.contextHiddens.length;
-
-        for (const cp of plainC.contextPermissions) {
-          const typePerm: any = cp.typePermission;
-          if (typePerm === TypePermission[TypePermission.write]) {
-            plainC.permission = TypePermission[TypePermission.write];
-            break;
-          }
-        }
-
-        delete plainC.contextPermissions;
-        delete plainC.contextHiddens;
-        return ObjectUtils.removeNull(plainC);
-      })
-      .filter((c) => c);
-
-    return {
-      ours: oursContexts,
-      shared: sharedContexts,
-      public: publicContexts
-    };
-  }
-
-  public async getDetailsById (request: Hapi.Request, _h: Hapi.ResponseToolkit) {
-    const requestedUser = HapiRequestToUser(request);
-    const owner = requestedUser ? requestedUser.sourceId : undefined;
-    const id = request.params.contextId;
-
-    const contextDetails = await this.contextService.getById(id, owner, true, true).catch(handleError);
-
-    const permission = await this.contextPermissionService.getPermission(contextDetails, owner).catch(handleError);
-
-    if (!permission) {
-      const msg = 'Must have read permission for this context';
-      throw Boom.forbidden(msg);
-    }
-    contextDetails.permission = TypePermission[permission];
-
-    this.contextAccessService.update(contextDetails.id);
-    return contextDetails;
-  }
-
-  public async getDefault (request: Hapi.Request, h: Hapi.ResponseToolkit) {
-    const requestedUser = HapiRequestToUser(request);
-    const userId = requestedUser.id;
-
-    const user = await this.userIgoService.get(userId).catch(() => {
+    if (!user) {
       return {
-        defaultContextId: 'default'
+        ours: [],
+        public: [],
+        shared: []
       };
-    });
-
-    request.params.contextId = user.defaultContextId;
-    return await this.getDetailsById(request, h).catch(async () => {
-      request.params.contextId = 'default';
-      const defaultContext = await this.getDetailsById(request, h);
-      this.userIgoService.update(userId, { defaultContextId: defaultContext.id });
-      return defaultContext;
-    });
-  }
-
-  public async setDefaultContext (request: Hapi.Request, _h: Hapi.ResponseToolkit) {
-    const requestedUser = HapiRequestToUser(request);
-    const userId = requestedUser.id;
-    const userIgoToCreate: IUserIgo = request.payload as IUserIgo;
-    const userIGO = await this.userIgoService.get(userId).catch(() => {});
-
-    if (userIGO) {
-      return await this.userIgoService.update(userId, userIgoToCreate).catch(handleError);
-    } else {
-      userIgoToCreate.userId = userId;
-      return await this.userIgoService.create(userIgoToCreate).catch(handleError);
     }
-  }
+
+    return this.contextService.getAllByCatetogies(
+      user.profils,
+      user.id,
+      !!hidden,
+      permission
+    );
+  };
+
+  getDetailsByUri = async (
+    request: AppRequest<typeof GetContextDetailedByUriSchema>,
+    reply: AppReply<typeof GetContextDetailedByUriSchema>
+  ) => {
+    const uri = request.params.uri;
+
+    const contextDb = await this.contextService.getByUri(uri);
+    if (!contextDb) {
+      return reply.notFound();
+    }
+
+    const contextDetails = await this.contextService.getDetailedById(
+      contextDb.id,
+      request.user
+    );
+    if (!contextDetails) {
+      return reply.notFound('Context not found');
+    }
+
+    await this.contextAccessService.upsert(contextDetails.id);
+    return contextDetails;
+  };
+
+  getDetailsById = async (
+    request: AppRequest<typeof GetContextDetailedByIdSchema>,
+    reply: AppReply<typeof GetContextDetailedByIdSchema>
+  ) => {
+    const id = request.params.contextId;
+
+    const contextDetails = await this.contextService.getDetailedById(
+      id,
+      request.user
+    );
+    if (!contextDetails) {
+      return reply.notFound('Context not found');
+    }
+
+    await this.contextAccessService.upsert(contextDetails.id);
+    return contextDetails;
+  };
+
+  getDefault = async (
+    request: AppRequest<typeof GetContextDefaultSchema>,
+    reply: AppReply<typeof GetContextDefaultSchema>
+  ) => {
+    const user = request.user;
+    if (!user) {
+      return this.contextService.getByUri(DEFAULT_CONTEXT_URI);
+    }
+
+    let context = await (user.defaultContextId
+      ? this.contextService.getById(user.defaultContextId)
+      : this.contextService.getByUri(DEFAULT_CONTEXT_URI));
+    if (!context) {
+      context = await this.contextService.getByUri(DEFAULT_CONTEXT_URI);
+      if (!context) {
+        throw new Error("Le contexte système n'a pas été trouvé");
+      }
+      this.userService.update(user.id, {
+        defaultContextId: context.id
+      });
+    }
+
+    const newRequest = {
+      ...request,
+      params: {
+        contextId: context.id
+      }
+    } as AppRequest<typeof GetContextDetailedByIdSchema>;
+
+    return this.getDetailsById(
+      newRequest,
+      reply as unknown as AppReply<typeof GetContextDetailedByIdSchema>
+    );
+  };
+
+  setDefaultContext = async (
+    request: AppRequest<typeof PostContextDefaultSchema>,
+    reply: AppReply<typeof PostContextDefaultSchema>
+  ) => {
+    let { defaultContextId } = request.body;
+
+    const user = request.user;
+    if (!user) {
+      return reply.forbidden('Accès refusé');
+    }
+
+    if (user.defaultContextId === defaultContextId) {
+      const defaultCtx =
+        await this.contextService.getByUri(DEFAULT_CONTEXT_URI);
+      defaultContextId = defaultCtx!.id;
+    }
+
+    await this.userService.update(user.id, {
+      defaultContextId
+    });
+    return defaultContextId;
+  };
 }

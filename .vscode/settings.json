@@ -1,0 +1,37 @@
+{
+  "files.watcherExclude": {
+    "**/.git/objects/**": true,
+    "**/.git/subtree-cache/**": true,
+    "**/node_modules/**": true,
+    "**/dist/**": true
+  },
+  "search.exclude": {
+    "**/node_modules": true,
+    "**/dist": true
+  },
+  "[javascript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.formatOnSave": true
+  },
+  "[typescript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.formatOnSave": true
+  },
+  "[json]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.formatOnSave": true
+  },
+  "sqltools.connections": [
+    {
+      "previewLimit": 50,
+      "server": "database",
+      "port": 5432,
+      "driver": "PostgreSQL",
+      "name": "Local",
+      "database": "postgres",
+      "username": "postgres",
+      "password": "postgres"
+    }
+  ],
+  "makefile.configureOnOpen": false
+}
