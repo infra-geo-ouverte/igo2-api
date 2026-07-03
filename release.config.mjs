@@ -16,16 +16,16 @@ export default {
     [
       '@semantic-release/exec',
       {
-        verifyReleaseCmd: 'echo RELEASE=${nextRelease.version} > .env',
-        publishCmd: [
-          // Sentry script
-          // `docker run --rm \
-          //   -e SENTRY_AUTH_TOKEN=${env.SENTRY_AUTH_TOKEN} \
-          //   -e VERSION=\${nextRelease.version} \
-          //   -e ENVIRONMENT=${env.ENVIRONMENT} \
-          //   ${env.IMAGE_NAME}-builder \
-          //   /bin/sh -c ./scripts/src/monitoring/sentry-release.sh`
-        ].join(' && ')
+        verifyReleaseCmd: 'echo RELEASE=${nextRelease.version} > .env'
+        // publishCmd: [
+        //   // Sentry script
+        //   `docker run --rm \
+        //     -e SENTRY_AUTH_TOKEN=${env.SENTRY_AUTH_TOKEN} \
+        //     -e VERSION=\${nextRelease.version} \
+        //     -e ENVIRONMENT=${env.ENVIRONMENT} \
+        //     ${env.IMAGE_NAME}-builder \
+        //     /bin/sh -c ./scripts/src/monitoring/sentry-release.sh`
+        // ].join(' && ')
       }
     ],
     '@semantic-release/github',
