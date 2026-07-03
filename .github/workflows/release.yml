@@ -1,10 +1,13 @@
 name: Release Pipeline
 
+
 on:
   push:
     branches:
       - main
       - next
+      - '[0-9]+.x'        # Matches 1.x, 1.x, etc.
+      - '[0-9]+.[0-9]+.x' # Matches 1.2.x, 1.1.x, etc.
 
 permissions:
   id-token: write # Required for OIDC
@@ -12,6 +15,7 @@ permissions:
 
 jobs:
   release:
+    name: Release
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -49,4 +53,6 @@ jobs:
         run: npm run build
 
       - name: Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.PAT }}
         run: npx semantic-release

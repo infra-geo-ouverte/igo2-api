@@ -2,15 +2,10 @@
  * @type {import('semantic-release').GlobalConfig}
  */
 export default {
-  branches: [
-    { name: 'prod' },
-    { name: 'acc', prerelease: 'rc' },
-    { name: 'dev', prerelease: 'next' }
-  ],
+  branches: [{ name: 'main' }, { name: 'next', prerelease: 'next' }],
   plugins: [
     '@semantic-release/commit-analyzer',
     '@semantic-release/release-notes-generator',
-    '@semantic-release/github',
     // NPM is only use to update the package.json
     [
       '@semantic-release/npm',
@@ -33,6 +28,7 @@ export default {
         ].join(' && ')
       }
     ],
+    '@semantic-release/github',
     [
       '@semantic-release/git',
       { assets: ['src/**/*', 'package.json', 'package-lock.json'] }
