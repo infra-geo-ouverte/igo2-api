@@ -1,7 +1,7 @@
 import { createHash } from 'node:crypto';
 
 import { StringArray } from '@igo2/fastify';
-import { and, desc, eq, isNull, or, sql } from 'drizzle-orm';
+import { AnyColumn, SQL, and, desc, eq, isNull, or, sql } from 'drizzle-orm';
 import Value from 'typebox/value';
 
 import { AppDatabase, AppInstance } from '../app.interface';
@@ -130,16 +130,31 @@ export class LayerService {
     limit = 10,
     page = 1
   ): Promise<ILayerSearchResult> {
+    /**
+     * Prevent to add unaccent extension on DB backend.
+     */
+    const sqlTranslateStripAccents = (
+      columnOrValue: AnyColumn | string | SQL
+    ): SQL => {
+      const accented =
+        'áàâãäåāăąèééêëēĕėęěìíîïìĩīĭḩóôõöōŏőùúûüũūŭůäàáâãåæçćĉčöòóôõøüùúûßéèêëýñîìíïş';
+      const plain =
+        'aaaaaaaaaeeeeeeeeeeiiiiiiiihooooooouuuuuuuuaaaaaaeccccoooooouuuuseeeeyniiiis';
+
+      return sql`translate(${columnOrValue}, ${accented}, ${plain})`;
+    };
+    const toTextSearchString = (term: string): string => {
+      return term
+        .split(' ')
+        .filter(Boolean)
+        .map((term) => `${term}:*`)
+        .join(' | ');
+    };
     const normalizedQuery = this.normalizeSearchQuery(originalQuery);
     if (!normalizedQuery) {
       return { items: [] };
     }
-
-    const tsQuery = normalizedQuery
-      .split(' ')
-      .filter(Boolean)
-      .map((term) => `${term}:*`)
-      .join(' | ');
+    const tsQuery = toTextSearchString(normalizedQuery);
 
     const offset = (page - 1) * limit;
     const searchDocument = sql<string>`
@@ -150,10 +165,10 @@ export class LayerService {
           coalesce(${layerModel.layers}, ''),
           coalesce(${layerModel.url}, ''),
           coalesce(${layerModel.type}::text, ''),
-          coalesce(${layerModel.layerOptions}->>'title', ''),
+          coalesce(${sqlTranslateStripAccents(sql`${layerModel.layerOptions}->>'title'`)}, ''),
           coalesce(${layerModel.layerOptions}->>'name', ''),
-          coalesce(${layerModel.layerOptions}->'metadata'->>'abstract', ''),
-          coalesce(${layerModel.layerOptions}->'metadata'->>'keyword', '')
+          coalesce(${sqlTranslateStripAccents(sql`${layerModel.layerOptions}->'metadata'->>'abstract'`)}, ''),
+          coalesce(${sqlTranslateStripAccents(sql`${layerModel.layerOptions}->'metadata'->>'keyword'`)}, '')
         )
       )
     `;
@@ -162,7 +177,7 @@ export class LayerService {
       ts_headline(
         'simple',
         coalesce(${layerModel.layerOptions}->>'title', ${layerModel.layers}, ''),
-        to_tsquery('simple', ${tsQuery}),
+        to_tsquery('simple', ${toTextSearchString(originalQuery)}),
         'StartSel=<strong>, StopSel=</strong>'
       )
     `;
