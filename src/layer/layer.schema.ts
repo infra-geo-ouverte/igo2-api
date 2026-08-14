@@ -110,7 +110,7 @@ export const SearchLayerOptionSchema = {
     type: Type.Optional(
       Type.Union([Type.Literal('layer'), Type.Literal('group')])
     ),
-    limit: Type.Optional(Type.Integer({ minimum: 1 })),
+    limit: Type.Optional(Type.Integer({ minimum: 1, maximum: 100 })),
     page: Type.Optional(Type.Integer({ minimum: 1 }))
   }),
   response: {

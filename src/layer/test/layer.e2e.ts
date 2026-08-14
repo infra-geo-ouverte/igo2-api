@@ -113,7 +113,7 @@ test('Layer', async (t: TestContext) => {
       t.assert.equal(response.statusCode, 200);
 
       const result = response.json<ILayer[]>();
-      t.assert.equal(result.length >= 4, true);
+      t.assert.ok(result.length >= 4, 'expected at least four layers');
       t.assert.equal(
         result[0].layerOptions?.title,
         LAYER_MOCK_1.layerOptions?.title
@@ -143,7 +143,7 @@ test('Layer', async (t: TestContext) => {
 
         const result = response.json<ILayerSearchResult>();
         t.assert.equal(Array.isArray(result.items), true);
-        t.assert.equal(result.items.length > 0, true);
+        t.assert.ok(result.items.length > 0, 'expected at least one result');
         t.assert.equal(result.items[0].properties.type, 'layer');
         t.assert.equal(result.items[0].properties.format, 'wms');
         t.assert.equal(
@@ -177,6 +177,166 @@ test('Layer', async (t: TestContext) => {
           ),
           true
         );
+      }
+    );
+
+    t.test(
+      'Should escape HTML in search highlight title',
+      async (t: TestContext) => {
+        const payload: ILayerIn = {
+          ...LAYER_MOCK_1,
+          url: 'http://sanitize.test.com/highlight-title',
+          layerOptions: {
+            ...LAYER_MOCK_1.layerOptions,
+            title: 'Foret <img src=x onerror=alert(1)>'
+          },
+          sourceOptions: {
+            ...LAYER_MOCK_1.sourceOptions!,
+            url: 'http://sanitize.test.com/highlight-title'
+          }
+        };
+
+        const createResponse = await createLayer(app, HEADERS_ADMIN, payload);
+        t.assert.equal(createResponse.statusCode, 201);
+
+        const response = await searchLayers(HEADERS_ADMIN, {
+          q: 'foret',
+          type: 'layer',
+          limit: 20,
+          page: 1
+        });
+        t.assert.equal(response.statusCode, 200);
+
+        const result = response.json<ILayerSearchResult>();
+        const item = result.items.find(
+          (candidate) =>
+            candidate.properties.url ===
+            'http://sanitize.test.com/highlight-title'
+        );
+
+        t.assert.ok(item);
+        t.assert.equal(
+          item?.highlight.title?.includes('&lt;img src=x onerror=alert(1)&gt;'),
+          true
+        );
+        t.assert.equal(
+          item?.highlight.title?.includes('<img src=x onerror=alert(1)>'),
+          false
+        );
+        t.assert.equal(item?.highlight.title?.includes('<strong>'), true);
+      }
+    );
+
+    t.test(
+      'Should paginate on authorized search results',
+      async (t: TestContext) => {
+        const deniedUrl =
+          'http://restricted-host/apis/search-pagination-denied';
+        const allowedUrl1 = 'http://example.com/search-pagination-allowed-1';
+        const allowedUrl2 = 'http://example.com/search-pagination-allowed-2';
+
+        nock(app.env.KONG_API)
+          .persist()
+          .get('/routes')
+          .reply(200, {
+            data: [
+              {
+                id: 'search-pagination-route',
+                paths: ['/apis/search-pagination-denied'],
+                methods: ['GET'],
+                service: { id: 202 }
+              } as IRouteConfig
+            ]
+          });
+
+        nock(app.env.KONG_API)
+          .persist()
+          .get('/services/202/plugins')
+          .reply(200, {
+            data: [
+              {
+                name: 'acl',
+                enabled: true,
+                config: {
+                  allow: ['admin']
+                }
+              }
+            ]
+          });
+
+        const candidates: ILayerIn[] = [
+          {
+            ...LAYER_MOCK_1,
+            url: deniedUrl,
+            layerOptions: {
+              ...LAYER_MOCK_1.layerOptions,
+              title: 'pagtest pagtest pagtest'
+            },
+            sourceOptions: {
+              ...LAYER_MOCK_1.sourceOptions!,
+              url: deniedUrl
+            }
+          },
+          {
+            ...LAYER_MOCK_1,
+            url: allowedUrl1,
+            layerOptions: {
+              ...LAYER_MOCK_1.layerOptions,
+              title: 'pagtest pagtest'
+            },
+            sourceOptions: {
+              ...LAYER_MOCK_1.sourceOptions!,
+              url: allowedUrl1
+            }
+          },
+          {
+            ...LAYER_MOCK_1,
+            url: allowedUrl2,
+            layerOptions: {
+              ...LAYER_MOCK_1.layerOptions,
+              title: 'pagtest'
+            },
+            sourceOptions: {
+              ...LAYER_MOCK_1.sourceOptions!,
+              url: allowedUrl2
+            }
+          }
+        ];
+
+        for (const candidate of candidates) {
+          const createResponse = await createLayer(
+            app,
+            HEADERS_ADMIN,
+            candidate
+          );
+          t.assert.equal(createResponse.statusCode, 201);
+        }
+
+        const firstPageResponse = await searchLayers(HEADERS_USER_1, {
+          q: 'pagtest',
+          type: 'layer',
+          limit: 1,
+          page: 1
+        });
+        t.assert.equal(firstPageResponse.statusCode, 200);
+
+        const secondPageResponse = await searchLayers(HEADERS_USER_1, {
+          q: 'pagtest',
+          type: 'layer',
+          limit: 1,
+          page: 2
+        });
+        t.assert.equal(secondPageResponse.statusCode, 200);
+
+        const firstPage = firstPageResponse.json<ILayerSearchResult>();
+        const secondPage = secondPageResponse.json<ILayerSearchResult>();
+
+        t.assert.equal(firstPage.items.length, 1);
+        t.assert.equal(secondPage.items.length, 1);
+        t.assert.equal(firstPage.items[0].properties.url, allowedUrl1);
+        t.assert.equal(secondPage.items[0].properties.url, allowedUrl2);
+
+        nock.cleanAll();
       }
     );
 

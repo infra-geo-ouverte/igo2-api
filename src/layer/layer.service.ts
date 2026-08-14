@@ -1,7 +1,7 @@
-import { createHash } from 'node:crypto';
+import { createHash, randomBytes } from 'node:crypto';
 
 import { StringArray } from '@igo2/fastify';
-import { AnyColumn, SQL, and, desc, eq, isNull, or, sql } from 'drizzle-orm';
+import { and, desc, eq, isNull, or, sql } from 'drizzle-orm';
 import Value from 'typebox/value';
 
 import { AppDatabase, AppInstance } from '../app.interface';
@@ -40,6 +40,11 @@ export const LayerSourceKeys: KeyPath<SourceOptions>[] = [
   'url',
   'params'
 ];
+
+const HIGHLIGHT_TOKEN_NONCE = randomBytes(12).toString('hex');
+const HIGHLIGHT_START_TOKEN = `__IGO_HIGHLIGHT_${HIGHLIGHT_TOKEN_NONCE}_START__`;
+const HIGHLIGHT_END_TOKEN = `__IGO_HIGHLIGHT_${HIGHLIGHT_TOKEN_NONCE}_END__`;
+const HIGHLIGHT_HEADLINE_OPTIONS = `StartSel=${HIGHLIGHT_START_TOKEN}, StopSel=${HIGHLIGHT_END_TOKEN}`;
 
 export class LayerService {
   private layerPermission?: ILayerPermission;
@@ -130,24 +135,11 @@ export class LayerService {
     limit = 10,
     page = 1
   ): Promise<ILayerSearchResult> {
-    /**
-     * Prevent to add unaccent extension on DB backend.
-     */
-    const sqlTranslateStripAccents = (
-      columnOrValue: AnyColumn | string | SQL
-    ): SQL => {
-      const accented =
-        'áàâãäåāăąèééêëēĕėęěìíîïìĩīĭḩóôõöōŏőùúûüũūŭůäàáâãåæçćĉčöòóôõøüùúûßéèêëýñîìíïş';
-      const plain =
-        'aaaaaaaaaeeeeeeeeeeiiiiiiiihooooooouuuuuuuuaaaaaaeccccoooooouuuuseeeeyniiiis';
-
-      return sql`translate(${columnOrValue}, ${accented}, ${plain})`;
-    };
     const toTextSearchString = (term: string): string => {
       return term
         .split(' ')
         .filter(Boolean)
-        .map((term) => `${term}:*`)
+        .map((word) => `${word}:*`)
         .join(' | ');
     };
     const normalizedQuery = this.normalizeSearchQuery(originalQuery);
@@ -155,8 +147,10 @@ export class LayerService {
       return { items: [] };
     }
     const tsQuery = toTextSearchString(normalizedQuery);
+    const tsQuerySql = sql`to_tsquery('simple', unaccent(${tsQuery}))`;
 
-    const offset = (page - 1) * limit;
+    const authorizedOffset = (page - 1) * limit;
+    const batchSize = Math.max(limit, 20);
     const searchDocument = sql<string>`
       to_tsvector(
         'simple',
@@ -165,20 +159,20 @@ export class LayerService {
           coalesce(${layerModel.layers}, ''),
           coalesce(${layerModel.url}, ''),
           coalesce(${layerModel.type}::text, ''),
-          coalesce(${sqlTranslateStripAccents(sql`${layerModel.layerOptions}->>'title'`)}, ''),
+          coalesce(unaccent(${layerModel.layerOptions}->>'title'), ''),
           coalesce(${layerModel.layerOptions}->>'name', ''),
-          coalesce(${sqlTranslateStripAccents(sql`${layerModel.layerOptions}->'metadata'->>'abstract'`)}, ''),
-          coalesce(${sqlTranslateStripAccents(sql`${layerModel.layerOptions}->'metadata'->>'keyword'`)}, '')
+          coalesce(unaccent(${layerModel.layerOptions}->'metadata'->>'abstract'), ''),
+          coalesce(unaccent(${layerModel.layerOptions}->'metadata'->>'keyword'), '')
         )
       )
     `;
-    const rank = sql<number>`ts_rank(${searchDocument}, to_tsquery('simple', ${tsQuery}))`;
+    const rank = sql<number>`ts_rank(${searchDocument}, ${tsQuerySql})`;
     const headline = sql<string>`
       ts_headline(
         'simple',
         coalesce(${layerModel.layerOptions}->>'title', ${layerModel.layers}, ''),
         to_tsquery('simple', ${toTextSearchString(originalQuery)}),
-        'StartSel=<strong>, StopSel=</strong>'
+        ${HIGHLIGHT_HEADLINE_OPTIONS}
       )
     `;
     const typeFilter =
@@ -186,43 +180,57 @@ export class LayerService {
         ? sql`${layerModel.type} = 'group'`
         : sql`${layerModel.type} <> 'group'`;
 
-    const rows = await this.db
-      .select({
-        id: layerModel.id,
-        type: layerModel.type,
-        url: layerModel.url,
-        layers: layerModel.layers,
-        global: layerModel.global,
-        layerOptions: layerModel.layerOptions,
-        sourceOptions: layerModel.sourceOptions,
-        score: rank,
-        headline: headline
-      })
-      .from(layerModel)
-      .where(
-        and(
-          typeFilter,
-          sql`${searchDocument} @@ to_tsquery('simple', ${tsQuery})`
-        )
-      )
-      .orderBy(desc(rank))
-      .limit(limit)
-      .offset(offset);
+    let scannedOffset = 0;
+    let skippedAuthorized = 0;
+    const authorizedRows: {
+      id: number;
+      type: LayerType;
+      url: string;
+      layers: string | null;
+      layerOptions: ILayer['layerOptions'];
+      sourceOptions: ILayer['sourceOptions'];
+      score: number;
+      headline: string;
+    }[] = [];
 
-    const items = (
-      await Promise.all(
-        rows.map(async (row) => {
-          try {
-            await this.urlAllowed(row.url, profils);
-            return row;
-          } catch {
-            return null;
-          }
+    while (authorizedRows.length < limit) {
+      const rows = await this.db
+        .select({
+          id: layerModel.id,
+          type: layerModel.type,
+          url: layerModel.url,
+          layers: layerModel.layers,
+          layerOptions: layerModel.layerOptions,
+          sourceOptions: layerModel.sourceOptions,
+          score: rank,
+          headline: headline
         })
-      )
-    )
-      .filter((row): row is (typeof rows)[number] => row !== null)
-      .map((row) => this.mapSearchRow(row, type));
+        .from(layerModel)
+        .where(and(typeFilter, sql`${searchDocument} @@ ${tsQuerySql}`))
+        .orderBy(desc(rank))
+        .limit(batchSize)
+        .offset(scannedOffset);
+
+      if (rows.length === 0) {
+        break;
+      }
+
+      scannedOffset += rows.length;
+
+      const visibleRows = await this.filterAuthorizedRows(rows, profils);
+      const remainingToSkip = Math.max(authorizedOffset - skippedAuthorized, 0);
+      const pagedRows =
+        remainingToSkip > 0 ? visibleRows.slice(remainingToSkip) : visibleRows;
+
+      skippedAuthorized += Math.min(remainingToSkip, visibleRows.length);
+      authorizedRows.push(...pagedRows.slice(0, limit - authorizedRows.length));
+
+      if (rows.length < batchSize) {
+        break;
+      }
+    }
+
+    const items = authorizedRows.map((row) => this.mapSearchRow(row, type));
 
     return {
       items,
@@ -253,6 +261,30 @@ export class LayerService {
     await this.urlAllowed(layerResult.url, profils);
 
     return layerResult;
+  }
+
+  private async filterAuthorizedRows<TRow extends { url: string }>(
+    rows: TRow[],
+    profils: IProfils
+  ): Promise<TRow[]> {
+    const visibleRows = await Promise.all(
+      rows.map(async (row) => {
+        try {
+          await this.urlAllowed(row.url, profils);
+          return row;
+        } catch {
+          return undefined;
+        }
+      })
+    );
+
+    return visibleRows.reduce<TRow[]>((authorized, row) => {
+      if (row) {
+        authorized.push(row);
+      }
+
+      return authorized;
+    }, []);
   }
 
   async getBySource(
@@ -427,8 +459,6 @@ export class LayerService {
       .replaceAll(/(\(|\)|\*)/g, ' ')
       .replaceAll(/\s+/g, ' ')
       .trim()
-      .normalize('NFD')
-      .replaceAll(/[\u0300-\u036f]/g, '')
       .toLowerCase();
   }
 
@@ -457,6 +487,8 @@ export class LayerService {
       layerOptions['metadata'] && typeof layerOptions['metadata'] === 'object'
         ? (layerOptions['metadata'] as Record<string, unknown>)
         : {};
+    const title = this.getOptionalString(layerOptions['title']);
+    const fallbackHighlightTitle = title ?? row.layers ?? undefined;
     const identifier = createHash('md5')
       .update(`${row.type}${row.url}${row.layers ?? ''}`)
       .digest('hex');
@@ -465,7 +497,7 @@ export class LayerService {
       score: row.score,
       properties: {
         name: row.layers ?? undefined,
-        title: this.getOptionalString(layerOptions['title']),
+        title,
         abstract: this.getOptionalString(metadata['abstract']),
         keywords: this.getOptionalStringArray(metadata['keyword']),
         metadataUrl: this.getOptionalString(metadata['url']),
@@ -482,9 +514,28 @@ export class LayerService {
         id: identifier
       },
       highlight: {
-        title: row.headline || this.getOptionalString(layerOptions['title'])
+        title: this.formatHighlightTitle(row.headline || fallbackHighlightTitle)
       }
     };
+  }
+
+  private formatHighlightTitle(value: string | undefined): string | undefined {
+    if (!value) {
+      return undefined;
+    }
+
+    return this.escapeHtml(value)
+      .replaceAll(HIGHLIGHT_START_TOKEN, '<strong>')
+      .replaceAll(HIGHLIGHT_END_TOKEN, '</strong>');
+  }
+
+  private escapeHtml(value: string): string {
+    return value
+      .replaceAll('&', '&amp;')
+      .replaceAll('<', '&lt;')
+      .replaceAll('>', '&gt;')
+      .replaceAll('"', '&quot;')
+      .replaceAll("'", '&#39;');
   }
 
   private getOptionalString(value: unknown): string | undefined {
