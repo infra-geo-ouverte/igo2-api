@@ -23,7 +23,7 @@ export const toolModel = appPgTable('tool', {
   tooltip: varchar({ length: 128 }),
   icon: varchar({ length: 128 }),
   inToolbar: boolean(),
-  global: boolean(),
+  global: boolean().notNull().default(false),
   profils: text().array(),
   ...baseToolModel,
   ...metadataTimestampColumns
