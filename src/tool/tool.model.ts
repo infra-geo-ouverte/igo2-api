@@ -12,7 +12,7 @@ import { metadataTimestampColumns } from '../core/database/model.utils';
 import { IToolOptions } from './tool.interface';
 
 export const baseToolModel = {
-  order: integer('order'),
+  order: integer('display_order'),
   options: json('options').$type<IToolOptions>()
 };
 

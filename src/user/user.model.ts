@@ -7,7 +7,7 @@ import { IUserPreference, UserSource } from './user.interface';
 export const userSourceEnum = appPgEnum('enum_user_source', UserSource);
 
 export const userModel = appPgTable(
-  'user',
+  'api_user',
   {
     id: serial().primaryKey(),
     source: userSourceEnum().notNull().default('user'),
