@@ -9,7 +9,7 @@ export const catalogModel = appPgTable('catalog', {
   title: varchar({ length: 64 }).notNull(),
   url: varchar({ length: 128 }),
   options: json().$type<ICatalogOptions>(),
-  order: integer(),
+  order: integer('display_order'),
   profils: text().array(),
   ...metadataTimestampColumns
 });
