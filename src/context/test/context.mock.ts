@@ -178,7 +178,7 @@ export async function appendMockedContexts(
     options: {},
     order: null,
     profils: null,
-    global: null,
+    global: false,
     icon: null,
     tooltip: null,
     inToolbar: null
@@ -193,7 +193,7 @@ export async function appendMockedContexts(
     options: {},
     order: null,
     profils: null,
-    global: null,
+    global: false,
     icon: null,
     tooltip: null,
     inToolbar: null

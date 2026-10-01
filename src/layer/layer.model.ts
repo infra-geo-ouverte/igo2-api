@@ -18,7 +18,7 @@ export const layerModel = appPgTable(
     type: layerTypeEnum().notNull(),
     url: varchar().notNull(),
     layers: varchar({ length: 128 }),
-    global: boolean(),
+    global: boolean().notNull().default(false),
     layerOptions: json().$type<AnyLayerOptionsWithoutSource>(),
     sourceOptions: json().$type<LayerSourceOptions>(),
     ...metadataTimestampColumns
