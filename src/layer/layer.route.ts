@@ -15,6 +15,7 @@ import {
   GetLayersSchema,
   LayerMigrateBatchSchema,
   LayerMigrateSchema,
+  SearchLayerOptionSchema,
   UpdateLayerSchema
 } from './layer.schema';
 
@@ -36,6 +37,13 @@ export const routes = (app: AppInstance) => {
     preHandler: adminAuthorization,
     handler: controller.getAdminOptions,
     schema: GetLayerAdminOptionSchema
+  });
+
+  app.route({
+    method: 'GET',
+    url: '/search',
+    handler: controller.search,
+    schema: SearchLayerOptionSchema
   });
 
   app.route({

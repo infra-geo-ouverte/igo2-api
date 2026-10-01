@@ -9,6 +9,7 @@ import {
   GetLayerSchema,
   LayerMigrateBatchSchema,
   LayerMigrateSchema,
+  SearchLayerOptionSchema,
   UpdateLayerSchema
 } from './layer.schema';
 import { LayerService } from './layer.service';
@@ -87,6 +88,12 @@ export class LayerController {
 
   getAll = async () => {
     return this.layerService.getAll();
+  };
+
+  search = async (request: AppRequest<typeof SearchLayerOptionSchema>) => {
+    const profils = request.user?.profils ?? [];
+    const { q, type = 'layer', limit = 10, page = 1 } = request.query;
+    return this.layerService.search(q, type, profils, limit, page);
   };
 
   getBaseLayers = async () => {

@@ -38,6 +38,7 @@ export const LAYER_MOCK_2: ILayerIn = {
     ],
     metadata: {
       url: 'https://www.donneesquebec.ca/recherche/fr/dataset/6a052cb5-42e6-4735-8626-02f62f1294d0',
+      keyword: ['urgence', 'municipalite'],
       extern: true
     },
     legendOptions: {

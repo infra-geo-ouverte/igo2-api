@@ -1,5 +1,7 @@
+import { createHash, randomBytes } from 'node:crypto';
+
 import { StringArray } from '@igo2/fastify';
-import { and, eq, isNull, or, sql } from 'drizzle-orm';
+import { and, desc, eq, isNull, or, sql } from 'drizzle-orm';
 import Value from 'typebox/value';
 
 import { AppDatabase, AppInstance } from '../app.interface';
@@ -11,6 +13,8 @@ import {
   ILayer,
   ILayerIn,
   ILayerMigrateBatch,
+  ILayerSearchItem,
+  ILayerSearchResult,
   LayerOptions,
   LayerType,
   SourceOptions
@@ -36,6 +40,11 @@ export const LayerSourceKeys: KeyPath<SourceOptions>[] = [
   'url',
   'params'
 ];
+
+const HIGHLIGHT_TOKEN_NONCE = randomBytes(12).toString('hex');
+const HIGHLIGHT_START_TOKEN = `__IGO_HIGHLIGHT_${HIGHLIGHT_TOKEN_NONCE}_START__`;
+const HIGHLIGHT_END_TOKEN = `__IGO_HIGHLIGHT_${HIGHLIGHT_TOKEN_NONCE}_END__`;
+const HIGHLIGHT_HEADLINE_OPTIONS = `StartSel=${HIGHLIGHT_START_TOKEN}, StopSel=${HIGHLIGHT_END_TOKEN}`;
 
 export class LayerService {
   private layerPermission?: ILayerPermission;
@@ -119,6 +128,119 @@ export class LayerService {
     });
   }
 
+  async search(
+    originalQuery: string,
+    type: 'layer' | 'group' = 'layer',
+    profils: IProfils,
+    limit = 10,
+    page = 1
+  ): Promise<ILayerSearchResult> {
+    const toTextSearchString = (term: string): string => {
+      return term
+        .split(' ')
+        .filter(Boolean)
+        .map((word) => `${word}:*`)
+        .join(' | ');
+    };
+    const normalizedQuery = this.normalizeSearchQuery(originalQuery);
+    if (!normalizedQuery) {
+      return { items: [] };
+    }
+    const tsQuery = toTextSearchString(normalizedQuery);
+    const tsQuerySql = sql`to_tsquery('simple', unaccent(${tsQuery}))`;
+
+    const authorizedOffset = (page - 1) * limit;
+    const batchSize = Math.max(limit, 20);
+    const searchDocument = sql<string>`
+      to_tsvector(
+        'simple',
+        concat_ws(
+          ' ',
+          coalesce(${layerModel.layers}, ''),
+          coalesce(${layerModel.url}, ''),
+          coalesce(${layerModel.type}::text, ''),
+          coalesce(unaccent(${layerModel.layerOptions}->>'title'), ''),
+          coalesce(${layerModel.layerOptions}->>'name', ''),
+          coalesce(unaccent(${layerModel.layerOptions}->'metadata'->>'abstract'), ''),
+          coalesce(unaccent(${layerModel.layerOptions}->'metadata'->>'keyword'), '')
+        )
+      )
+    `;
+    const rank = sql<number>`ts_rank(${searchDocument}, ${tsQuerySql})`;
+    const headline = sql<string>`
+      ts_headline(
+        'simple',
+        coalesce(${layerModel.layerOptions}->>'title', ${layerModel.layers}, ''),
+        to_tsquery('simple', ${toTextSearchString(originalQuery)}),
+        ${HIGHLIGHT_HEADLINE_OPTIONS}
+      )
+    `;
+    const typeFilter =
+      type === 'group'
+        ? sql`${layerModel.type} = 'group'`
+        : sql`${layerModel.type} <> 'group'`;
+
+    let scannedOffset = 0;
+    let skippedAuthorized = 0;
+    const authorizedRows: {
+      id: number;
+      type: LayerType;
+      url: string;
+      layers: string | null;
+      layerOptions: ILayer['layerOptions'];
+      sourceOptions: ILayer['sourceOptions'];
+      score: number;
+      headline: string;
+    }[] = [];
+
+    while (authorizedRows.length < limit) {
+      const rows = await this.db
+        .select({
+          id: layerModel.id,
+          type: layerModel.type,
+          url: layerModel.url,
+          layers: layerModel.layers,
+          layerOptions: layerModel.layerOptions,
+          sourceOptions: layerModel.sourceOptions,
+          score: rank,
+          headline: headline
+        })
+        .from(layerModel)
+        .where(and(typeFilter, sql`${searchDocument} @@ ${tsQuerySql}`))
+        .orderBy(desc(rank))
+        .limit(batchSize)
+        .offset(scannedOffset);
+
+      if (rows.length === 0) {
+        break;
+      }
+
+      scannedOffset += rows.length;
+
+      const visibleRows = await this.filterAuthorizedRows(rows, profils);
+      const remainingToSkip = Math.max(authorizedOffset - skippedAuthorized, 0);
+      const pagedRows =
+        remainingToSkip > 0 ? visibleRows.slice(remainingToSkip) : visibleRows;
+
+      skippedAuthorized += Math.min(remainingToSkip, visibleRows.length);
+      authorizedRows.push(...pagedRows.slice(0, limit - authorizedRows.length));
+
+      if (rows.length < batchSize) {
+        break;
+      }
+    }
+
+    const items = authorizedRows.map((row) => this.mapSearchRow(row, type));
+
+    return {
+      items,
+      maxScore:
+        items.length > 0
+          ? Math.max(...items.map((item) => item.score))
+          : undefined
+    };
+  }
+
   async getById(id: number): Promise<ILayer | undefined> {
     const [result] = await this.db
       .select()
@@ -139,6 +261,30 @@ export class LayerService {
     await this.urlAllowed(layerResult.url, profils);
 
     return layerResult;
+  }
+
+  private async filterAuthorizedRows<TRow extends { url: string }>(
+    rows: TRow[],
+    profils: IProfils
+  ): Promise<TRow[]> {
+    const visibleRows = await Promise.all(
+      rows.map(async (row) => {
+        try {
+          await this.urlAllowed(row.url, profils);
+          return row;
+        } catch {
+          return undefined;
+        }
+      })
+    );
+
+    return visibleRows.reduce<TRow[]>((authorized, row) => {
+      if (row) {
+        authorized.push(row);
+      }
+
+      return authorized;
+    }, []);
   }
 
   async getBySource(
@@ -306,5 +452,108 @@ export class LayerService {
     return existingLayer
       ? this.update(existingLayer.id, values)
       : this.create(layer);
+  }
+
+  private normalizeSearchQuery(query: string): string {
+    return query
+      .replaceAll(/(\(|\)|\*)/g, ' ')
+      .replaceAll(/\s+/g, ' ')
+      .trim()
+      .toLowerCase();
+  }
+
+  private mapSearchRow(
+    row: {
+      id: number;
+      type: LayerType;
+      url: string;
+      layers: string | null;
+      layerOptions: ILayer['layerOptions'];
+      sourceOptions: ILayer['sourceOptions'];
+      score: number;
+      headline: string;
+    },
+    type: 'layer' | 'group'
+  ): ILayerSearchItem {
+    const layerOptions =
+      row.layerOptions && typeof row.layerOptions === 'object'
+        ? (row.layerOptions as Record<string, unknown>)
+        : {};
+    const sourceOptions =
+      row.sourceOptions && typeof row.sourceOptions === 'object'
+        ? (row.sourceOptions as Record<string, unknown>)
+        : {};
+    const metadata =
+      layerOptions['metadata'] && typeof layerOptions['metadata'] === 'object'
+        ? (layerOptions['metadata'] as Record<string, unknown>)
+        : {};
+    const title = this.getOptionalString(layerOptions['title']);
+    const fallbackHighlightTitle = title ?? row.layers ?? undefined;
+    const identifier = createHash('md5')
+      .update(`${row.type}${row.url}${row.layers ?? ''}`)
+      .digest('hex');
+
+    return {
+      score: row.score,
+      properties: {
+        name: row.layers ?? undefined,
+        title,
+        abstract: this.getOptionalString(metadata['abstract']),
+        keywords: this.getOptionalStringArray(metadata['keyword']),
+        metadataUrl: this.getOptionalString(metadata['url']),
+        minScaleDenom: this.getOptionalNumber(layerOptions['minScaleDenom']),
+        maxScaleDenom: this.getOptionalNumber(layerOptions['maxScaleDenom']),
+        queryable: this.getOptionalBoolean(sourceOptions['queryable']),
+        optionsFromCapabilities: this.getOptionalBoolean(
+          sourceOptions['optionsFromCapabilities']
+        ),
+        type,
+        format: row.type,
+        url: row.url,
+        sourceId: row.id,
+        id: identifier
+      },
+      highlight: {
+        title: this.formatHighlightTitle(row.headline || fallbackHighlightTitle)
+      }
+    };
+  }
+
+  private formatHighlightTitle(value: string | undefined): string | undefined {
+    if (!value) {
+      return undefined;
+    }
+
+    return this.escapeHtml(value)
+      .replaceAll(HIGHLIGHT_START_TOKEN, '<strong>')
+      .replaceAll(HIGHLIGHT_END_TOKEN, '</strong>');
+  }
+
+  private escapeHtml(value: string): string {
+    return value
+      .replaceAll('&', '&amp;')
+      .replaceAll('<', '&lt;')
+      .replaceAll('>', '&gt;')
+      .replaceAll('"', '&quot;')
+      .replaceAll("'", '&#39;');
+  }
+
+  private getOptionalString(value: unknown): string | undefined {
+    return typeof value === 'string' && value.length > 0 ? value : undefined;
+  }
+
+  private getOptionalNumber(value: unknown): number | undefined {
+    return typeof value === 'number' ? value : undefined;
+  }
+
+  private getOptionalBoolean(value: unknown): boolean | undefined {
+    return typeof value === 'boolean' ? value : undefined;
+  }
+
+  private getOptionalStringArray(value: unknown): string[] | undefined {
+    return Array.isArray(value) &&
+      value.every((item) => typeof item === 'string')
+      ? value
+      : undefined;
   }
 }
