@@ -175,7 +175,7 @@ export class ContextPermissionService {
       const cp = row.context_permission;
       return {
         ...cp,
-        user: row.user,
+        user: row.api_user,
         profil: row.profil
       } as IAnyContextPermissionWithRelations;
     });
