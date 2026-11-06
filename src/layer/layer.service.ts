@@ -1,7 +1,7 @@
-import { createHash, randomBytes } from 'node:crypto';
+import { createHash } from 'node:crypto';
 
 import { StringArray } from '@igo2/fastify';
-import { and, desc, eq, isNull, or, sql } from 'drizzle-orm';
+import { and, asc, desc, eq, isNull, or, sql } from 'drizzle-orm';
 import Value from 'typebox/value';
 
 import { AppDatabase, AppInstance } from '../app.interface';
@@ -40,11 +40,6 @@ export const LayerSourceKeys: KeyPath<SourceOptions>[] = [
   'url',
   'params'
 ];
-
-const HIGHLIGHT_TOKEN_NONCE = randomBytes(12).toString('hex');
-const HIGHLIGHT_START_TOKEN = `__IGO_HIGHLIGHT_${HIGHLIGHT_TOKEN_NONCE}_START__`;
-const HIGHLIGHT_END_TOKEN = `__IGO_HIGHLIGHT_${HIGHLIGHT_TOKEN_NONCE}_END__`;
-const HIGHLIGHT_HEADLINE_OPTIONS = `StartSel=${HIGHLIGHT_START_TOKEN}, StopSel=${HIGHLIGHT_END_TOKEN}`;
 
 export class LayerService {
   private layerPermission?: ILayerPermission;
@@ -140,7 +135,7 @@ export class LayerService {
         .split(' ')
         .filter(Boolean)
         .map((word) => `${word}:*`)
-        .join(' | ');
+        .join(' & ');
     };
     const normalizedQuery = this.normalizeSearchQuery(originalQuery);
     if (!normalizedQuery) {
@@ -151,30 +146,28 @@ export class LayerService {
 
     const authorizedOffset = (page - 1) * limit;
     const batchSize = Math.max(limit, 20);
-    const searchDocument = sql<string>`
-      to_tsvector(
-        'simple',
-        concat_ws(
-          ' ',
-          coalesce(${layerModel.layers}, ''),
-          coalesce(${layerModel.url}, ''),
-          coalesce(${layerModel.type}::text, ''),
-          coalesce(unaccent(${layerModel.layerOptions}->>'title'), ''),
-          coalesce(${layerModel.layerOptions}->>'name', ''),
-          coalesce(unaccent(${layerModel.layerOptions}->'metadata'->>'abstract'), ''),
-          coalesce(unaccent(${layerModel.layerOptions}->'metadata'->>'keyword'), '')
-        )
-      )
-    `;
-    const rank = sql<number>`ts_rank(${searchDocument}, ${tsQuerySql})`;
-    const headline = sql<string>`
-      ts_headline(
-        'simple',
-        coalesce(${layerModel.layerOptions}->>'title', ${layerModel.layers}, ''),
-        to_tsquery('simple', ${toTextSearchString(originalQuery)}),
-        ${HIGHLIGHT_HEADLINE_OPTIONS}
-      )
-    `;
+    const searchDocument = sql<string>`(
+      setweight(to_tsvector('simple', coalesce(unaccent(${layerModel.layerOptions}->>'title'), '')), 'A') ||
+      setweight(to_tsvector('simple', concat_ws(' ', coalesce(${layerModel.layers}, ''), coalesce(${layerModel.layerOptions}->>'name', ''))), 'B') ||
+      setweight(to_tsvector('simple', coalesce(unaccent(${layerModel.layerOptions}->'metadata'->>'keyword'), '')), 'C') ||
+      setweight(to_tsvector('simple', coalesce(unaccent(${layerModel.layerOptions}->'metadata'->>'abstract'), '')), 'D')
+    )`;
+    // Title (or layer name) without accents/punctuation, to compare with the query
+    const plainTitle = sql`regexp_replace(lower(unaccent(coalesce(${layerModel.layerOptions}->>'title', ${layerModel.layers}, ''))), '[^[:alnum:]]+', ' ', 'g')`;
+    const titleBoost = sql`(
+      case
+        when ${plainTitle} like ${normalizedQuery + '%'} then 1.0
+        when ${plainTitle} like ${'% ' + normalizedQuery + '%'} then 0.5
+        else 0.0
+      end
+    )`;
+    // ts_rank_cd normalization 32 bounds the text score to [0, 1[ so scores stay comparable
+    const rank = sql<number>`(
+      ts_rank_cd('{0.1, 0.2, 0.5, 1.0}', ${searchDocument}, ${tsQuerySql}, 32) + ${titleBoost}
+    )`;
+    const highlightTerms = normalizedQuery
+      .split(' ')
+      .map((term) => this.foldAccents(term));
     const typeFilter =
       type === 'group'
         ? sql`${layerModel.type} = 'group'`
@@ -190,7 +183,6 @@ export class LayerService {
       layerOptions: ILayer['layerOptions'];
       sourceOptions: ILayer['sourceOptions'];
       score: number;
-      headline: string;
     }[] = [];
 
     while (authorizedRows.length < limit) {
@@ -202,12 +194,11 @@ export class LayerService {
           layers: layerModel.layers,
           layerOptions: layerModel.layerOptions,
           sourceOptions: layerModel.sourceOptions,
-          score: rank,
-          headline: headline
+          score: rank
         })
         .from(layerModel)
         .where(and(typeFilter, sql`${searchDocument} @@ ${tsQuerySql}`))
-        .orderBy(desc(rank))
+        .orderBy(desc(rank), asc(layerModel.id))
         .limit(batchSize)
         .offset(scannedOffset);
 
@@ -230,7 +221,9 @@ export class LayerService {
       }
     }
 
-    const items = authorizedRows.map((row) => this.mapSearchRow(row, type));
+    const items = authorizedRows.map((row) =>
+      this.mapSearchRow(row, type, highlightTerms)
+    );
 
     return {
       items,
@@ -456,7 +449,7 @@ export class LayerService {
 
   private normalizeSearchQuery(query: string): string {
     return query
-      .replaceAll(/(\(|\)|\*)/g, ' ')
+      .replaceAll(/[^\p{L}\p{N}]+/gu, ' ')
       .replaceAll(/\s+/g, ' ')
       .trim()
       .toLowerCase();
@@ -471,9 +464,9 @@ export class LayerService {
       layerOptions: ILayer['layerOptions'];
       sourceOptions: ILayer['sourceOptions'];
       score: number;
-      headline: string;
     },
-    type: 'layer' | 'group'
+    type: 'layer' | 'group',
+    highlightTerms: string[]
   ): ILayerSearchItem {
     const layerOptions =
       row.layerOptions && typeof row.layerOptions === 'object'
@@ -514,19 +507,37 @@ export class LayerService {
         id: identifier
       },
       highlight: {
-        title: this.formatHighlightTitle(row.headline || fallbackHighlightTitle)
+        title: this.highlightText(fallbackHighlightTitle, highlightTerms)
       }
     };
   }
 
-  private formatHighlightTitle(value: string | undefined): string | undefined {
+  private foldAccents(value: string): string {
+    return value.normalize('NFD').replaceAll(/\p{M}/gu, '').toLowerCase();
+  }
+
+  /** Wraps words starting with a search term (accent-insensitive) in <strong>. */
+  private highlightText(
+    value: string | undefined,
+    terms: string[]
+  ): string | undefined {
     if (!value) {
       return undefined;
     }
 
-    return this.escapeHtml(value)
-      .replaceAll(HIGHLIGHT_START_TOKEN, '<strong>')
-      .replaceAll(HIGHLIGHT_END_TOKEN, '</strong>');
+    let result = '';
+    let lastIndex = 0;
+    for (const match of value.matchAll(/[\p{L}\p{N}]+/gu)) {
+      const word = match[0];
+      const folded = this.foldAccents(word);
+      result += this.escapeHtml(value.slice(lastIndex, match.index));
+      result += terms.some((term) => folded.startsWith(term))
+        ? `<strong>${this.escapeHtml(word)}</strong>`
+        : this.escapeHtml(word);
+      lastIndex = match.index + word.length;
+    }
+
+    return result + this.escapeHtml(value.slice(lastIndex));
   }
 
   private escapeHtml(value: string): string {
