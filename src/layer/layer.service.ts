@@ -130,19 +130,19 @@ export class LayerService {
     limit = 10,
     page = 1
   ): Promise<ILayerSearchResult> {
-    const toTextSearchString = (term: string): string => {
+    const toTextSearchString = (term: string, operator: '&' | '|'): string => {
       return term
         .split(' ')
         .filter(Boolean)
         .map((word) => `${word}:*`)
-        .join(' & ');
+        .join(` ${operator} `);
     };
     const normalizedQuery = this.normalizeSearchQuery(originalQuery);
     if (!normalizedQuery) {
       return { items: [] };
     }
-    const tsQuery = toTextSearchString(normalizedQuery);
-    const tsQuerySql = sql`to_tsquery('simple', unaccent(${tsQuery}))`;
+    const tsQuerySql = sql`to_tsquery('simple', unaccent(${toTextSearchString(normalizedQuery, '|')}))`;
+    const tsQueryAllSql = sql`to_tsquery('simple', unaccent(${toTextSearchString(normalizedQuery, '&')}))`;
 
     const authorizedOffset = (page - 1) * limit;
     const batchSize = Math.max(limit, 20);
@@ -161,9 +161,11 @@ export class LayerService {
         else 0.0
       end
     )`;
+    // Any term matches, but documents containing every term rank first
+    const allTermsBoost = sql`(case when ${searchDocument} @@ ${tsQueryAllSql} then 1.0 else 0.0 end)`;
     // ts_rank_cd normalization 32 bounds the text score to [0, 1[ so scores stay comparable
     const rank = sql<number>`(
-      ts_rank_cd('{0.1, 0.2, 0.5, 1.0}', ${searchDocument}, ${tsQuerySql}, 32) + ${titleBoost}
+      ts_rank_cd('{0.1, 0.2, 0.5, 1.0}', ${searchDocument}, ${tsQuerySql}, 32) + ${titleBoost} + ${allTermsBoost}
     )`;
     const highlightTerms = normalizedQuery
       .split(' ')
