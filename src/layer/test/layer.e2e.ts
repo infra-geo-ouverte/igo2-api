@@ -410,6 +410,68 @@ test('Layer', async (t: TestContext) => {
       }
     );
 
+    t.test(
+      'Should deep merge layerOptions and keep untouched keys',
+      async (t: TestContext) => {
+        const layer = layers[1];
+        const response = await updateLayer(HEADERS_ADMIN, layer.id, {
+          layerOptions: { opacity: 0.5 }
+        });
+        t.assert.equal(response.statusCode, 200);
+
+        const result = (await getLayer(HEADERS_ADMIN, layer.id)).json<ILayer>();
+        t.assert.equal(result.layerOptions?.opacity, 0.5);
+        t.assert.equal(
+          result.layerOptions?.title,
+          LAYER_MOCK_2.layerOptions?.title
+        );
+      }
+    );
+
+    t.test(
+      'Should remove a layerOptions key when its value is null',
+      async (t: TestContext) => {
+        const layer = layers[1];
+        const response = await app.inject({
+          method: 'PATCH',
+          headers: HEADERS_ADMIN,
+          url: `/layers/${layer.id}`,
+          body: { layerOptions: { visible: null } }
+        });
+        t.assert.equal(response.statusCode, 200);
+
+        const result = (await getLayer(HEADERS_ADMIN, layer.id)).json<ILayer>();
+        t.assert.equal(result.layerOptions?.visible, undefined);
+        t.assert.equal(
+          result.layerOptions?.title,
+          LAYER_MOCK_2.layerOptions?.title
+        );
+      }
+    );
+
+    t.test(
+      'Should deep merge sourceOptions and keep untouched keys',
+      async (t: TestContext) => {
+        const layer = layers[1];
+        await updateLayer(HEADERS_ADMIN, layer.id, {
+          sourceOptions: { type: 'wms', url: '', version: '1.3.0' }
+        });
+        const response = await app.inject({
+          method: 'PATCH',
+          headers: HEADERS_ADMIN,
+          url: `/layers/${layer.id}`,
+          body: { sourceOptions: { params: { STYLES: 'custom' } } }
+        });
+        t.assert.equal(response.statusCode, 200);
+
+        const result = (await getLayer(HEADERS_ADMIN, layer.id)).json<ILayer>();
+        t.assert.equal(result.sourceOptions?.version, '1.3.0');
+        const params = result.sourceOptions?.params as
+          Record<string, unknown> | undefined;
+        t.assert.equal(params?.['STYLES'], 'custom');
+      }
+    );
+
     t.test('Should not patch for anonymous user', async (t: TestContext) => {
       const layer = layers[1];
 

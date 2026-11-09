@@ -5,7 +5,7 @@ import {
   createSelectSchema,
   createUpdateSchema
 } from 'drizzle-orm/typebox';
-import Type from 'typebox';
+import Type, { TSchema } from 'typebox';
 
 import { LayerType } from './layer.interface';
 import { layerModel } from './layer.model';
@@ -50,10 +50,37 @@ export const InsertLayerSchema = Type.Omit(
   ['id', 'createdAt', 'updatedAt']
 );
 
+const NullableOptional = <T extends TSchema>(schema: T) =>
+  Type.Optional(Type.Union([schema, Type.Null()]));
+
+const LayerOptionsPatchSchema = Type.Object(
+  {
+    title: NullableOptional(Type.String()),
+    baseLayer: NullableOptional(Type.Boolean()),
+    opacity: NullableOptional(Type.Number()),
+    visible: NullableOptional(Type.Boolean()),
+    extent: NullableOptional(
+      Type.Tuple([Type.Number(), Type.Number(), Type.Number(), Type.Number()])
+    ),
+    zIndex: NullableOptional(Type.Number()),
+    minResolution: NullableOptional(Type.Number()),
+    maxResolution: NullableOptional(Type.Number())
+  },
+  { additionalProperties: true }
+);
+
+const LayerSourceOptionsPatchSchema = Type.Object(
+  {
+    params: NullableOptional(Type.Record(Type.String(), Type.Unknown())),
+    version: NullableOptional(Type.String())
+  },
+  { additionalProperties: true }
+);
+
 export const PatchLayerSchema = Type.Omit(
   createUpdateSchema(layerModel, {
-    layerOptions: Type.Optional(LayerOptionsSchema),
-    sourceOptions: Type.Optional(LayerSourceOptionsSchema)
+    layerOptions: NullableOptional(LayerOptionsPatchSchema),
+    sourceOptions: NullableOptional(LayerSourceOptionsPatchSchema)
   }),
   ['id', 'createdAt', 'updatedAt']
 );
@@ -175,7 +202,8 @@ export const DeleteLayerSchema = {
 } satisfies FastifySchema;
 
 export const UpdateLayerSchema = {
-  description: 'Update layer by id.',
+  description:
+    'Partially update a layer by id. `layerOptions` and `sourceOptions` follow JSON Merge Patch (RFC 7396): only send the modified keys, objects are merged recursively, a `null` value removes a key (or the whole attribute), and arrays are replaced entirely. `type`, `url` and `params.layers` are stored in dedicated columns and are ignored in `sourceOptions`.',
   params: Type.Object({
     id: Type.Number()
   }),

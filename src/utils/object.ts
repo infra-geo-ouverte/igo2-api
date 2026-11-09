@@ -1,3 +1,30 @@
+type JsonObject = Record<string, unknown>;
+
+function isJsonObject(value: unknown): value is JsonObject {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+/**
+ * JSON Merge Patch (RFC 7396): objects are merged recursively, `null` removes a key,
+ * arrays and primitives replace the target value.
+ */
+export function mergePatch(target: unknown, patch: unknown): unknown {
+  if (!isJsonObject(patch)) {
+    return patch;
+  }
+
+  const result: JsonObject = isJsonObject(target) ? { ...target } : {};
+  for (const [key, value] of Object.entries(patch)) {
+    if (key === '__proto__') continue;
+    if (value === null) {
+      delete result[key];
+    } else {
+      result[key] = mergePatch(result[key], value);
+    }
+  }
+  return result;
+}
+
 // Define a type for simple objects, excluding Arrays and null
 type NonArrayObject<T> = T extends unknown[]
   ? never // Exclude Arrays
