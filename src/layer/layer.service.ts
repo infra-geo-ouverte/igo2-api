@@ -7,12 +7,13 @@ import Value from 'typebox/value';
 import { AppDatabase, AppInstance } from '../app.interface';
 import { IProfils } from '../auth';
 import { Transaction } from '../core/database';
-import { KeyPath } from '../utils/object';
+import { KeyPath, mergePatch } from '../utils/object';
 import {
   AnySourceOptionsParams,
   ILayer,
   ILayerIn,
   ILayerMigrateBatch,
+  ILayerPatch,
   ILayerSearchItem,
   ILayerSearchResult,
   LayerOptions,
@@ -81,7 +82,49 @@ export class LayerService {
     return result;
   }
 
-  async update(id: number, layerData: Partial<ILayerIn>): Promise<ILayer> {
+  /** Partial update: `layerOptions` and `sourceOptions` are deep-merged (RFC 7396). */
+  async update(id: number, layerData: ILayerPatch): Promise<ILayer> {
+    const { layerOptions, sourceOptions, ...rest } = layerData;
+
+    return this.db.transaction(async (tx) => {
+      const data: Partial<ILayerIn> = { ...rest };
+
+      if (layerOptions !== undefined || sourceOptions !== undefined) {
+        const [existing] = await tx
+          .select({
+            layerOptions: layerModel.layerOptions,
+            sourceOptions: layerModel.sourceOptions
+          })
+          .from(layerModel)
+          .where(eq(layerModel.id, id))
+          .for('update');
+
+        if (layerOptions !== undefined) {
+          data.layerOptions = (
+            layerOptions === null
+              ? null
+              : mergePatch(existing?.layerOptions, layerOptions)
+          ) as ILayerIn['layerOptions'];
+        }
+        if (sourceOptions !== undefined) {
+          data.sourceOptions = (
+            sourceOptions === null
+              ? null
+              : mergePatch(existing?.sourceOptions, sourceOptions)
+          ) as ILayerIn['sourceOptions'];
+        }
+      }
+
+      return this.replace(id, data, tx);
+    });
+  }
+
+  /** Overwrites the given columns as-is (no JSON merge). */
+  private async replace(
+    id: number,
+    layerData: Partial<ILayerIn>,
+    transaction?: Transaction
+  ): Promise<ILayer> {
     const data: Partial<ILayerIn> = {
       ...layerData,
       sourceOptions:
@@ -91,7 +134,7 @@ export class LayerService {
             )
           : layerData.sourceOptions
     };
-    const [result] = await this.db
+    const [result] = await (transaction ?? this.db)
       .update(layerModel)
       .set(data)
       .where(eq(layerModel.id, id))
@@ -450,7 +493,7 @@ export class LayerService {
     });
 
     return existingLayer
-      ? this.update(existingLayer.id, values)
+      ? this.replace(existingLayer.id, values)
       : this.create(layer);
   }
 

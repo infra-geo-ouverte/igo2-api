@@ -8,6 +8,14 @@ export type ILayerIn = Omit<
   'createdAt' | 'updatedAt'
 >;
 
+// layerOptions and sourceOptions follow JSON Merge Patch (RFC 7396) semantics.
+export type ILayerPatch = Partial<
+  Omit<ILayerIn, 'layerOptions' | 'sourceOptions'>
+> & {
+  layerOptions?: Record<string, unknown> | null;
+  sourceOptions?: Record<string, unknown> | null;
+};
+
 export interface SourceOptions {
   type: LayerType;
   url: string;
