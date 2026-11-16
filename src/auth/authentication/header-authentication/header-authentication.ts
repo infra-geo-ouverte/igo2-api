@@ -9,10 +9,7 @@ import fastifyPlugin from 'fastify-plugin';
 import { IAuthPluginConfig } from '../authentication.interface';
 import { isSystemConsumer } from '../shared/consumer/consumer.utils';
 import { apiAuthentication } from './api-authentication';
-import {
-  HEADERS_CONSUMER_SCHEMA,
-  HEADERS_CONSUMER_SCHEMA_REF
-} from './header-authentication.interface';
+import { HEADERS_CONSUMER_SCHEMA } from './header-authentication.interface';
 import { HeaderAuthenticationService } from './header-authentication.service';
 
 /**
@@ -21,8 +18,6 @@ import { HeaderAuthenticationService } from './header-authentication.service';
  */
 export const headerAuthentication: FastifyPluginAsync<IAuthPluginConfig> =
   fastifyPlugin(async (app: FastifyInstance, config?: IAuthPluginConfig) => {
-    app.addSchema(HEADERS_CONSUMER_SCHEMA);
-
     app.decorate('authService', new HeaderAuthenticationService());
 
     app.addHook('onRoute', (options) => {
@@ -36,7 +31,7 @@ export const headerAuthentication: FastifyPluginAsync<IAuthPluginConfig> =
       // Add the headers authentication JSON Schema to all routes
       options.schema = {
         ...options.schema,
-        headers: HEADERS_CONSUMER_SCHEMA_REF
+        headers: HEADERS_CONSUMER_SCHEMA
       };
     });
 

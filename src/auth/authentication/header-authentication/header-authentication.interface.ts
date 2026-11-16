@@ -22,9 +22,6 @@ export const HeaderConsumers = [
 export type HeaderConsumer = (typeof HeaderConsumers)[number];
 
 const HEADERS_CONSUMER_SCHEMA_NAME = 'ConsumerHeadersSchema';
-export const HEADERS_CONSUMER_SCHEMA_REF = Type.Ref(
-  HEADERS_CONSUMER_SCHEMA_NAME
-);
 
 export const HEADERS_CONSUMER_SCHEMA = Type.Object<
   Record<keyof IHeaderConsumer, TSchema>
