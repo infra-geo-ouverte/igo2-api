@@ -4,28 +4,40 @@ import test, { TestContext } from 'node:test';
 import { AppInstance } from '../../../../app.interface';
 import { IUserConsumer } from '../../shared/consumer';
 import { headerAuthentication } from '../header-authentication';
+import { HEADERS_CONSUMER_SCHEMA } from '../header-authentication.interface';
 import { HeaderAuthenticationService } from '../header-authentication.service';
 
 test('headerAuthentication', async (t: TestContext) => {
   await t.test(
-    'headerAuthentication should register schema and hooks',
+    'headerAuthentication should add inline schema and register hooks',
     async () => {
-      let schemaRegistered = false;
+      let onRouteHook:
+        | ((options: { url: string; schema?: { headers?: unknown } }) => void)
+        | undefined;
       const hooksRegistered: string[] = [];
 
       const mockApp = {
-        addSchema: () => {
-          schemaRegistered = true;
-        },
-        addHook: (name: string) => {
+        addHook: (name: string, hook: unknown) => {
           hooksRegistered.push(name);
+          if (name === 'onRoute') {
+            onRouteHook = hook as typeof onRouteHook;
+          }
         },
         decorate: () => void 0
       } as unknown as AppInstance;
 
       await headerAuthentication(mockApp, {});
 
-      strictEqual(schemaRegistered, true, 'Schema should be registered');
+      const routeOptions: {
+        url: string;
+        schema: { headers?: unknown };
+      } = { url: '/catalogs/:id', schema: {} };
+      onRouteHook?.(routeOptions);
+      strictEqual(
+        routeOptions.schema.headers,
+        HEADERS_CONSUMER_SCHEMA,
+        'Headers schema should be inlined on the route'
+      );
       ok(
         hooksRegistered.includes('onRoute'),
         'onRoute hook should be registered'
